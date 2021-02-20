@@ -51,6 +51,7 @@ SOURCES += \
     ../lua/src/lutf8lib.c \
     ../lua/src/lvm.c \
     ../lua/src/lzio.c \
+    ../utils/malloc.c \
     main.cpp \
     mainwindow.cpp
 
@@ -83,6 +84,7 @@ HEADERS += \
     ../lua/src/lundump.h \
     ../lua/src/lvm.h \
     ../lua/src/lzio.h \
+    ../utils/malloc.h \
     mainwindow.h
 
 FORMS += \
