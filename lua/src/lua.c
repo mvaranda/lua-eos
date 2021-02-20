@@ -622,7 +622,7 @@ static int pmain (lua_State *L) {
 #ifdef LUA_EMBEDDED
 int lua_main (int argc, char **argv) {
 #else
-int main (int argc, char **argv) {
+int main (int *, char **argv) {
 #endif
   int status, result;
   lua_State *L = luaL_newstate();  /* create state */
@@ -630,6 +630,24 @@ int main (int argc, char **argv) {
     l_message(argv[0], "cannot create state: not enough memory");
     return EXIT_FAILURE;
   }
+
+#if 1
+  int error;
+  luaL_openlibs(L);
+  while (*argv != NULL) {
+    error = luaL_loadbuffer(L, *argv, strlen(*argv), "line");
+    if ( ! error) error = lua_pcall(L, 0, 0, 0);
+    if (error) {
+      printf( "%s", lua_tostring(L, -1));
+      lua_pop(L, 1);  /* pop error message from the stack */
+      break;
+    }
+    argv++;
+  }
+  lua_close(L);
+  return error;
+#else
+
   lua_pushcfunction(L, &pmain);  /* to call 'pmain' in protected mode */
   lua_pushinteger(L, argc);  /* 1st argument */
   lua_pushlightuserdata(L, argv); /* 2nd argument */
@@ -637,6 +655,7 @@ int main (int argc, char **argv) {
   result = lua_toboolean(L, -1);  /* get result */
   report(L, status);
   lua_close(L);
+#endif
   return (result && status == LUA_OK) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
