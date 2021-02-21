@@ -170,6 +170,7 @@ SOURCES += \
     ../lvgl/src/lv_widgets/lv_tileview.c \
     ../lvgl/src/lv_widgets/lv_win.c \
     ../utils/malloc.c \
+    clabel.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -293,6 +294,7 @@ HEADERS += \
     ../lvgl/src/lvgl.h \
     ../lvgl_patch/lv_conf.h \
     ../utils/malloc.h \
+    clabel.h \
     mainwindow.h
 
 FORMS += \
