@@ -17,10 +17,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    QPixmap display_pixelmap;
     QImage display_image;
+    Ui::MainWindow *ui;
 
 private:
-    Ui::MainWindow *ui;
+
 };
 #endif // MAINWINDOW_H

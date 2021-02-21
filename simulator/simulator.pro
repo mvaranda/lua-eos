@@ -12,7 +12,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 DEFINES += LUA_EMBEDDED
 
-INCLUDEPATH += ../lvgl_patch \
+INCLUDEPATH += ../lvgl \
+  ../lvgl_patch \
   ../lvgl/src/lv_core \
   ../lvgl/src/lv_draw \
   ../lvgl/src/lv_font \
@@ -27,6 +28,7 @@ INCLUDEPATH += ../lvgl_patch \
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ../examples/native/demo_01.c \
     ../lua/src/lapi.c \
     ../lua/src/lauxlib.c \
     ../lua/src/lbaselib.c \
