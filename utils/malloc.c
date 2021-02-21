@@ -521,6 +521,10 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
   improvement at the expense of carrying around more memory.
 */
 
+
+// MV:
+#ifdef USE_DOUG_LEA_MALLOC
+
 /* Version identifier to allow people to support multiple versions */
 #ifndef DLMALLOC_VERSION
 #define DLMALLOC_VERSION 20806
@@ -6278,3 +6282,5 @@ History:
          structure of old version,  but most details differ.)
 
 */
+
+#endif // #ifdef USE_DOUG_LEA_MALLOC
