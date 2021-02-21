@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QPixmap>
 #include <QImage>
+#include <QTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -20,7 +21,12 @@ public:
     QImage display_image;
     Ui::MainWindow *ui;
 
+private slots:
+  void timerEvent(QTimerEvent *event);
+
+
 private:
+  int timerId;
 
 };
 #endif // MAINWINDOW_H
