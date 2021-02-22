@@ -23,6 +23,8 @@ public:
 
 private slots:
   void timerEvent(QTimerEvent *event);
+  void onMousePressed(int x, int y);
+  void onMouseReleased(int x, int y);
 
 
 private:

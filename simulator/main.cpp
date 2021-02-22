@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.show();
 
-    printf("lua_main return: %d\n", lua_main(2, args));
+    //printf("lua_main return: %d\n", lua_main(2, args));
+
     return a.exec();
 }

@@ -32,6 +32,10 @@ static lv_indev_drv_t indev_drv;
 static lv_disp_drv_t disp_drv;               /*Descriptor of a display driver*/
 static lv_disp_buf_t disp_buf;
 static lv_color_t buf[LV_HOR_RES_MAX * LV_VER_RES_MAX / 10];                     /*Declare a buffer for 1/10 screen size*/
+static int touchpad_x = 0, touchpad_y = 0;
+static int touchpad_state = LV_INDEV_STATE_REL;
+static int touchpad_old_state = LV_INDEV_STATE_REL;
+
 
 extern void lv_ex_get_started_1(void);
 
@@ -45,10 +49,16 @@ void my_disp_flush(lv_disp_drv_t * disp, const lv_area_t * area, lv_color_t * co
 bool lvgl_input_read(lv_indev_drv_t * drv, lv_indev_data_t*data)
 {
   Q_UNUSED(drv);
-  data->point.x = 0; //touchpad_x;
-  data->point.y = 0; //touchpad_y;
-  data->state = LV_INDEV_STATE_REL; //LV_INDEV_STATE_PR or LV_INDEV_STATE_REL;
-  return false; /*No buffering now so no more data read*/
+    bool ret = false;
+  data->point.x = touchpad_x;
+  data->point.y = touchpad_y;
+  data->state = touchpad_state; //LV_INDEV_STATE_REL; //LV_INDEV_STATE_PR or LV_INDEV_STATE_REL;
+  if ( touchpad_state != touchpad_old_state) {
+      touchpad_old_state = touchpad_state;
+      //ret = true;
+      printf("mouse down\n");
+  }
+  return ret; /*No buffering now so no more data read*/
 }
 
 static void runNative(void) {
@@ -76,10 +86,11 @@ static void runNative(void) {
     static void nativeTimer(void) {
       static int cnt = 0;
       lv_tick_inc(LVGL_TICK_TIME);
-      if (cnt++ > 10) {
-        cnt = 0;
-        lv_task_handler();
-      }
+//      if (cnt++ > 10) {
+//        cnt = 0;
+//        lv_task_handler();
+//      }
+      lv_task_handler();
     }
 
 
@@ -114,6 +125,8 @@ MainWindow::MainWindow(QWidget *parent)
     }
 #endif
 
+    connect(ui->lb_display, SIGNAL(mousePressed(int, int)), this, SLOT(onMousePressed(int, int)));
+    connect(ui->lb_display, SIGNAL(mouseReleased(int, int)), this, SLOT(onMouseReleased(int, int)));
 
     // ui->lb_display->setPixmap(display_pixelmap);
     //ui->lb_display->setPixmap(QPixmap::fromImage(display_image));
@@ -126,6 +139,24 @@ MainWindow::MainWindow(QWidget *parent)
  timerId = startTimer(LVGL_TICK_TIME);
 
 }
+
+void MainWindow::onMousePressed(int x, int y)
+{
+    printf("Mouse pressed %d, %d\n", x, y);
+    touchpad_x = 0;
+    touchpad_y = y;
+    touchpad_state = LV_INDEV_STATE_PR;
+}
+
+void MainWindow::onMouseReleased(int x, int y)
+{
+    printf("Mouse released %d, %d\n", x, y);
+    touchpad_x = 0;
+    touchpad_y = y;
+    touchpad_state = LV_INDEV_STATE_REL;
+}
+
+
 
 void MainWindow::timerEvent(QTimerEvent *event)
 {

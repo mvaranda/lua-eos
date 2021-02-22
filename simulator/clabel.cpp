@@ -9,13 +9,10 @@ ClickableLabel::ClickableLabel(QWidget* parent, Qt::WindowFlags f)
 ClickableLabel::~ClickableLabel() {}
 
 void ClickableLabel::mousePressEvent(QMouseEvent* event) {
-    //int x =  event->x();
-    printf("press x = %d, y = %d\n",event->pos().rx(), event->pos().ry());
-    emit clicked();
+    mousePressed(event->x(), event->y());
 }
 
 void ClickableLabel::mouseReleaseEvent(QMouseEvent* event) {
-    printf("release x = %d, y = %d\n", event->x(), event->y());
-    emit clicked();
+    mouseReleased(event->x(), event->y());
 }
 
