@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "lv_conf.h"
@@ -55,8 +56,8 @@ bool lvgl_input_read(lv_indev_drv_t * drv, lv_indev_data_t*data)
   data->state = touchpad_state; //LV_INDEV_STATE_REL; //LV_INDEV_STATE_PR or LV_INDEV_STATE_REL;
   if ( touchpad_state != touchpad_old_state) {
       touchpad_old_state = touchpad_state;
-      //ret = true;
-      printf("mouse down\n");
+      qDebug() << QString("mouse down: x=%1 y=%2").arg(QString::number(touchpad_x), QString::number(touchpad_y)) << "\n";
+
   }
   return ret; /*No buffering now so no more data read*/
 }
@@ -86,11 +87,11 @@ static void runNative(void) {
     static void nativeTimer(void) {
       static int cnt = 0;
       lv_tick_inc(LVGL_TICK_TIME);
-//      if (cnt++ > 10) {
-//        cnt = 0;
-//        lv_task_handler();
-//      }
-      lv_task_handler();
+      if (cnt++ > 4) {
+        cnt = 0;
+        lv_task_handler();
+      }
+
     }
 
 
@@ -151,7 +152,7 @@ void MainWindow::onMousePressed(int x, int y)
 void MainWindow::onMouseReleased(int x, int y)
 {
     printf("Mouse released %d, %d\n", x, y);
-    touchpad_x = 0;
+    touchpad_x = x;
     touchpad_y = y;
     touchpad_state = LV_INDEV_STATE_REL;
 }

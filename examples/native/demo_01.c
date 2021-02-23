@@ -1,8 +1,11 @@
 #include "lv_conf.h"
 #include "lvgl.h"
+#include <stdio.h>
+//
 
 static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
 {
+    printf("btn_event_cb EVENT %d\n", event);
     if(event == LV_EVENT_CLICKED) {
         static uint8_t cnt = 0;
         cnt++;
