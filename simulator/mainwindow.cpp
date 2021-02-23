@@ -143,7 +143,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::onMousePressed(int x, int y)
 {
     printf("Mouse pressed %d, %d\n", x, y);
-    touchpad_x = 0;
+    touchpad_x = x;
     touchpad_y = y;
     touchpad_state = LV_INDEV_STATE_PR;
 }
