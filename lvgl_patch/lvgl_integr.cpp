@@ -1,6 +1,5 @@
-#include "mainwindow.h"
+
 #include "ui_mainwindow.h"
-#include "lv_conf.h"
 #include "lvgl.h"
 #include "lvgl_integr.h"
 #include "log.h"

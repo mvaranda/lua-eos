@@ -1,10 +1,12 @@
 #include <QDebug>
+#include <QThread>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "lv_conf.h"
 #include "lvgl.h"
 #include "lvgl_integr.h"
 #include "log.h"
+#include "eos_init.h"
 
 #define LUA_EOS_VERSION "0.0"
 
@@ -36,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     lv_integr_run();
 
     timerId = startTimer(LVGL_TICK_TIME);
+    luaCppInit();
 
 }
 

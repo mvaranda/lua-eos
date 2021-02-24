@@ -21,7 +21,9 @@ INCLUDEPATH += ../lvgl \
   ../lvgl/src/lv_hal \
   ../lvgl/src/lv_mist \
   ../lvgl/src/lv_themes \
-  ../lvgl/src/lv_widgets
+  ../lvgl/src/lv_widgets \
+  ../lua_eos/native \
+  ../lua/src/
 
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
@@ -63,6 +65,7 @@ SOURCES += \
     ../lua/src/lutf8lib.c \
     ../lua/src/lvm.c \
     ../lua/src/lzio.c \
+    ../lua_eos/native/eos_init.cpp \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
     ../lvgl/src/lv_core/lv_indev.c \
@@ -208,6 +211,7 @@ HEADERS += \
     ../lua/src/lundump.h \
     ../lua/src/lvm.h \
     ../lua/src/lzio.h \
+    ../lua_eos/native/eos_init.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
     ../lvgl/src/lv_conf_kconfig.h \
