@@ -5,6 +5,7 @@
 #include <QPixmap>
 #include <QImage>
 #include <QTimer>
+#include "termdlg.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,10 +26,13 @@ private slots:
   void timerEvent(QTimerEvent *event);
   void onMousePressed(int x, int y);
   void onMouseReleased(int x, int y);
+  void writeDataFromTerm(const QByteArray &data);
 
 
 private:
   int timerId;
+  TermDlg * m_term;
+  Console * m_term_console;
 
 };
 #endif // MAINWINDOW_H

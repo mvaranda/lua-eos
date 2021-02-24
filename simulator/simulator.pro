@@ -170,10 +170,14 @@ SOURCES += \
     ../lvgl/src/lv_widgets/lv_textarea.c \
     ../lvgl/src/lv_widgets/lv_tileview.c \
     ../lvgl/src/lv_widgets/lv_win.c \
+    ../lvgl_patch/lvgl_integr.cpp \
     ../utils/malloc.c \
     clabel.cpp \
+    console.cpp \
+    log.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    termdlg.cpp
 
 HEADERS += \
     ../lua/src/lapi.h \
@@ -294,12 +298,17 @@ HEADERS += \
     ../lvgl/src/lv_widgets/lv_win.h \
     ../lvgl/src/lvgl.h \
     ../lvgl_patch/lv_conf.h \
+    ../lvgl_patch/lvgl_integr.h \
     ../utils/malloc.h \
     clabel.h \
-    mainwindow.h
+    console.h \
+    log.h \
+    mainwindow.h \
+    termdlg.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    termdlg.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
