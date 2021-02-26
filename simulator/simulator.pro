@@ -5,6 +5,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++11
 CONFIG += debug
 
+FREERTOS_DIR_REL = ../lua_eos/native/FreeRTOS
+FREERTOS_DIR = abspath ($${FREERTOS_DIR_REL}))
+
+FREERTOS_PLUS_DIR_REL = ../lua_eos/native/FreeRTOS-Plus
+FREERTOS_PLUS_DIR = abspath ($${FREERTOS_PLUS_DIR_REL}))
+
+
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -24,6 +31,13 @@ INCLUDEPATH += ../lvgl \
   ../lvgl/src/lv_widgets \
   ../lua_eos/native \
   ../lua/src/
+
+INCLUDEPATH += $${FREERTOS_DIR}/Source/include
+INCLUDEPATH += $${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix
+INCLUDEPATH += $${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/utils
+INCLUDEPATH += $${FREERTOS_DIR}/Demo/Common/include
+#INCLUDEPATH += $${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/Include
+
 
 # You can also make your code fail to compile if it uses deprecated APIs.
 # In order to do so, uncomment the following line.
