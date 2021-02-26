@@ -5,11 +5,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 CONFIG += c++11
 CONFIG += debug
 
-FREERTOS_DIR_REL = ../lua_eos/native/FreeRTOS
-FREERTOS_DIR = abspath ($${FREERTOS_DIR_REL}))
+FREERTOS_DIR = ../lua_eos/native/FreeRTOS/FreeRTOS
 
-FREERTOS_PLUS_DIR_REL = ../lua_eos/native/FreeRTOS-Plus
-FREERTOS_PLUS_DIR = abspath ($${FREERTOS_PLUS_DIR_REL}))
+#FREERTOS_PLUS_DIR = ../lua_eos/native/FreeRTOS-Plus
 
 
 # The following define makes your compiler emit warnings if you use
@@ -19,6 +17,8 @@ FREERTOS_PLUS_DIR = abspath ($${FREERTOS_PLUS_DIR_REL}))
 DEFINES += QT_DEPRECATED_WARNINGS
 
 DEFINES += LUA_EMBEDDED
+
+DEFINES += projCOVERAGE_TEST=1
 
 INCLUDEPATH += ../lvgl \
   ../lvgl_patch \
@@ -30,12 +30,21 @@ INCLUDEPATH += ../lvgl \
   ../lvgl/src/lv_themes \
   ../lvgl/src/lv_widgets \
   ../lua_eos/native \
-  ../lua/src/
+  ../lua/src/ \
+  ../lua_eos/native
 
 INCLUDEPATH += $${FREERTOS_DIR}/Source/include
 INCLUDEPATH += $${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix
 INCLUDEPATH += $${FREERTOS_DIR}/Source/portable/ThirdParty/GCC/Posix/utils
 INCLUDEPATH += $${FREERTOS_DIR}/Demo/Common/include
+INCLUDEPATH += $${FREERTOS_DIR}/Demo/Posix_GCC
+
+#INCLUDEPATH += ../lua_eos/native/FreeRTOS/FreeRTOS/Source/include
+#INCLUDEPATH += ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix
+#INCLUDEPATH += ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils
+#INCLUDEPATH += ../lua_eos/native/FreeRTOS/FreeRTOS/Demo/Common/include
+
+
 #INCLUDEPATH += $${FREERTOS_PLUS_DIR}/Source/FreeRTOS-Plus-Trace/Include
 
 
@@ -79,7 +88,18 @@ SOURCES += \
     ../lua/src/lutf8lib.c \
     ../lua/src/lvm.c \
     ../lua/src/lzio.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/croutine.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/event_groups.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/list.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/queue.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/stream_buffer.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/tasks.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/timers.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_3.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c \
+    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/port.c \
     ../lua_eos/native/eos_init.cpp \
+    ../lua_eos/native/rtos_entry.c \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
     ../lvgl/src/lv_core/lv_indev.c \
@@ -225,6 +245,7 @@ HEADERS += \
     ../lua/src/lundump.h \
     ../lua/src/lvm.h \
     ../lua/src/lzio.h \
+    ../lua_eos/native/FreeRTOSConfig.h \
     ../lua_eos/native/eos_init.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
