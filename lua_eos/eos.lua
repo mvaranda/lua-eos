@@ -52,7 +52,14 @@ eos_delay = _eos_delay
 
 schd = {}
 local tasks = {}
-local user_events = {}
+
+EV_SYS_START_UP = {id = 1,    name = "EV_SYS_START_UP",       pri = false}
+EV_SYS_SHUT_DOWN = {id = 2,    name = "EV_SYS_SHUT_DOWN",       pri = false}
+
+local events_list = {
+  EV_SYS_START_UP, 
+  EV_SYS_SHUT_DOWN
+}
 
 local user_event = 1000
 
@@ -64,6 +71,8 @@ local ST_ERROR = 4
 local function scheduler()
   local success
   local args
+  local fist_time = true
+  
   while(1) do
     for k,v in pairs(tasks) do
       
@@ -91,12 +100,17 @@ local function scheduler()
       end
       eos_delay(1000)
     end
+    
+    if fist_time then
+      schd.post(EV_SYS_START_UP, "Starting up")
+      fist_time = false
+    end
   end
 end
 
 function schd.create_user_event(name, high_priority)
   local p = false
-  for k,v in pairs(user_events) do
+  for k,v in pairs(events_list) do
     if v.name == name then
       return nil, "event name already taken: " .. name
     end
@@ -104,12 +118,12 @@ function schd.create_user_event(name, high_priority)
   if high_priority ~= nil then
     p = high_priority
   end
-  local ev = { id = username,
+  local ev = { id = user_event,
                name = name,
                pri = high_priority
   }
   user_event = user_event + 1
-  table.insert(user_events, ev)
+  table.insert(events_list, ev)
   return ev
 end
 
@@ -132,10 +146,11 @@ function schd.subscribe_event(ctx, event)
     end
   end
   table.insert(ctx.subscription, event)
+  -- print("Subscribed: " .. event.name)
 end
 
 function schd.subscribe_event_by_name(ctx, name)
-  for k,v in pairs(user_events) do
+  for k,v in pairs(events_list) do
     if name == v.name then
       schd.subscribe_event(ctx, v)
       return true
@@ -199,10 +214,17 @@ end
 function task2( ctx )
   print ("starting task " .. ctx.name)
   
-  local res,msg = schd.subscribe_event_by_name(ctx, "event_1")
+  -- subscribe for events
+  local res,msg = schd.subscribe_event_by_name(ctx, "EV_SYS_START_UP")
   if res == false then
     print(msg)
   end
+  res,msg = schd.subscribe_event_by_name(ctx, "event_1")
+  if res == false then
+    print(msg)
+  end
+
+  
   
   local y = 1
   while(1) do
