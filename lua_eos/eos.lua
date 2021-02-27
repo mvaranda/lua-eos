@@ -1,6 +1,8 @@
 
 -- http://lua-users.org/wiki/LuaStyleGuide
-function show(t) for k,v in pairs(t) do print(k .. " =  ".. v) end end
+-- check optimization: https://github.com/pallene-lang/pallene
+
+function show(t) for k,v in pairs(t) do print(k,v) end end
 
 function _eos_delay(t)
   local x = 0
@@ -74,8 +76,10 @@ local function scheduler()
       elseif v.state ==  ST_WAIT_EVENT then
         if #v.ev_q > 0 then
           local e = table.remove(v.ev_q, 1)
-          
+          success, args = coroutine.resume(v.co, v, e.event, e.arg)
         end
+      elseif v.state ==  ST_ERROR then
+        -- TODO: remove task from the list
       else
         print("unexpected e.state = " .. v.state)
         return
@@ -92,27 +96,42 @@ end
 
 function schd.create_user_event(name, high_priority)
   local p = false
+  for k,v in pairs(user_events) do
+    if v.name == name then
+      return nil, "event name already taken: " .. name
+    end
+  end
   if high_priority ~= nil then
     p = high_priority
   end
-  local ev = {}
-  ev.id = user_event
-  ev.name = name
-  ev.pri = high_priority
+  local ev = { id = username,
+               name = name,
+               pri = high_priority
+  }
   user_event = user_event + 1
   table.insert(user_events, ev)
   return ev
 end
 
+function schd.post(event, arg)
+  for k,task in pairs(tasks) do
+    for kk, e in pairs(task.subscription) do
+      if e == event then
+        table.insert(task.ev_q, {event=event, arg=arg})
+      end
+    end
+  end
+end
+
 function schd.subscribe_event(ctx, event)
   -- chech if event already subscribed
-  for k,v in pairs(ctx.ev_q) do
+  for k,v in pairs(ctx.subscription) do
     if event.id == v.id then
       print("event already subscribed")
       return
     end
   end
-  table.insert(ctx.ev_q, event)
+  table.insert(ctx.subscription, event)
 end
 
 function schd.subscribe_event_by_name(ctx, name)
@@ -140,24 +159,42 @@ function schd.scheduler()
   scheduler()
 end
 
-function schd.yield()
-  coroutine.yield()
+function schd.wait_event(ctx)
+  ctx.state = ST_WAIT_EVENT
+  local c, e, arg = schd.yield()
+  return e, arg
 end
 
+function schd.yield()
+  local c, e, arg = coroutine.yield()
+  return c,e,arg
+end
 
+function schd.error(ctx, msg)
+  ctx.state = ST_ERROR
+end
 
 function task1( ctx )
   print ("starting task " .. ctx.name)
   
   local ev = schd.create_user_event("event_1")
+  if ev == nil then
+    print ("error")
+    schd.error(ctx, "error")
+    return
+  end
   
   local x = 10
   while(1) do
     print("task1, x = " .. x)
     x=x+1
+    if (x % 5) == 0 then
+      schd.post(ev, "message from task 1")
+    end
     schd.yield()
   end
 end
+
 
 function task2( ctx )
   print ("starting task " .. ctx.name)
@@ -169,9 +206,11 @@ function task2( ctx )
   
   local y = 1
   while(1) do
-    print("task2, y = " .. y)
-    y=y+1
-    schd.yield()
+--    print("task2, y = " .. y)
+--    y=y+1
+--    schd.yield()
+    local ev, arg = schd.wait_event(ctx)
+    print("event = ", ev.name, " msg = ", arg)
   end
 end
 
