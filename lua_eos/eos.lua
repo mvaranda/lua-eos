@@ -1,3 +1,19 @@
+--/***************************************************************
+-- *
+-- *                 This code is part of LUA_EOS
+-- *
+-- * Copyrights 2021 - Varanda Labs Inc.
+-- *
+-- * License:
+-- *   Creative Commons: CC BY-NC-SA 4.0
+-- *   Attribution-NonCommercial-ShareAlike 4.0 International
+-- *   https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+-- *
+-- *   Note: for purchasing a commertial license contact:
+-- *     m@varanda.ca
+-- *
+-- ***************************************************************
+-- */
 
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
@@ -62,6 +78,7 @@ local events_list = {
 }
 
 local user_event = 1000
+local taskIDCnt = 1
 
 local ST_YIELD = 1
 local ST_WAIT_DELAY = 2
@@ -162,6 +179,8 @@ end
 
 function schd.create_task(task_func, name)
   local e = {}
+  e["taskID"] = taskIDCnt
+  taskIDCnt = taskIDCnt + 1
   e["co"] = coroutine.create(task_func)
   e["name"] = name
   e["state"] = ST_YIELD
@@ -212,6 +231,8 @@ end
 
 function task3( ctx )
   print ("starting task " .. ctx.name)
+  
+  eos_set_timer(ctx.taskID, 5, 5000)
   
   res,msg = schd.subscribe_event_by_name(ctx, "event_1")
   if res == false then

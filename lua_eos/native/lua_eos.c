@@ -34,6 +34,21 @@
 
 #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
 #define READ_BUF_SIZE 1024
+
+// set timer:
+// task ID
+// if possible: event queue
+// timer ID (where 0 is delay)
+// expire in milliseconds
+static int luac_eos_set_timer(lua_State *L)
+{
+    int taskID = (int) lua_tointeger(L,1);
+    int timerID = (int) lua_tointeger(L,2);
+    int time = (int) lua_tointeger(L,3);
+    LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
+    return 0;
+}
+
 static int luac_eos_delay(lua_State *L)
 {
     unsigned int d = (unsigned int) luaL_checknumber(L, 1);
@@ -45,15 +60,15 @@ static void register_luacs(lua_State *L)
 {
     lua_pushcfunction(L, luac_eos_delay);
     lua_setglobal(L, "eos_delay");
+
+    lua_pushcfunction(L, luac_eos_set_timer);
+    lua_setglobal(L, "eos_set_timer");
+
 }
 
 void luaTask(void * arg)
 {
     LOG("luaInit...");
-
-//    char ** argv = argc;
-
-//  char * buf = (char *) calloc(READ_BUF_SIZE,1);
 
   //int status, result;
   lua_State *L = luaL_newstate();  /* create state */
@@ -65,12 +80,6 @@ void luaTask(void * arg)
   luaL_openlibs(L);
   register_luacs(L);
 
-#if 1
-//  FILE * h = fopen(START_LUA_EOS_FILENAME, "r");
-//  if ( ! h) {
-//      LOG_E("fail to open eos.lua");
-//      return;
-//  }
   int err;
   if ((err = luaL_loadfile(L, START_LUA_EOS_FILENAME)) != 0) {
       switch(err) {
@@ -94,17 +103,5 @@ void luaTask(void * arg)
     lua_pop(L, 1);  /* pop error message from the stack */
   }
 
-#else
-  while (*argv != NULL) {
-    error = luaL_loadbuffer(L, *argv, strlen(*argv), "line");
-    if ( ! error) error = lua_pcall(L, 0, 0, 0);
-    if (error) {
-      printf( "%s", lua_tostring(L, -1));
-      lua_pop(L, 1);  /* pop error message from the stack */
-      break;
-    }
-    argv++;
-  }
-#endif
   LOG_E("lua thread terminated");
 }
