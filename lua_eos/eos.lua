@@ -210,6 +210,25 @@ function task1( ctx )
   end
 end
 
+function task3( ctx )
+  print ("starting task " .. ctx.name)
+  
+  res,msg = schd.subscribe_event_by_name(ctx, "event_1")
+  if res == false then
+    print(msg)
+  end
+  
+  local y = 1
+  while(1) do
+--    print("task2, y = " .. y)
+--    y=y+1
+--    schd.yield()
+    local ev, arg = schd.wait_event(ctx)
+    print("task3: event = ", ev.name, " msg = ", arg)
+  end
+end
+
+
 
 function task2( ctx )
   print ("starting task " .. ctx.name)
@@ -224,7 +243,7 @@ function task2( ctx )
     print(msg)
   end
 
-  
+  schd.create_task(task3, "task3")
   
   local y = 1
   while(1) do
@@ -232,7 +251,7 @@ function task2( ctx )
 --    y=y+1
 --    schd.yield()
     local ev, arg = schd.wait_event(ctx)
-    print("event = ", ev.name, " msg = ", arg)
+    print("task2: event = ", ev.name, " msg = ", arg)
   end
 end
 
