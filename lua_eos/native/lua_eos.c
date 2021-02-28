@@ -25,6 +25,7 @@
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
 #include "task.h"
+#include "timers.h"
 
 #include "lua.h"
 #include "lauxlib.h"
@@ -34,6 +35,11 @@
 
 #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
 #define READ_BUF_SIZE 1024
+
+void timer_callback(TimerHandle_t tm)
+{
+    LOG("timer_callback called");
+}
 
 // set timer:
 // task ID
@@ -46,6 +52,19 @@ static int luac_eos_set_timer(lua_State *L)
     int timerID = (int) lua_tointeger(L,2);
     int time = (int) lua_tointeger(L,3);
     LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
+
+    unsigned int _timerID = (taskID << 16) | (timerID & 0xffff);
+
+    TimerHandle_t tm = xTimerCreate
+                     ( "lua timer",
+                       (const TickType_t)  pdMS_TO_TICKS(time),
+                       pdFALSE,
+                       (void *) _timerID,
+                       timer_callback );
+
+    xTimerStart( tm, -1 );
+
+
     return 0;
 }
 
