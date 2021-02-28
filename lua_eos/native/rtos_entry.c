@@ -60,6 +60,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "lua_eos.h"
+
 /* Local includes. */
 // #include "console.h"
 
