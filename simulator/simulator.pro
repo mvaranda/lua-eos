@@ -99,6 +99,7 @@ SOURCES += \
     ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c \
     ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/port.c \
     ../lua_eos/native/eos_init.cpp \
+    ../lua_eos/native/eos_lua.c \
     ../lua_eos/native/rtos_entry.c \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
@@ -247,6 +248,7 @@ HEADERS += \
     ../lua/src/lzio.h \
     ../lua_eos/native/FreeRTOSConfig.h \
     ../lua_eos/native/eos_init.h \
+    ../lua_eos/native/eos_lua.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
     ../lvgl/src/lv_conf_kconfig.h \
