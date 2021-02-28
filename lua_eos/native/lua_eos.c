@@ -26,6 +26,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
+#include "queue.h"
+#include "semphr.h"
 
 #include "lua.h"
 #include "lauxlib.h"
@@ -33,12 +35,60 @@
 #include "log.h"
 #include "lua_eos.h"
 
+typedef struct ev_queue_timer_item_st {
+    int taskID;
+    int timerID;
+} ev_queue_timer_item_t;
+
+typedef union ev_queue_item_st {
+    ev_queue_timer_item_t       timer_item;
+} ev_queue_item_t;
+
 #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
 #define READ_BUF_SIZE 1024
 
-void timer_callback(TimerHandle_t tm)
+
+
+#define EV_QUEUE_LENGTH    16
+
+#define EV_LOCK() xSemaphoreTake(ev_q_mutex, pdMS_TO_TICKS(10000))
+#define EV_UNLOCK() xSemaphoreGive(ev_q_mutex)
+
+
+static SemaphoreHandle_t ev_q_mutex = NULL;
+static StaticSemaphore_t ev_q_mutex_buffer;
+
+/* The variable used to hold the event queue's data structure. */
+static StaticQueue_t static_event_queue_ctrl;
+static QueueHandle_t event_queue;
+static uint8_t event_queue_buff[ EV_QUEUE_LENGTH * sizeof( ev_queue_item_t ) ];
+
+static void add_event_to_queue( const void * ev_item)
 {
-    LOG("timer_callback called");
+  if ( EV_LOCK() != pdTRUE) {
+    LOG_E("timer_callback: EV_LOCK fail");
+    return;
+  }
+
+  if ( xQueueSend( event_queue, (const void *) ev_item, 0) != pdTRUE) {
+    LOG_E("timer_callback: event Q is full");
+  }
+
+  if ( EV_UNLOCK() != pdTRUE) {
+    LOG_E("timer_callback: EV_UNLOCK fail");
+    return;
+  }
+}
+
+static void timer_callback(TimerHandle_t tm)
+{
+    uint32_t timer_id = ( uint32_t ) pvTimerGetTimerID( tm );
+
+    ev_queue_item_t ev_u;
+    ev_u.timer_item.taskID = timer_id >> 16;
+    ev_u.timer_item.timerID = timer_id & 0xffff;
+    LOG("timer_callback: taskID = %d, timerID = %d", ev_u.timer_item.taskID, ev_u.timer_item.timerID);
+    add_event_to_queue(&ev_u);
 }
 
 // set timer:
@@ -87,7 +137,21 @@ static void register_luacs(lua_State *L)
 
 void luaTask(void * arg)
 {
-    LOG("luaInit...");
+  LOG("luaInit...");
+
+  if ( ! (event_queue = xQueueCreateStatic( EV_QUEUE_LENGTH,
+                                 sizeof( ev_queue_item_t ),
+                                 event_queue_buff,
+                                 &static_event_queue_ctrl) ) ){
+       LOG_E("Could not create event_queue");
+       return;
+  }
+
+  if ( ! (ev_q_mutex = xSemaphoreCreateMutexStatic( &ev_q_mutex_buffer ) )) {
+      LOG_E("Could not create ev_q_mutex");
+      return;
+  }
+
 
   //int status, result;
   lua_State *L = luaL_newstate();  /* create state */
@@ -118,7 +182,7 @@ void luaTask(void * arg)
   }
   err = lua_pcall(L, 0, 0, 0);
   if (err) {
-    printf( "%s", lua_tostring(L, -1));
+    LOG_E( "%s", lua_tostring(L, -1));
     lua_pop(L, 1);  /* pop error message from the stack */
   }
 
