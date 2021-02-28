@@ -17,7 +17,12 @@
  ***************************************************************
  */
 
+// Stack sizes
 #define LUA_EOS_STACK_SIZE (1 * 1024) // 1k
+
+// Priorities
+#define	LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
+
 
 void luaTask(void * arg);
 
