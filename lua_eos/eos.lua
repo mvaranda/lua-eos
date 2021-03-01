@@ -211,6 +211,9 @@ end
 function task1( ctx )
   print ("starting task " .. ctx.name)
   
+  t = eod_read_event_table()
+  show(t)
+  
   local ev = schd.create_user_event("event_1")
   if ev == nil then
     print ("error")

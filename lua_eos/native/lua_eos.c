@@ -35,14 +35,19 @@
 #include "log.h"
 #include "lua_eos.h"
 
-typedef struct ev_queue_timer_item_st {
+typedef struct ev_queue_item_timer_st {
     int taskID;
     int timerID;
-} ev_queue_timer_item_t;
+} ev_queue_item_timer_t;
 
-typedef union ev_queue_item_st {
-    ev_queue_timer_item_t       timer_item;
+typedef union ev_queue_item_union_st {
+    ev_queue_item_timer_t       timer_item;
+} ev_queue_item_union_t;
+
+typedef struct ev_queue_item_st {
+    ev_queue_item_union_t       item;
 } ev_queue_item_t;
+
 
 #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
 #define READ_BUF_SIZE 1024
@@ -85,10 +90,25 @@ static void timer_callback(TimerHandle_t tm)
     uint32_t timer_id = ( uint32_t ) pvTimerGetTimerID( tm );
 
     ev_queue_item_t ev_u;
-    ev_u.timer_item.taskID = timer_id >> 16;
-    ev_u.timer_item.timerID = timer_id & 0xffff;
-    LOG("timer_callback: taskID = %d, timerID = %d", ev_u.timer_item.taskID, ev_u.timer_item.timerID);
+    ev_u.item.timer_item.taskID = timer_id >> 16;
+    ev_u.item.timer_item.timerID = timer_id & 0xffff;
+    LOG("timer_callback: taskID = %d, timerID = %d", ev_u.item.timer_item.taskID, ev_u.item.timer_item.timerID);
     add_event_to_queue(&ev_u);
+}
+
+static int luac_eod_read_event_table(lua_State *L)
+{
+  lua_newtable(L);
+
+  lua_pushstring(L, "aaa_idx");
+  lua_pushstring(L, "aaa_value");
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "bbb_idx");
+  lua_pushinteger(L, 222);
+  lua_settable(L, -3);
+  return 1;
+
 }
 
 // set timer:
@@ -132,6 +152,9 @@ static void register_luacs(lua_State *L)
 
     lua_pushcfunction(L, luac_eos_set_timer);
     lua_setglobal(L, "eos_set_timer");
+
+    lua_pushcfunction(L, luac_eod_read_event_table);
+    lua_setglobal(L, "eod_read_event_table");
 
 }
 
