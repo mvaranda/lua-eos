@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <memory.h>
 
 /* FreeRTOS kernel includes. */
 #include "FreeRTOS.h"
@@ -29,24 +30,11 @@
 #include "queue.h"
 #include "semphr.h"
 
-#include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
 #include "log.h"
 #include "lua_eos.h"
 
-typedef struct ev_queue_item_timer_st {
-    int taskID;
-    int timerID;
-} ev_queue_item_timer_t;
-
-typedef union ev_queue_item_union_st {
-    ev_queue_item_timer_t       timer_item;
-} ev_queue_item_union_t;
-
-typedef struct ev_queue_item_st {
-    ev_queue_item_union_t       item;
-} ev_queue_item_t;
 
 
 #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
@@ -85,31 +73,71 @@ static void add_event_to_queue( const void * ev_item)
   }
 }
 
-static void timer_callback(TimerHandle_t tm)
+void cb_event_push_timer(lua_State *L, ev_queue_item_union_t * item_ptr)
 {
-    uint32_t timer_id = ( uint32_t ) pvTimerGetTimerID( tm );
-
-    ev_queue_item_t ev_u;
-    ev_u.item.timer_item.taskID = timer_id >> 16;
-    ev_u.item.timer_item.timerID = timer_id & 0xffff;
-    LOG("timer_callback: taskID = %d, timerID = %d", ev_u.item.timer_item.taskID, ev_u.item.timer_item.timerID);
-    add_event_to_queue(&ev_u);
+  lua_pushstring(L, "task_id");                      // Key
+  lua_pushinteger(L, item_ptr->timer_item.taskID);   // value
+  lua_settable(L, -3);
+  lua_pushstring(L, "timer_id");                      // Key
+  lua_pushinteger(L, item_ptr->timer_item.timerID);   // value
+  lua_settable(L, -3);
 }
+
 
 static int luac_eod_read_event_table(lua_State *L)
 {
-  lua_newtable(L);
+  int num_items = 0;
+  ev_queue_item_t ev_item;
+  memset(&ev_item, 0, sizeof(ev_item));
 
-  lua_pushstring(L, "aaa_idx");
-  lua_pushstring(L, "aaa_value");
-  lua_settable(L, -3);
+  if ( EV_LOCK() != pdTRUE) {
+    LOG_E("timer_callback: EV_LOCK fail");
+    return 0;
+  }
 
-  lua_pushstring(L, "bbb_idx");
-  lua_pushinteger(L, 222);
-  lua_settable(L, -3);
-  return 1;
+  if (uxQueueMessagesWaiting( event_queue ) > 0) {
+      lua_newtable(L);
+  }
+
+  while (xQueueReceive( event_queue, &ev_item, 0) == pdTRUE) {
+    if (ev_item.cb_event_push == NULL) {
+      LOG_E("luac_eod_read_event_table: missing event push callback");
+      return 0;
+    }
+
+    lua_pushnumber(L, num_items + 1);
+    lua_newtable(L);
+    ev_item.cb_event_push(L, &ev_item.item);
+    lua_settable(L, -3);
+
+    num_items++;
+  }
+
+  if ( EV_UNLOCK() != pdTRUE) {
+    LOG_E("timer_callback: EV_UNLOCK fail");
+    return 0;
+  }
+
+  if (num_items > 0)
+    return 1;
+
+  return 0;
 
 }
+
+static void timer_callback(TimerHandle_t tm)
+{
+  uint32_t timer_id = ( uint32_t ) pvTimerGetTimerID( tm );
+
+  ev_queue_item_t ev_item;
+  memset(&ev_item, 0, sizeof(ev_item));
+  ev_item.cb_event_push = cb_event_push_timer;
+  ev_item.item.timer_item.taskID = timer_id >> 16;
+  ev_item.item.timer_item.timerID = timer_id & 0xffff;
+  LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
+  add_event_to_queue(&ev_item);
+}
+
 
 // set timer:
 // task ID
@@ -118,43 +146,43 @@ static int luac_eod_read_event_table(lua_State *L)
 // expire in milliseconds
 static int luac_eos_set_timer(lua_State *L)
 {
-    int taskID = (int) lua_tointeger(L,1);
-    int timerID = (int) lua_tointeger(L,2);
-    int time = (int) lua_tointeger(L,3);
-    LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
+  int taskID = (int) lua_tointeger(L,1);
+  int timerID = (int) lua_tointeger(L,2);
+  int time = (int) lua_tointeger(L,3);
+  LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
 
-    unsigned int _timerID = (taskID << 16) | (timerID & 0xffff);
+  unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
 
-    TimerHandle_t tm = xTimerCreate
-                     ( "lua timer",
-                       (const TickType_t)  pdMS_TO_TICKS(time),
-                       pdFALSE,
-                       (void *) _timerID,
-                       timer_callback );
+  TimerHandle_t tm = xTimerCreate
+      ( "lua timer",
+        (const TickType_t)  pdMS_TO_TICKS(time),
+        pdFALSE,
+        (void *) _timerID,
+        timer_callback );
 
-    xTimerStart( tm, -1 );
+  xTimerStart( tm, (TickType_t) -1 );
 
 
-    return 0;
+  return 0;
 }
 
 static int luac_eos_delay(lua_State *L)
 {
-    unsigned int d = (unsigned int) luaL_checknumber(L, 1);
-    usleep(d * 1000);
-    return 0;
+  unsigned int d = (unsigned int) luaL_checknumber(L, 1);
+  usleep(d * 1000);
+  return 0;
 }
 
 static void register_luacs(lua_State *L)
 {
-    lua_pushcfunction(L, luac_eos_delay);
-    lua_setglobal(L, "eos_delay");
+  lua_pushcfunction(L, luac_eos_delay);
+  lua_setglobal(L, "eos_delay");
 
-    lua_pushcfunction(L, luac_eos_set_timer);
-    lua_setglobal(L, "eos_set_timer");
+  lua_pushcfunction(L, luac_eos_set_timer);
+  lua_setglobal(L, "eos_set_timer");
 
-    lua_pushcfunction(L, luac_eod_read_event_table);
-    lua_setglobal(L, "eod_read_event_table");
+  lua_pushcfunction(L, luac_eod_read_event_table);
+  lua_setglobal(L, "eod_read_event_table");
 
 }
 
@@ -163,16 +191,16 @@ void luaTask(void * arg)
   LOG("luaInit...");
 
   if ( ! (event_queue = xQueueCreateStatic( EV_QUEUE_LENGTH,
-                                 sizeof( ev_queue_item_t ),
-                                 event_queue_buff,
-                                 &static_event_queue_ctrl) ) ){
-       LOG_E("Could not create event_queue");
-       return;
+                                            sizeof( ev_queue_item_t ),
+                                            event_queue_buff,
+                                            &static_event_queue_ctrl) ) ){
+    LOG_E("Could not create event_queue");
+    return;
   }
 
   if ( ! (ev_q_mutex = xSemaphoreCreateMutexStatic( &ev_q_mutex_buffer ) )) {
-      LOG_E("Could not create ev_q_mutex");
-      return;
+    LOG_E("Could not create ev_q_mutex");
+    return;
   }
 
 
@@ -188,20 +216,20 @@ void luaTask(void * arg)
 
   int err;
   if ((err = luaL_loadfile(L, START_LUA_EOS_FILENAME)) != 0) {
-      switch(err) {
-      case LUA_ERRFILE:
-          LOG_E("loadfile: fail to open eos.lua");
-          break;
-          case LUA_ERRSYNTAX: LOG_E("loadfile: syntax error during pre-compilation");
-          break;
-        case LUA_ERRMEM:
-          LOG_E("loadfile: memory allocation error.");
-          break;
-      default:
-          LOG_E("loadfile: unknown error.");
-          break;
-      }
-      return;
+    switch(err) {
+    case LUA_ERRFILE:
+      LOG_E("loadfile: fail to open eos.lua");
+      break;
+    case LUA_ERRSYNTAX: LOG_E("loadfile: syntax error during pre-compilation");
+      break;
+    case LUA_ERRMEM:
+      LOG_E("loadfile: memory allocation error.");
+      break;
+    default:
+      LOG_E("loadfile: unknown error.");
+      break;
+    }
+    return;
   }
   err = lua_pcall(L, 0, 0, 0);
   if (err) {

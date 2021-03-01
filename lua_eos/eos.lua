@@ -18,7 +18,14 @@
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
 
-function show(t) for k,v in pairs(t) do print(k,v) end end
+function show(t)
+  for k,v in pairs(t) do
+    print(k,v)
+    if type(v) == 'table' then
+      show(v) -- recursive
+    end
+  end 
+end
 
 function _eos_delay(t)
   local x = 0
@@ -115,7 +122,7 @@ local function scheduler()
         print("Error: " .. args)
         return
       end
-      eos_delay(1000)
+      eos_delay(100)
     end
     
     if fist_time then
@@ -211,9 +218,6 @@ end
 function task1( ctx )
   print ("starting task " .. ctx.name)
   
-  t = eod_read_event_table()
-  show(t)
-  
   local ev = schd.create_user_event("event_1")
   if ev == nil then
     print ("error")
@@ -235,7 +239,8 @@ end
 function task3( ctx )
   print ("starting task " .. ctx.name)
   
-  eos_set_timer(ctx.taskID, 5, 5000)
+  eos_set_timer(ctx.taskID, 5, 2000)
+  eos_set_timer(ctx.taskID, 6, 2000)
   
   res,msg = schd.subscribe_event_by_name(ctx, "event_1")
   if res == false then
@@ -243,12 +248,19 @@ function task3( ctx )
   end
   
   local y = 1
+  local t
   while(1) do
 --    print("task2, y = " .. y)
 --    y=y+1
 --    schd.yield()
     local ev, arg = schd.wait_event(ctx)
     print("task3: event = ", ev.name, " msg = ", arg)
+    
+    t = eod_read_event_table()
+    if t ~= nil then
+      print("event table:")
+      show(t)
+    end
   end
 end
 

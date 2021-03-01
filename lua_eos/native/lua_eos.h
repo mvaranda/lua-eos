@@ -17,11 +17,31 @@
  ***************************************************************
  */
 
+#include "lua.h"
+
 // Stack sizes
-#define LUA_EOS_STACK_SIZE (1 * 1024) // 1k
+#define LUA_EOS_STACK_SIZE (4 * 1024) // 1k
 
 // Priorities
 #define	LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
+
+typedef struct ev_queue_item_timer_st {
+    int taskID;
+    int timerID;
+} ev_queue_item_timer_t;
+
+typedef union ev_queue_item_union_st {
+    ev_queue_item_timer_t       timer_item;
+} ev_queue_item_union_t;
+
+typedef void (*cb_event_push_t)(lua_State *L, ev_queue_item_union_t * item_ptr);
+
+
+typedef struct ev_queue_item_st {
+    cb_event_push_t            cb_event_push;
+    ev_queue_item_union_t       item;
+} ev_queue_item_t;
+
 
 
 void luaTask(void * arg);
