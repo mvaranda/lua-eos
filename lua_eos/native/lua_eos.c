@@ -142,6 +142,7 @@ static void timer_callback(TimerHandle_t tm)
   ev_item.item.timer_item.timerID = timer_id & 0xffff;
   LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
   add_event_to_queue(&ev_item);
+  xTimerDelete(tm,0);
 }
 
 
@@ -166,23 +167,29 @@ static int luac_eos_set_timer(lua_State *L)
         (void *) _timerID,
         timer_callback );
 
-  xTimerStart( tm, (TickType_t) -1 );
+  if ( ! tm) {
+     LOG_E("luac_eos_set_timer: xTimerCreate fail");
+  }
+
+  if (xTimerStart( tm, (TickType_t) -1 ) !=  pdPASS) {
+      LOG_E("luac_eos_set_timer: xTimerStart fail");
+  }
 
 
   return 0;
 }
 
-static int luac_eos_delay(lua_State *L)
-{
-  unsigned int d = (unsigned int) luaL_checknumber(L, 1);
-  usleep(d * 1000);
-  return 0;
-}
+//static int luac_eos_delay(lua_State *L)
+//{
+//  unsigned int d = (unsigned int) luaL_checknumber(L, 1);
+//  usleep(d * 1000);
+//  return 0;
+//}
 
 static void register_luacs(lua_State *L)
 {
-  lua_pushcfunction(L, luac_eos_delay);
-  lua_setglobal(L, "eos_delay");
+  //lua_pushcfunction(L, luac_eos_delay);
+  //lua_setglobal(L, "eos_delay");
 
   lua_pushcfunction(L, luac_eos_set_timer);
   lua_setglobal(L, "eos_set_timer");
