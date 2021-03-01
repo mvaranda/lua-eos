@@ -25,9 +25,17 @@
 // Priorities
 #define	LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
+typedef enum {
+  EV_SYS_START_UP = 1,
+  EV_SYS_SHUT_DOWN = 2,
+
+  EV_SYS_TIMER = 3,
+
+} sys_events_t;
+
 typedef struct ev_queue_item_timer_st {
-    int taskID;
-    int timerID;
+    int           taskID;
+    int           timerID;
 } ev_queue_item_timer_t;
 
 typedef union ev_queue_item_union_st {

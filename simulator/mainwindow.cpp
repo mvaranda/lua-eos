@@ -47,11 +47,13 @@ MainWindow::MainWindow(QWidget *parent)
     //display_image.fill(Qt::green);
     //ui->lb_display->setPixmap(QPixmap::fromImage(display_image));
     //ui->lb_display->update();
-
+#if 0
     m_term = new TermDlg(0);
     m_term_console = m_term->m_console;
     m_term->show();
     connect(m_term_console, &Console::getData, this, &MainWindow::writeDataFromTerm);
+#endif
+
     lv_integr_run();
 
     timerId = startTimer(LVGL_TICK_TIME);

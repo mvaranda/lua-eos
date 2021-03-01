@@ -75,9 +75,14 @@ static void add_event_to_queue( const void * ev_item)
 
 void cb_event_push_timer(lua_State *L, ev_queue_item_union_t * item_ptr)
 {
+  lua_pushstring(L, "ev_id");                      // Key
+  lua_pushinteger(L, EV_SYS_TIMER);   // value
+  lua_settable(L, -3);
+
   lua_pushstring(L, "task_id");                      // Key
   lua_pushinteger(L, item_ptr->timer_item.taskID);   // value
   lua_settable(L, -3);
+
   lua_pushstring(L, "timer_id");                      // Key
   lua_pushinteger(L, item_ptr->timer_item.timerID);   // value
   lua_settable(L, -3);
@@ -102,6 +107,7 @@ static int luac_eod_read_event_table(lua_State *L)
   while (xQueueReceive( event_queue, &ev_item, 0) == pdTRUE) {
     if (ev_item.cb_event_push == NULL) {
       LOG_E("luac_eod_read_event_table: missing event push callback");
+      EV_UNLOCK();
       return 0;
     }
 

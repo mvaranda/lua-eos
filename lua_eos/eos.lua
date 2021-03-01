@@ -76,8 +76,10 @@ eos_delay = _eos_delay
 schd = {}
 local tasks = {}
 
-EV_SYS_START_UP = {id = 1,    name = "EV_SYS_START_UP",       pri = false}
+-- the following id's must match with sys_events_t enumeration
+EV_SYS_START_UP =  {id = 1,    name = "EV_SYS_START_UP",        pri = false}
 EV_SYS_SHUT_DOWN = {id = 2,    name = "EV_SYS_SHUT_DOWN",       pri = false}
+EV_SYS_TIMER =     {id = 3,    name = "EV_SYS_TIMER",           pri = false}
 
 local events_list = {
   EV_SYS_START_UP, 
@@ -96,25 +98,44 @@ local function scheduler()
   local success
   local args
   local fist_time = true
+  local nat_ev
   
   while(1) do
-    for k,v in pairs(tasks) do
+    nat_ev = eod_read_event_table()
+    
+    for k,task in pairs(tasks) do
+      
+      if nat_ev ~= nil then
+        for kk,ev in pairs(nat_ev) do
+          -- check if timer 
+          if ev.ev_id == EV_SYS_TIMER.id then
+            print("EVENT IS TIMER")
+          else
+            for kkk, sub in pairs(task.subscription) do
+              if sub.id == ev.ev_id then
+                -- TODO: add exception for timer as task id must also match
+                table.insert(task.ev_q, {event=sub, arg=ev})
+              end
+            end
+          end  
+        end
+      end
       
       success = true
-      if v.state == ST_YIELD then
-        success, args = coroutine.resume(v.co, v, "ID", "ARGS")
-      elseif v.state ==  ST_WAIT_DELAY then
+      if task.state == ST_YIELD then
+        success, args = coroutine.resume(task.co, task, "ID", "ARGS")
+      elseif task.state ==  ST_WAIT_DELAY then
         print("WAIT_DELAY not implemeneted")
         return
-      elseif v.state ==  ST_WAIT_EVENT then
-        if #v.ev_q > 0 then
-          local e = table.remove(v.ev_q, 1)
-          success, args = coroutine.resume(v.co, v, e.event, e.arg)
+      elseif task.state ==  ST_WAIT_EVENT then
+        if #task.ev_q > 0 then
+          local e = table.remove(task.ev_q, 1)
+          success, args = coroutine.resume(task.co, task, e.event, e.arg)
         end
-      elseif v.state ==  ST_ERROR then
+      elseif task.state ==  ST_ERROR then
         -- TODO: remove task from the list
       else
-        print("unexpected e.state = " .. v.state)
+        print("unexpected e.state = " .. task.state)
         return
       end
       
@@ -122,13 +143,18 @@ local function scheduler()
         print("Error: " .. args)
         return
       end
-      eos_delay(100)
+      
     end
+    
+    eos_delay(100)
     
     if fist_time then
       schd.post(EV_SYS_START_UP, "Starting up")
       fist_time = false
     end
+    
+    -- read events from native and dispatch them
+    
   end
 end
 
@@ -256,11 +282,7 @@ function task3( ctx )
     local ev, arg = schd.wait_event(ctx)
     print("task3: event = ", ev.name, " msg = ", arg)
     
-    t = eod_read_event_table()
-    if t ~= nil then
-      print("event table:")
-      show(t)
-    end
+
   end
 end
 
