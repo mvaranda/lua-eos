@@ -44,8 +44,13 @@
 
 #define EV_QUEUE_LENGTH    16
 
+#if 0
 #define EV_LOCK() xSemaphoreTake(ev_q_mutex, pdMS_TO_TICKS(10000))
 #define EV_UNLOCK() xSemaphoreGive(ev_q_mutex)
+#else
+#define EV_LOCK() pdTRUE
+#define EV_UNLOCK() pdTRUE
+#endif
 
 
 static SemaphoreHandle_t ev_q_mutex = NULL;

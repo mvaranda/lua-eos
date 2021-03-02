@@ -20,7 +20,7 @@
 #include "lua.h"
 
 // Stack sizes
-#define LUA_EOS_STACK_SIZE (4 * 1024) // 1k
+#define LUA_EOS_STACK_SIZE (8 * 1024) // 1k
 
 // Priorities
 #define	LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )

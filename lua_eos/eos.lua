@@ -115,7 +115,6 @@ local function scheduler()
           -- check if timer 
           if ev.ev_id == EV_SYS_TIMER.id then
             
-            -- todo ckeck task_id
             if ev.task_id == task.task_id then
               -- if timer ID = 0 this is a delay
               if ev.timer_id == 0 then
@@ -280,7 +279,7 @@ function task1( ctx )
       eos.post(ev, "message from task 1")
     end
     --eos.yield()
-    eos.delay(ctx, 1000)
+    eos.delay(ctx, 200)
     
   end
 end

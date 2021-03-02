@@ -46,6 +46,9 @@ static void luaCppThread(void)
 void luaCppInit(void)
 {
     thread = QThread::create([]{ luaCppThread(); });
+    thread->setStackSize(1024 * 1024);
+    LOG("Stack size = %d", thread->stackSize());
+
     thread->start();
 }
 
