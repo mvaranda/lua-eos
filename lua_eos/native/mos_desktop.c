@@ -13,7 +13,9 @@
 //
 /****************************************************************************/
 
-#include "orbos.h"
+#if 0
+
+#include "mos.h"
 //#include "shell_uart.h"
 //#include "orbos_shell.h"
 //#include "app_cfg.h"
@@ -630,4 +632,7 @@ void mos_shutdown(void)
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+
 #endif

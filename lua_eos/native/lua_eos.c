@@ -23,12 +23,15 @@
 #include <stdarg.h>
 #include <memory.h>
 
-/* FreeRTOS kernel includes. */
+#include "mos.h"
+/*
+// FreeRTOS kernel includes.
 #include "FreeRTOS.h"
 #include "task.h"
 #include "timers.h"
 #include "queue.h"
 #include "semphr.h"
+*/
 
 #include "lauxlib.h"
 #include "lualib.h"
@@ -53,29 +56,21 @@
 #endif
 
 
-static SemaphoreHandle_t ev_q_mutex = NULL;
-static StaticSemaphore_t ev_q_mutex_buffer;
+static mos_mutex_h_t ev_q_mutex = NULL;
+//static StaticSemaphore_t ev_q_mutex_buffer;
 
 /* The variable used to hold the event queue's data structure. */
-static StaticQueue_t static_event_queue_ctrl;
-static QueueHandle_t event_queue;
-static uint8_t event_queue_buff[ EV_QUEUE_LENGTH * sizeof( ev_queue_item_t ) ];
+//static StaticQueue_t static_event_queue_ctrl;
+static mos_queue_h_t event_queue;
+//static uint8_t event_queue_buff[ EV_QUEUE_LENGTH * sizeof( ev_queue_item_t ) ];
 
 static void add_event_to_queue( const void * ev_item)
 {
-  if ( EV_LOCK() != pdTRUE) {
-    LOG_E("timer_callback: EV_LOCK fail");
-    return;
-  }
 
-  if ( xQueueSend( event_queue, (const void *) ev_item, 0) != pdTRUE) {
+  if ( mos_queue_put( event_queue, (const void *) ev_item) != true) {
     LOG_E("timer_callback: event Q is full");
   }
 
-  if ( EV_UNLOCK() != pdTRUE) {
-    LOG_E("timer_callback: EV_UNLOCK fail");
-    return;
-  }
 }
 
 void cb_event_push_timer(lua_State *L, ev_queue_item_union_t * item_ptr)
@@ -93,6 +88,7 @@ void cb_event_push_timer(lua_State *L, ev_queue_item_union_t * item_ptr)
   lua_settable(L, -3);
 }
 
+#define MAX_WAIT_READ_EVENT_Q 0
 
 static int luac_eod_read_event_table(lua_State *L)
 {
@@ -100,19 +96,13 @@ static int luac_eod_read_event_table(lua_State *L)
   ev_queue_item_t ev_item;
   memset(&ev_item, 0, sizeof(ev_item));
 
-  if ( EV_LOCK() != pdTRUE) {
-    LOG_E("timer_callback: EV_LOCK fail");
-    return 0;
-  }
-
-  if (uxQueueMessagesWaiting( event_queue ) > 0) {
+  if (mos_queue_waiting( event_queue ) > 0) {
       lua_newtable(L);
   }
 
-  while (xQueueReceive( event_queue, &ev_item, 0) == pdTRUE) {
+  while (mos_queue_get( event_queue, &ev_item, MAX_WAIT_READ_EVENT_Q) == MOS_PASS) {
     if (ev_item.cb_event_push == NULL) {
       LOG_E("luac_eod_read_event_table: missing event push callback");
-      EV_UNLOCK();
       return 0;
     }
 
@@ -124,11 +114,6 @@ static int luac_eod_read_event_table(lua_State *L)
     num_items++;
   }
 
-  if ( EV_UNLOCK() != pdTRUE) {
-    LOG_E("timer_callback: EV_UNLOCK fail");
-    return 0;
-  }
-
   if (num_items > 0)
     return 1;
 
@@ -136,9 +121,9 @@ static int luac_eod_read_event_table(lua_State *L)
 
 }
 
-static void timer_callback(TimerHandle_t tm)
+static void timer_callback(mos_timer_h_t tm_h, void * arg)
 {
-  uint32_t timer_id = ( uint32_t ) pvTimerGetTimerID( tm );
+  mos_timer_id_t timer_id = ( uint32_t ) arg;
 
   ev_queue_item_t ev_item;
   memset(&ev_item, 0, sizeof(ev_item));
@@ -147,7 +132,7 @@ static void timer_callback(TimerHandle_t tm)
   ev_item.item.timer_item.timerID = timer_id & 0xffff;
   LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
   add_event_to_queue(&ev_item);
-  xTimerDelete(tm,0);
+
 }
 
 
@@ -165,42 +150,39 @@ static int luac_eos_set_timer(lua_State *L)
 
   unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
 
-  TimerHandle_t tm = xTimerCreate
-      ( "lua timer",
-        (const TickType_t)  pdMS_TO_TICKS(time),
-        pdFALSE,
-        (void *) _timerID,
-        timer_callback );
+  mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, (void *)  _timerID);
 
   if ( ! tm) {
      LOG_E("luac_eos_set_timer: xTimerCreate fail");
-  }
-
-  if (xTimerStart( tm, (TickType_t) -1 ) !=  pdPASS) {
-      LOG_E("luac_eos_set_timer: xTimerStart fail");
   }
 
 
   return 0;
 }
 
-//static int luac_eos_delay(lua_State *L)
-//{
-//  unsigned int d = (unsigned int) luaL_checknumber(L, 1);
-//  usleep(d * 1000);
-//  return 0;
-//}
+static int luac_eos_print_str(lua_State *L)
+{
+  static c = 0;
+  char * s;
+
+  s = luaL_checkstring(L, 1);
+  if (s) qDebugC(s);
+
+  return 0;
+}
+
 
 static void register_luacs(lua_State *L)
 {
-  //lua_pushcfunction(L, luac_eos_delay);
-  //lua_setglobal(L, "eos_delay");
-
   lua_pushcfunction(L, luac_eos_set_timer);
   lua_setglobal(L, "eos_set_timer");
 
   lua_pushcfunction(L, luac_eod_read_event_table);
   lua_setglobal(L, "eod_read_event_table");
+
+  lua_pushcfunction(L, luac_eos_print_str);
+  lua_setglobal(L, "eos_print_str");
+
 
 }
 
@@ -208,18 +190,15 @@ void luaTask(void * arg)
 {
   LOG("luaInit...");
 
-  if ( ! (event_queue = xQueueCreateStatic( EV_QUEUE_LENGTH,
-                                            sizeof( ev_queue_item_t ),
-                                            event_queue_buff,
-                                            &static_event_queue_ctrl) ) ){
+  if ( (event_queue = mos_queue_create ( EV_QUEUE_LENGTH, sizeof( ev_queue_item_t ))) != MOS_PASS) {
     LOG_E("Could not create event_queue");
     return;
   }
 
-  if ( ! (ev_q_mutex = xSemaphoreCreateMutexStatic( &ev_q_mutex_buffer ) )) {
-    LOG_E("Could not create ev_q_mutex");
-    return;
-  }
+//  if ( ! (ev_q_mutex = xSemaphoreCreateMutexStatic( &ev_q_mutex_buffer ) )) {
+//    LOG_E("Could not create ev_q_mutex");
+//    return;
+//  }
 
 
   //int status, result;

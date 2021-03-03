@@ -18,6 +18,8 @@
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
 
+print = eos_print_str
+
 function show(t)
   for k,v in pairs(t) do
     print(k,v)
@@ -118,7 +120,7 @@ local function scheduler()
             if ev.task_id == task.task_id then
               -- if timer ID = 0 this is a delay
               if ev.timer_id == 0 then
-                print("** EVENT IS EXPIRED DELAY.. change to YIELD state")
+                --print("** EVENT IS EXPIRED DELAY.. change to YIELD state")
                 task.state = ST_YIELD
               else
                 print("** EVENT IS TIMER")
@@ -273,7 +275,8 @@ function task1( ctx )
   
   local x = 10
   while(1) do
-    print("task1, x = " .. x)
+    --print("task1, x = " .. x)
+    eos_print_str("task1, x = " .. x)
     x=x+1
     if (x % 5) == 0 then
       eos.post(ev, "message from task 1")
@@ -302,7 +305,7 @@ function task3( ctx )
 --    y=y+1
 --    eos.yield()
     local ev, arg = eos.wait_event(ctx)
-    print("task3: event = ", ev.name, " msg = ", arg)
+    print("task3: event = " .. ev.name .. " msg = " .. arg)
     
 
   end

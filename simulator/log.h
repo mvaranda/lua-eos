@@ -19,16 +19,16 @@
 
 
 #include <stdio.h>
-#if 1
+#if 0
 #define LOG         qDebugC
 #define LOG_E       qDebugC
 #define LOG_I       qDebugC
 #define LOG_W       qDebugC
 #else
-#define LOG         printf
-#define LOG_E       printf
-#define LOG_I       printf
-#define LOG_W       printf
+#define LOG(...)         do {/* dummy */} while(0)
+#define LOG_E(...)       do {/* dummy */} while(0)
+#define LOG_I (...)       do {/* dummy */} while(0)
+#define LOG_W(...)       do {/* dummy */} while(0)
 #endif
 
 

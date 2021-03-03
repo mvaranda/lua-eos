@@ -1,40 +1,54 @@
-#ifndef __ORBOS_H__
-#define __ORBOS_H__
-/****************************************************************************/
-//
-//  Module:          $URL: $
-//  Created By:      Marcelo Varanda
-//  Revision:        $Revision: $
-//  Last Updated By: $Author: $
-//  Last Updated:    $Date:  $
-//
-//  Description: Part of ORBOS (Cargo Camera Sensor)
-//
-//  Copyright (c) 2017 ORBCOMM, all rights reserved.
-//  This material is Confidential and shall not be disclosed
-//  to a third party without the written consent.
-//
-/****************************************************************************/
-#include "orbos_int.h"
-#include "filesys.h"
+#ifndef __MOS_H__
+#define __MOS_H__
+/***************************************************************
+ *
+ *                 This code is part of LUA_EOS
+ *
+ * Copyrights 2021 - Varanda Labs Inc.
+ *
+ * License:
+ *   Creative Commons: CC BY-NC-SA 4.0
+ *   Attribution-NonCommercial-ShareAlike 4.0 International
+ *   https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+ *
+ *   Note: for purchasing a commertial license contact:
+ *     m@varanda.ca
+ *
+ ***************************************************************
+ */
+
+//#include "filesys.h"
+#include <stdint.h>
+#include <stdbool.h>
 #include "log.h"
 
-void * oos_malloc (size_t size);
-void * oos_calloc (size_t num, size_t size);
-void oos_free (void * p);
+#define MOS_PASS    0
+#define MOS_ERROR   -1
+
+
+void * mos_malloc (size_t size);
+void * mos_calloc (size_t num, size_t size);
+void mos_free (void * p);
 
 #if 1
-  #define OOS_MALLOC(s) oos_malloc (s)
-  #define OOS_FREE(p) oos_free(p)
+  #define MOS_MALLOC(s) mos_malloc (s)
+  #define MOS_FREE(p) mos_free(p)
 #else
-  #define OOS_MALLOC(s) NATIVE_MALLOC(s)
-  #define OOS_FREE(p) NATIVE_FREE(p)
+  #define MOS_MALLOC(s) NATIVE_MALLOC(s)
+  #define MOS_FREE(p) NATIVE_FREE(p)
 #endif
 
-typedef void (*thread_func_t)(void * arg);
-typedef void (*timer_func_t)(oos_timer_id_t timer_id);
+//----- MOS types
+typedef uint32_t mos_timer_id_t;
+typedef void * mos_timer_h_t;
+typedef void * mos_queue_h_t;
+typedef void * mos_thread_h_t;
+typedef void * mos_mutex_h_t;
 
-#define OOS_GET_ELAPSE_TIME(start_time) (oos_get_ms_timestamp() - start_time)
+typedef void (*thread_func_t)(void * arg);
+typedef void (*timer_func_t)(mos_timer_id_t timer_id);
+
+#define MOS_GET_ELAPSE_TIME(start_time) (mos_get_ms_timestamp() - start_time)
 
 
 #ifdef __cplusplus
@@ -48,7 +62,7 @@ extern "C" {
  *
  * @return None
  */
-void oos_init(void);
+void mos_init(void);
 
 //------------ thread funcs --------------
 
@@ -67,9 +81,9 @@ void oos_init(void);
  * @param stacksize Required stack amount in bytes
  * @param prio Thread priority
  *
- * @return upon success returns a valid oos_thread_id_t. NULL if error.
+ * @return upon success returns a valid mos_thread_h_t. NULL if error.
  */
-oos_thread_id_t oos_thread_new( const char *name, thread_func_t thread_func, void *arg, int iStackSize, int iPriority );
+mos_thread_h_t mos_thread_new( const char *name, thread_func_t thread_func, void *arg, int iStackSize, int iPriority );
 
 /**
  * @brief Return the thread ID of the caller thread.
@@ -77,7 +91,7 @@ oos_thread_id_t oos_thread_new( const char *name, thread_func_t thread_func, voi
  *
  * @return thread ID.
  */
-oos_thread_id_t oos_thread_get_id (void);
+mos_thread_h_t mos_thread_get_id (void);
 
 /**
  * @brief Delete a thread
@@ -92,44 +106,44 @@ oos_thread_id_t oos_thread_get_id (void);
  *
  * @return None.
  */
-void oos_thread_delete(oos_thread_id_t thread);
+void mos_thread_delete(mos_thread_h_t thread);
 
 /**
  * @brief Suspend a thread
  *
  * Places a thread into the Suspended state. A thread that is in the Suspended state will never be selected to enter the Running state.
- * The only way of removing a thread from the Suspended state is to make it the subject of a call to oos_thread_resume().
+ * The only way of removing a thread from the Suspended state is to make it the subject of a call to mos_thread_resume().
  *
  * @param thread Thread ID. A NULL can be used for a self-delete operation.
  *
  * @return None.
  */
-void oos_thread_suspend(oos_thread_id_t thread);
+void mos_thread_suspend(mos_thread_h_t thread);
 
 /**
  * @brief Resume a Suspended thread
  *
  *
  * Transition a thread from the Suspended state to the Ready state.
- * The thread must have previously been placed into the Suspended state using a call to oos_thread_suspend
+ * The thread must have previously been placed into the Suspended state using a call to mos_thread_suspend
  *
  * @param thread Thread ID.
  *
  * @return None.
  */
-void oos_thread_resume(oos_thread_id_t thread);
+void mos_thread_resume(mos_thread_h_t thread);
 
 /**
  * @brief thread sleep (in milliseconds)
  *
  *
- * Places the thread that calls oos_thread_sleep() into the Blocked state for a fixed number of time.
+ * Places the thread that calls mos_thread_sleep() into the Blocked state for a fixed number of time.
  *
  * @param time_milliseconds Duration that the thread will be blocked (sleeping).
  *
  * @return None.
  */
-void oos_thread_sleep( uint32_t time_milliseconds);
+void mos_thread_sleep( uint32_t time_milliseconds);
 
 //------------- queue ----------------
 
@@ -145,52 +159,52 @@ void oos_thread_sleep( uint32_t time_milliseconds);
  * @param len The maximum number of items that the queue being created can hold at any one time.
  * @param item_size The size, in bytes, of each data item that can be stored in the queue.
  *
- * @return upon success returns a valid oos_queue_id_t. NULL if error.
+ * @return upon success returns a valid mos_queue_h_t. NULL if error.
  */
-oos_queue_id_t oos_queue_create ( int len, int item_size);
+mos_queue_h_t mos_queue_create ( int len, int item_size);
 
 /**
  * @brief place an item at the end of a queue
  *
  * @param queue_id The ID of the queue to which the item is being placed (written).
- *        The queue ID will have been returned from the call to oos_queue_create()
- *        or oos_queue_create_static() used to create the queue.
+ *        The queue ID will have been returned from the call to mos_queue_create()
+ *        or mos_queue_create_static() used to create the queue.
  * @param item_to_queue A pointer to the data to be copied into the queue.
  *        The size of each item the queue can hold is set when the queue is created,
  *        and that many bytes will be copied from pvItemToQueue into the queue storage area.
  *
- * @return OOS_PASS if OK.
+ * @return MOS_PASS if OK.
  */
-int oos_queue_put (oos_queue_id_t queue_id, const void * item_to_queue);
+int mos_queue_put (mos_queue_h_t queue_id, const void * item_to_queue);
 
 /**
  * @brief place an item at the end of a queue
  *
- * Same than oos_queue_put but oos_queue_put_from_isr can be called inside an ISR.
+ * Same than mos_queue_put but mos_queue_put_from_isr can be called inside an ISR.
  *
- * @see oos_queue_put
+ * @see mos_queue_put
  */
-int oos_queue_put_from_isr (oos_queue_id_t xQueue, const void * pvItemToQueue);
+int mos_queue_put_from_isr (mos_queue_h_t xQueue, const void * pvItemToQueue);
 
 /**
  * @brief get an item from a queue
  *
  * @param queue_id The ID of the queue from which the data is being received (read).
- *        The queue ID will have been returned from the call to oos_queue_create()
- *        or oos_queue_create_static() used to create the queue.
+ *        The queue ID will have been returned from the call to mos_queue_create()
+ *        or mos_queue_create_static() used to create the queue.
  * @param item_buf A pointer to the memory into which the received data will be copied to.
  *        The length of the buffer must be at least equal to the queue item size.
- *        The item size will have been set by the item_size parameter of the call to oos_queue_create()
- *        or oos_queue_create_static() used to create the queue.
+ *        The item size will have been set by the item_size parameter of the call to mos_queue_create()
+ *        or mos_queue_create_static() used to create the queue.
  * @param timeout_milliseconds The maximum amount of time the thread should remain in the Blocked state
  *        to wait for data to become available on the queue, should the queue already be empty.
- *        If timeout_milliseconds is zero, then oos_queue_get() will return immediately if the queue is already empty.
- *        timeout_milliseconds = OOS_WAIT_FOREVER will cause the thread to wait indefinitely (without timing out).
+ *        If timeout_milliseconds is zero, then mos_queue_get() will return immediately if the queue is already empty.
+ *        timeout_milliseconds = MOS_WAIT_FOREVER will cause the thread to wait indefinitely (without timing out).
  *
- * @return OOS_PASS if an item was. Otherwise, either timeout or error.
+ * @return MOS_PASS if an item was. Otherwise, either timeout or error.
  * @note called must be sure that it is providing a valid queue ID as there is no distinction between timeout and error.
  */
-int oos_queue_get (oos_queue_id_t queue_id, void *item_buf, uint32_t timeout_milliseconds);
+int mos_queue_get (mos_queue_h_t queue_id, void *item_buf, uint32_t timeout_milliseconds);
 
 /**
  * @brief return num entries queued
@@ -198,10 +212,10 @@ int oos_queue_get (oos_queue_id_t queue_id, void *item_buf, uint32_t timeout_mil
  * @return num entries queued.
  *
  */
-int oos_queue_waiting (oos_queue_id_t xQueue);
+int mos_queue_waiting (mos_queue_h_t xQueue);
 
 //--------------- RTC -------------------
-
+#if 0
 /**
  * @brief get a time-of-the-day structure
  *
@@ -209,51 +223,51 @@ int oos_queue_waiting (oos_queue_id_t xQueue);
  *
  * @return None.
  */
-void oos_get_rtc_time ( oos_rtc_time_t * rtc_time);
+void mos_get_rtc_time ( mos_rtc_time_t * rtc_time);
 
 /**
  * @brief get a time-of-the-day in seconds
  *
  * @return RTC time-of-the-day in seconds.
  */
-uint32_t oos_get_rtc_time_in_seconds(void);
+uint32_t mos_get_rtc_time_in_seconds(void);
 
 /**
  * @brief convert a time in a time-of-the-day structure to seconds
  *
  * @return RTC time-of-the-day in seconds.
  */
-uint32_t oos_rtc_time_to_seconds(const oos_rtc_time_t *datetime);
+uint32_t mos_rtc_time_to_seconds(const mos_rtc_time_t *datetime);
 
 /**
  * @brief convert a time in seconds to a time-of-the-day structure
  *
  * @return None
  */
-void oos_seconds_to_rtc_time(uint32_t seconds, oos_rtc_time_t *datetime);
+void mos_seconds_to_rtc_time(uint32_t seconds, mos_rtc_time_t *datetime);
 
 /**
  * @brief get a time in seconds since the system was initialized.
  *
  * @return time in seconds since power up.
  */
-uint32_t oos_get_uptime_in_secs( void );
+uint32_t mos_get_uptime_in_secs( void );
 
 /**
  * @brief get a time in milliseconds since the system was initialized.
  *
  * @return time in seconds since power up.
  */
-uint64_t oos_get_ms_timestamp(void);
+uint64_t mos_get_ms_timestamp(void);
 
-
+#endif
 //---------- timers ----------
 
 /**
  * @brief Create and start a single shot timer
  *
  * After the time expires the callback function is called. The timer self destroys once it expires.
- * A call for oos_timer_delete can be performed in case there is a need to prevent the timer to expire.
+ * A call for mos_timer_delete can be performed in case there is a need to prevent the timer to expire.
  *
  * @param time_milliseconds Expiring time (max 2,900,000 milliseconds)
  * @param callback Function called upon time expiring
@@ -261,15 +275,15 @@ uint64_t oos_get_ms_timestamp(void);
  *
  * @return timer ID or NULL if error.
  *
- * @note For values > 2,900,000 milliseconds (~48 minutes) the oos_slow_timer_create should be used.
+ * @note For values > 2,900,000 milliseconds (~48 minutes) the mos_slow_timer_create should be used.
  */
-oos_timer_id_t oos_timer_create_single_shot( int time_milliseconds, timer_func_t callback, void * arg );
+mos_timer_h_t mos_timer_create_single_shot( int time_milliseconds, timer_func_t callback, void * arg );
 
 /**
  * @brief Create and start a single shot timer
  *
  * After the time expires the callback function is called. Timer restarts
- * A call for oos_timer_delete can be performed in case there is a need to prevent the timer to expire.
+ * A call for mos_timer_delete can be performed in case there is a need to prevent the timer to expire.
  *
  * @param time_milliseconds periodic Expiring time (max 2,900,000 milliseconds)
  * @param callback Function called upon time expiring
@@ -278,14 +292,14 @@ oos_timer_id_t oos_timer_create_single_shot( int time_milliseconds, timer_func_t
  * @return timer ID or NULL if error.
  *
  */
-oos_timer_id_t oos_timer_create_periodic( int time_milliseconds, timer_func_t callback, void * arg );
+mos_timer_h_t mos_timer_create_periodic( int time_milliseconds, timer_func_t callback, void * arg );
 
 
 /**
  * @brief Create and start a single shot SLOW timer
  *
  * After the time expires the callback function is called. The timer self destroys once it expires.
- * A call for oos_timer_delete can be performed in case there is a need to prevent the timer to expire.
+ * A call for mos_timer_delete can be performed in case there is a need to prevent the timer to expire.
  *
  * @param time_minutes Expiring time in minutes
  * @param callback Function called upon time expiring
@@ -295,7 +309,7 @@ oos_timer_id_t oos_timer_create_periodic( int time_milliseconds, timer_func_t ca
  * @note this timer has a (low) precision of +/- 1 minute.
  *
  */
-oos_timer_id_t oos_slow_timer_create_single_shot( int time_minutes, timer_func_t callback, void * arg );
+mos_timer_id_t mos_slow_timer_create_single_shot( int time_minutes, timer_func_t callback, void * arg );
 
 /**
  * @brief Delete a timer
@@ -305,7 +319,7 @@ oos_timer_id_t oos_slow_timer_create_single_shot( int time_minutes, timer_func_t
  *
  * @return None
  */
-void oos_timer_delete ( oos_timer_id_t timer_id );
+void mos_timer_delete ( mos_timer_id_t timer_id );
 
 /**
  * @brief Delete a timer
@@ -315,7 +329,7 @@ void oos_timer_delete ( oos_timer_id_t timer_id );
  *
  * @return Remaining time to expire: in milliseconds for regular timer or in minutes for slow timers. -1 if given an invalid timer ID.
  */
-int oos_timer_get_remaining ( oos_timer_id_t timer_id );
+int mos_timer_get_remaining ( mos_timer_id_t timer_id );
 
 //--------- counters -------
 /**
@@ -323,14 +337,14 @@ int oos_timer_get_remaining ( oos_timer_id_t timer_id );
  *
  * @return timestamp incremented 32768 per second.
  */
-uint64_t oos_get_raw_timestamp(void);
+uint64_t mos_get_raw_timestamp(void);
 
 /**
  * @brief Get a float timestamp.
  *
- * @return float timestamp wher its granularity is based on oos_get_raw_timestamp.
+ * @return float timestamp wher its granularity is based on mos_get_raw_timestamp.
  */
-float oos_get_timestamp(void); // second
+float mos_get_timestamp(void); // second
 
 //----------- Mutex -----------
 /**
@@ -338,7 +352,7 @@ float oos_get_timestamp(void); // second
  *
  * @return mutex ID.
  */
-oos_mutex_t oos_mutex_create(void);
+mos_mutex_h_t mos_mutex_create(void);
 
 /**
  * @brief Lock a mutex.
@@ -347,7 +361,7 @@ oos_mutex_t oos_mutex_create(void);
  *
  * @return mutex None.
  */
-void oos_mutex_lock(oos_mutex_t mutex);
+void mos_mutex_lock(mos_mutex_h_t mutex);
 
 /**
  * @brief Unlock a mutex.
@@ -356,14 +370,15 @@ void oos_mutex_lock(oos_mutex_t mutex);
  *
  * @return mutex None.
  */
-void oos_mutex_unlock(oos_mutex_t mutex);
+void mos_mutex_unlock(mos_mutex_h_t mutex);
 
 //------------------------------------------
-void oos_loop(void);
 
-__noreturn void oos_reset(void);
+void mos_loop(void);
 
-void oos_shutdown(void);
+//__noreturn void mos_reset(void);
+
+void mos_shutdown(void);
 
 
 #ifdef __cplusplus
