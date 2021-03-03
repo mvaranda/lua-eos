@@ -32,9 +32,11 @@ void mos_free (void * p);
 
 #if 1
   #define MOS_MALLOC(s) mos_malloc (s)
+  #define MOS_CALLOC(n,s) mos_calloc (n,s)
   #define MOS_FREE(p) mos_free(p)
 #else
   #define MOS_MALLOC(s) NATIVE_MALLOC(s)
+  #define MOS_CALLOC(n,s) NATIVE_CALLOC (n,s)
   #define MOS_FREE(p) NATIVE_FREE(p)
 #endif
 
@@ -362,6 +364,16 @@ mos_mutex_h_t mos_mutex_create(void);
  * @return mutex None.
  */
 void mos_mutex_lock(mos_mutex_h_t mutex);
+
+/**
+ * @brief destroy a mutex.
+ *
+ * *param mutex Mutex ID to be locked
+ *
+ * @return mutex None.
+ */
+void mos_mutex_destroy(mos_mutex_h_t mutex);
+
 
 /**
  * @brief Unlock a mutex.
