@@ -18,6 +18,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 DEFINES += LUA_EMBEDDED
 
+DEFINES += MOS_DESKTOP
+
 DEFINES += projCOVERAGE_TEST=1
 
 INCLUDEPATH += ../lvgl \
@@ -88,20 +90,9 @@ SOURCES += \
     ../lua/src/lutf8lib.c \
     ../lua/src/lvm.c \
     ../lua/src/lzio.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/croutine.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/event_groups.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/list.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/queue.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/stream_buffer.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/tasks.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/timers.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_3.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c \
-    ../lua_eos/native/FreeRTOS/FreeRTOS/Source/portable/ThirdParty/GCC/Posix/port.c \
     ../lua_eos/native/eos_init.cpp \
     ../lua_eos/native/lua_eos.c \
     ../lua_eos/native/mos_desktop.c \
-    ../lua_eos/native/rtos_entry.c \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
     ../lvgl/src/lv_core/lv_indev.c \
@@ -247,7 +238,6 @@ HEADERS += \
     ../lua/src/lundump.h \
     ../lua/src/lvm.h \
     ../lua/src/lzio.h \
-    ../lua_eos/native/FreeRTOSConfig.h \
     ../lua_eos/native/eos_init.h \
     ../lua_eos/native/eos_lua.h \
     ../lua_eos/native/lua_eos.h \

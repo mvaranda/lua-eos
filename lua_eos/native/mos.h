@@ -83,7 +83,7 @@ void mos_init(void);
  *
  * @return upon success returns a valid mos_thread_h_t. NULL if error.
  */
-mos_thread_h_t mos_thread_new( const char *name, thread_func_t thread_func, void *arg, int iStackSize, int iPriority );
+mos_thread_h_t mos_thread_new( const char *name, thread_func_t thread_func, void *arg, uint32_t iStackSize, uint32_t iPriority );
 
 /**
  * @brief Return the thread ID of the caller thread.
@@ -161,7 +161,7 @@ void mos_thread_sleep( uint32_t time_milliseconds);
  *
  * @return upon success returns a valid mos_queue_h_t. NULL if error.
  */
-mos_queue_h_t mos_queue_create ( int len, int item_size);
+mos_queue_h_t mos_queue_create ( uint32_t len, uint32_t item_size);
 
 /**
  * @brief place an item at the end of a queue
@@ -277,7 +277,7 @@ uint64_t mos_get_ms_timestamp(void);
  *
  * @note For values > 2,900,000 milliseconds (~48 minutes) the mos_slow_timer_create should be used.
  */
-mos_timer_h_t mos_timer_create_single_shot( int time_milliseconds, timer_func_t callback, void * arg );
+mos_timer_h_t mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, void * arg );
 
 /**
  * @brief Create and start a single shot timer
@@ -292,7 +292,7 @@ mos_timer_h_t mos_timer_create_single_shot( int time_milliseconds, timer_func_t 
  * @return timer ID or NULL if error.
  *
  */
-mos_timer_h_t mos_timer_create_periodic( int time_milliseconds, timer_func_t callback, void * arg );
+mos_timer_h_t mos_timer_create_periodic( uint32_t time_milliseconds, timer_func_t callback, void * arg );
 
 
 /**
@@ -309,7 +309,7 @@ mos_timer_h_t mos_timer_create_periodic( int time_milliseconds, timer_func_t cal
  * @note this timer has a (low) precision of +/- 1 minute.
  *
  */
-mos_timer_id_t mos_slow_timer_create_single_shot( int time_minutes, timer_func_t callback, void * arg );
+mos_timer_id_t mos_slow_timer_create_single_shot( uint32_t time_minutes, timer_func_t callback, void * arg );
 
 /**
  * @brief Delete a timer

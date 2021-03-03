@@ -13,6 +13,83 @@
 //
 /****************************************************************************/
 
+/* mos_thread_new
+
+  mos_queue_create
+  mos_queue_get
+  mos_queue_put
+  mos_queue_waiting
+  mos_timer_create_single_shot */
+
+#include <string.h>
+#include <pthread.h>
+#include "mos.h"
+
+
+#include <pthread.h>
+
+//int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
+//                          void *(*start_routine) (void *), void *arg);
+
+mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, uint32_t iStackSize, uint32_t iPriority )
+{
+    pthread_t thread;
+    int t = pthread_create(&thread, NULL,
+                              (void *(*) (void *)) thread_func, NULL);
+    if (t) {
+        return NULL;
+    }
+    return thread;
+}
+
+typedef struct queue_st {
+    uint8_t *       buffer;
+    mos_mutex_h_t   mutex;
+    uint32_t        item_size;
+    uint32_t        max_num_items;
+    uint32_t        num_items;
+    uint32_t        head_idx;
+    uint32_t        tail_idx;
+} queue_t;
+
+mos_queue_h_t mos_queue_create ( uint32_t len, uint32_t item_size)
+{
+  // return xQueueCreate( len, item_size);
+  queue_t * h = (queue_t *) MOS_MALLOC(sizeof(queue_t));
+  if ( ! h) {
+      LOG_E("mos_queue_create: no memo for handle");
+      return NULL;
+  }
+  h->buffer = MOS_MALLOC(len * item_size);
+  if ( ! h->buffer) {
+      LOG_E("mos_queue_create: no memo for buffer");
+      MOS_FREE(h);
+      return NULL;
+  }
+  memset(h->buffer, 0, len * item_size);
+
+  h->mutex = mos_mutex_create();
+  h->item_size = item_size;
+  h->max_num_items = len;
+  h->num_items = 0;
+  h->head_idx = 0;
+  h->tail_idx = 0;
+
+  return h;
+}
+
+mos_mutex_h_t mos_mutex_create(void)
+{
+    pthread_mutex_t * mutex_ptr = (pthread_mutex_t *) MOS_MALLOC(sizeof(pthread_mutex_t));
+    if ( ! mutex_ptr) {
+        LOG_E("mos_mutex_create: no memo for mutex");
+        return NULL;
+    }
+    pthread_mutex_init(mutex_ptr, NULL);
+    return mutex_ptr;
+}
+
+
 #if 0
 
 #include "mos.h"

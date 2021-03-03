@@ -32,6 +32,8 @@ extern "C" {
 #include "lauxlib.h"
 #include "lualib.h"
 #include "log.h"
+#include "mos.h"
+#include "lua_eos.h"
 
 extern void rtos_entry(void);
 
@@ -40,7 +42,14 @@ extern void rtos_entry(void);
 static void luaCppThread(void)
 {
     QDir dir; LOG("dir: %s", dir.absolutePath().toStdString().c_str());
+
+
+#ifdef MOS_DESKTOP
+    mos_thread_h_t task = mos_thread_new( "luaTask", luaTask, NULL, LUA_EOS_STACK_SIZE, LUA_TASK_PRIORITY );
+
+#else
     rtos_entry();
+#endif
 }
 
 void luaCppInit(void)

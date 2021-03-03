@@ -19,11 +19,17 @@
 
 #include "lua.h"
 
+#ifdef MOS_DESKTOP
+  #define LOWEST_PRIORITY 1 // assume low value has low priority
+#else
+  #define LOWEST_PRIORITY tskIDLE_PRIORITY
+#endif
+
 // Stack sizes
-#define LUA_EOS_STACK_SIZE (8 * 1024) // 1k
+#define LUA_EOS_STACK_SIZE (4 * 1024) // 4k
 
 // Priorities
-#define	LUA_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
+#define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
 
 typedef enum {
   EV_SYS_START_UP = 1,
