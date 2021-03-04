@@ -33,7 +33,7 @@ static bool dumplist(void)  {
             return false;
         }
         last_expire = entry->expire;
-        entry++;
+        entry = entry->next;
     }
     return true;
 }
@@ -84,29 +84,39 @@ void testMos::test_case1()
   list_entry_t * entry;// = insert( 1000, timer_callback, NULL);
   int i;
 
-#if 0
+#if 1
   //-------- check if list gets full -----
   for (i=0; i< NUM_MAX_TIMERS; i++) {
-    entry = insert( 1000 * i, timer_callback, NULL);
+    entry = insert( 1000 * i+1, timer_callback, NULL);
     LOG("added entry %d", i+1);
     QVERIFY(entry != NULL);
   }
   entry = insert( 20000, timer_callback, NULL);
   QVERIFY(entry == NULL); // must fail
 
-  reset_list(); // clear list
 #endif
+
+
   //--------- test add lowest expire -----
   // fill half list
+  reset_list(); // clear list
   for (i=0; i< NUM_MAX_TIMERS / 2; i++) {
     entry = insert( 1000 * i, timer_callback, NULL);
     QVERIFY(entry != NULL);
   }
+  LOG("\nAdd lowest expire value = 500");
   entry = insert( 500, timer_callback, NULL);
   QVERIFY(dumplist());
 
+  //--------- test add middle expire value-----
+  LOG("\nAdd middle expire value = 2500");
+  entry = insert( 2500, timer_callback, NULL);
+  QVERIFY(dumplist());
 
-
+  //--------- test add high expire value-----
+  LOG("\nAdd highest expire value = 12500");
+  entry = insert( 12500, timer_callback, NULL);
+  QVERIFY(dumplist());
 
 }
 

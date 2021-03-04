@@ -89,7 +89,7 @@ STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, const void
 
         if (entry->expire < ptr->next->expire) {
             entry->next = ptr->next;
-            ptr->next = entry;
+             ptr->next = entry;
             break;
         }
         ptr = ptr->next;
