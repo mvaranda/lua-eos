@@ -93,6 +93,7 @@ SOURCES += \
     ../lua_eos/native/eos_init.cpp \
     ../lua_eos/native/lua_eos.c \
     ../lua_eos/native/mos_desktop.c \
+    ../lua_eos/native/mos_desktop_timer.c \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
     ../lvgl/src/lv_core/lv_indev.c \
@@ -242,6 +243,7 @@ HEADERS += \
     ../lua_eos/native/eos_lua.h \
     ../lua_eos/native/lua_eos.h \
     ../lua_eos/native/mos.h \
+    ../lua_eos/native/mos_desktop_timer.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
     ../lvgl/src/lv_conf_kconfig.h \

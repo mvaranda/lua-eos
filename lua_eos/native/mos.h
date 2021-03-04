@@ -279,7 +279,7 @@ uint64_t mos_get_ms_timestamp(void);
  *
  * @note For values > 2,900,000 milliseconds (~48 minutes) the mos_slow_timer_create should be used.
  */
-mos_timer_h_t mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, void * arg );
+mos_timer_h_t mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, const void * arg );
 
 /**
  * @brief Create and start a single shot timer

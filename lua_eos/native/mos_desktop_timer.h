@@ -1,5 +1,5 @@
-#ifndef LOG_H
-#define LOG_H
+#ifndef __MOS_DESK_TIMER_H__
+#define __MOS_DESK_TIMER_H__
 /***************************************************************
  *
  *                 This code is part of LUA_EOS
@@ -17,34 +17,16 @@
  ***************************************************************
  */
 
-
-#include <stdio.h>
-#if 1
-#define LOG         qDebugC
-#define LOG_E       qDebugC
-#define LOG_I       qDebugC
-#define LOG_W       qDebugC
-#else
-#define LOG(...)         do {/* dummy */} while(0)
-#define LOG_E(...)       do {/* dummy */} while(0)
-#define LOG_I (...)       do {/* dummy */} while(0)
-#define LOG_W(...)       do {/* dummy */} while(0)
-#endif
-
-
 #ifdef __cplusplus
-  extern "C" {
+extern "C" {
 #endif
 
-
-  void qDebugC(const char * format,...);
+void mos_timer_init(void);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-
-
-
-#endif // LOG_H
+//----------------------------
+#endif

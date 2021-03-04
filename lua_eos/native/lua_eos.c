@@ -190,7 +190,7 @@ void luaTask(void * arg)
 {
   LOG("luaInit...");
 
-  if ( (event_queue = mos_queue_create ( EV_QUEUE_LENGTH, sizeof( ev_queue_item_t ))) != MOS_PASS) {
+  if ( (event_queue = mos_queue_create ( EV_QUEUE_LENGTH, sizeof( ev_queue_item_t ))) == NULL) {
     LOG_E("Could not create event_queue");
     return;
   }

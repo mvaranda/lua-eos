@@ -34,6 +34,7 @@ extern "C" {
 #include "log.h"
 #include "mos.h"
 #include "lua_eos.h"
+#include "mos_desktop_timer.h"
 
 extern void rtos_entry(void);
 
@@ -45,6 +46,7 @@ static void luaCppThread(void)
 
 
 #ifdef MOS_DESKTOP
+    mos_timer_init();
     mos_thread_h_t task = mos_thread_new( "luaTask", luaTask, NULL, LUA_EOS_STACK_SIZE, LUA_TASK_PRIORITY );
 
 #else
