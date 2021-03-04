@@ -17,41 +17,32 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "mos.h"
+#include "mos_desktop_timer.h"
 
 
 #include <pthread.h>
 
-#define NUM_MAX_TIMERS 10
-
-typedef enum {
-    ST_EMPTY = 0,
-    ST_COUNTING,
-    ST_EXPIRED,
-    ST_IDLE,
-} state_t;
-
-typedef struct list_entry_st {
-    struct list_entry_st *   next;
-    state_t             state;
-
-    uint64_t            expire;
-    timer_func_t        callback;
-    const void *        arg;
-
-} list_entry_t;
-
 //int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 //                          void *(*start_routine) (void *), void *arg);
+
+#ifndef UNIT_TEST
+  #define STATIC static
+#else
+  #define STATIC
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-static list_entry_t list[NUM_MAX_TIMERS];
-static list_num_entries = 0;
-static list_entry_t * head = NULL;
 
-static list_entry_t * insert( uint64_t expire, timer_func_t callback, const void * arg) {
+STATIC uint64_t tick_counter = 0;
+
+STATIC list_entry_t list[NUM_MAX_TIMERS];
+STATIC uint32_t list_num_entries = 0;
+STATIC list_entry_t * head = NULL;
+
+STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, const void * arg) {
     int i;
 
     list_entry_t * entry = NULL;
@@ -114,7 +105,17 @@ mos_timer_h_t mos_timer_create_single_shot( uint32_t time_milliseconds, timer_fu
 
 static void timer_thread(void *arg)
 {
+    uint64_t last = 0;
     LOG("Timer therad started");
+    while(1) {
+        usleep(TICK_PERIOD);
+
+        tick_counter++;
+        if (tick_counter - last > MILLISEC_TO_TICK(1000)) {
+            last = tick_counter;
+            LOG("tick");
+        }
+    }
 }
 
 void mos_timer_init(void)

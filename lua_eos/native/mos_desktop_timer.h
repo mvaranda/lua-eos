@@ -16,6 +16,32 @@
  *
  ***************************************************************
  */
+#include <stdint.h>
+#include <stdbool.h>
+#include "mos.h"
+
+#define NUM_MAX_TIMERS 10
+#define TICK_PERIOD 20000  // microseconds (20 milliseconds, 50Hz)
+#define MILLISEC_TO_TICK(m) (m/20)
+
+typedef enum {
+    ST_EMPTY = 0,
+    ST_COUNTING,
+    ST_EXPIRED,
+    ST_IDLE,
+} state_t;
+
+typedef struct list_entry_st {
+    struct list_entry_st *   next;
+    state_t             state;
+
+    uint64_t            expire;
+    timer_func_t        callback;
+    const void *        arg;
+
+} list_entry_t;
+
+
 
 #ifdef __cplusplus
 extern "C" {
