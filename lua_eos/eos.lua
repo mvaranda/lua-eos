@@ -110,10 +110,10 @@ local function scheduler()
   while(1) do
     nat_ev = eod_read_event_table()
     
---    if nat_ev ~= nil then
---      print("heap (KB):" .. collectgarbage("count")) 
---      collectgarbage("collect")
---    end
+    --if nat_ev ~= nil then
+      --print("heap (KB):" .. collectgarbage("count")) 
+      --collectgarbage("collect")
+    --end
     
 --    if nat_ev ~= nil then
 --      print("nat_ev:")
@@ -287,9 +287,9 @@ function task1( ctx )
   local x = 10
   while(1) do
     --print("task1, x = " .. x)
---    eos_print_str("task1, x = " .. x)
---    print("task1, x = " .. x)
---    x=x+1
+    --eos_print_str("task1, x = " .. x)
+    print("task1, x = " .. x)
+    x=x+1
 --    if (x % 5) == 0 then
 --      eos.post(ev, "message from task 1")
 --    end

@@ -93,14 +93,30 @@ void cb_event_push_timer(lua_State *L, ev_queue_item_union_t * item_ptr)
 
 #define MAX_WAIT_READ_EVENT_Q 0
 
+static int luac_eod_read_test_table(lua_State *L)
+{
+    static int cnt = 0;
+    if (cnt++ < 5) return 0; // empty table
+    lua_newtable(L);
+
+    return 1;
+}
+
 static int luac_eod_read_event_table(lua_State *L)
 {
   int num_items = 0;
   ev_queue_item_t ev_item;
   memset(&ev_item, 0, sizeof(ev_item));
 
+
+
+
   if (mos_queue_waiting( event_queue ) > 0) {
       lua_newtable(L);
+  }
+  else {
+      lua_pushnil(L);
+      return 1;
   }
 
   while (mos_queue_get( event_queue, &ev_item, MAX_WAIT_READ_EVENT_Q) == MOS_PASS) {
@@ -147,10 +163,13 @@ static void timer_callback(mos_timer_id_t timer_id)
 // expire in milliseconds
 static int luac_eos_set_timer(lua_State *L)
 {
+
   LOG("luac_eos_set_timer: collecting values from LUA");
+
   int taskID = (int) lua_tointeger(L,1);
   int timerID = (int) lua_tointeger(L,2);
   int time = (int) lua_tointeger(L,3);
+
   LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
 
   unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
