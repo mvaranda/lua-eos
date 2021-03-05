@@ -273,13 +273,13 @@ uint64_t mos_get_ms_timestamp(void);
  *
  * @param time_milliseconds Expiring time (max 2,900,000 milliseconds)
  * @param callback Function called upon time expiring
- * @param arg Generic user defined argument passed to the callback.
+ * @param id Generic user defined identifier passed to the callback.
  *
  * @return timer ID or NULL if error.
  *
- * @note For values > 2,900,000 milliseconds (~48 minutes) the mos_slow_timer_create should be used.
+ * @note system timer roll after 994 days.
  */
-mos_timer_h_t mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, const void * arg );
+bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, mos_timer_id_t id );
 
 /**
  * @brief Create and start a single shot timer
@@ -311,7 +311,7 @@ mos_timer_h_t mos_timer_create_periodic( uint32_t time_milliseconds, timer_func_
  * @note this timer has a (low) precision of +/- 1 minute.
  *
  */
-mos_timer_id_t mos_slow_timer_create_single_shot( uint32_t time_minutes, timer_func_t callback, void * arg );
+bool mos_slow_timer_create_single_shot( uint64_t time_minutes, timer_func_t callback, mos_timer_id_t id);
 
 /**
  * @brief Delete a timer

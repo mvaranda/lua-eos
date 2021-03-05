@@ -16,14 +16,15 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "mos.h"
 #include "mos_desktop_timer.h"
 
 
 #include <pthread.h>
 
-//int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
-//                          void *(*start_routine) (void *), void *arg);
+static mos_mutex_h_t mutex; // mos_mutex_create
+static mos_thread_h_t task;
 
 #ifndef UNIT_TEST
   #define STATIC static
@@ -39,10 +40,10 @@ extern "C" {
 STATIC uint64_t tick_counter = 0;
 
 STATIC list_entry_t list[NUM_MAX_TIMERS];
-STATIC uint32_t list_num_entries = 0;
-STATIC list_entry_t * head = NULL;
+STATIC volatile uint32_t list_num_entries = 0;
+STATIC volatile list_entry_t * head = NULL;
 
-STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, const void * arg) {
+STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, mos_timer_id_t id) {
     int i;
 
     list_entry_t * entry = NULL;
@@ -64,7 +65,7 @@ STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, const void
     entry->state = ST_COUNTING;
     entry->expire = expire;
     entry->callback = callback;
-    entry->arg = arg;
+    entry->id = id;
     entry->next = NULL;
 
     list_num_entries++;
@@ -98,19 +99,57 @@ STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, const void
     return entry;
 }
 
-mos_timer_h_t mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, const void * arg )
+bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, mos_timer_id_t id )
 {
-
+  mos_mutex_lock(mutex);
+  list_entry_t * entry = insert( tick_counter + MILLISEC_TO_TICK(time_milliseconds),  callback,  id);
+  mos_mutex_unlock(mutex);
+  if (entry == NULL)
+      return false;
+  return true;
 }
 
 static void timer_thread(void *arg)
 {
     uint64_t last = 0;
+    timer_func_t        callback;
+    mos_timer_id_t      id;
+
     LOG("Timer therad started");
     while(1) {
         usleep(TICK_PERIOD);
 
         tick_counter++;
+//        if (tick_counter == 90){
+//            LOG("TICK = 90");
+//        }
+
+
+        mos_mutex_lock(mutex);
+
+        list_entry_t  entry;
+        list_entry_t  *next;
+        while (head) {
+            if (head->expire <= tick_counter) {
+                callback = head->callback;
+                id = head->id;
+                next = head->next;
+                memset(head, 0, sizeof(list_entry_t));
+                head = next;
+                mos_mutex_unlock(mutex);
+                if (callback) {
+                    callback(id);
+                }
+                mos_mutex_lock(mutex);
+                continue;
+
+            }
+            if (head)
+                head = head->next;
+        }
+
+        mos_mutex_unlock(mutex);
+
         if (tick_counter - last > MILLISEC_TO_TICK(1000)) {
             last = tick_counter;
             LOG("tick");
@@ -121,7 +160,8 @@ static void timer_thread(void *arg)
 void mos_timer_init(void)
 {
     memset (list, 0, sizeof(list));
-    mos_thread_h_t task = mos_thread_new( "luaTask", timer_thread, NULL, 1024 * 1024, 10 );
+    mutex = mos_mutex_create();
+    task = mos_thread_new( "luaTask", timer_thread, NULL, 1024 * 1024, 10 );
 
 }
 

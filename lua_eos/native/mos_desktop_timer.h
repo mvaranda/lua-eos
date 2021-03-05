@@ -21,7 +21,7 @@
 #include "mos.h"
 
 #define NUM_MAX_TIMERS 10
-#define TICK_PERIOD 20000  // microseconds (20 milliseconds, 50Hz)
+#define TICK_PERIOD 20000  // microseconds (20 milliseconds, 50Hz)... 994 days to roll to zero for uint32_t
 #define MILLISEC_TO_TICK(m) (m/20)
 
 typedef enum {
@@ -37,7 +37,7 @@ typedef struct list_entry_st {
 
     uint64_t            expire;
     timer_func_t        callback;
-    const void *        arg;
+    mos_timer_id_t      id;
 
 } list_entry_t;
 

@@ -1,4 +1,5 @@
 #include <QtTest>
+#include <unistd.h>
 #include "mos_desktop_timer.h"
 
 extern "C" {
@@ -7,9 +8,12 @@ extern uint64_t tick_counter;
 extern list_entry_t list[NUM_MAX_TIMERS];
 extern uint32_t list_num_entries;
 extern list_entry_t * head;
+static mos_timer_id_t expired_timer_id = 0;
 
-//-------- mos_desktop_timer variables ------
-extern list_entry_t * insert( uint64_t expire, timer_func_t callback, const void * arg);
+//-------- mos_desktop_timer functions ------
+extern list_entry_t * insert( uint64_t expire, timer_func_t callback, mos_timer_id_t id);
+extern bool mos_timer_create_single_shot( uint32_t time_minutes, timer_func_t callback, mos_timer_id_t id);
+
 
 //------- local test functions -------
 
@@ -20,7 +24,8 @@ static void reset_list(void){
 }
 
 static void timer_callback(mos_timer_id_t timer_id) {
-
+    LOG("Test timer callback called");
+    expired_timer_id = timer_id;
 }
 
 static bool dumplist(void)  {
@@ -82,7 +87,7 @@ void testMos::cleanupTestCase()
 void testMos::test_case1()
 {
   list_entry_t * entry;// = insert( 1000, timer_callback, NULL);
-  int i;
+  uint32_t i;
 
 #if 1
   //-------- check if list gets full -----
@@ -117,6 +122,24 @@ void testMos::test_case1()
   LOG("\nAdd highest expire value = 12500");
   entry = insert( 12500, timer_callback, NULL);
   QVERIFY(dumplist());
+
+  //----- test timers ------
+#define TEST_TM  200 // 200 ms
+#define SLEEP_60_PERCENT MILLISEC_TO_TICK( ((TEST_TM * 6) / 10))
+  reset_list();
+  mos_timer_init();
+  bool r;
+  for (i = 1; i <= 20; i++) {
+    QVERIFY( mos_timer_create_single_shot( TEST_TM, timer_callback, i));
+//    usleep (SLEEP_60_PERCENT * TICK_PERIOD);
+//    QVERIFY(i != expired_timer_id); // must be different
+//    usleep (SLEEP_60_PERCENT * TICK_PERIOD);
+    //usleep ((TEST_TM * 2) * TICK_PERIOD);
+    sleep(1);
+    QVERIFY(i == expired_timer_id); // must be equal
+    LOG("Pass for id %d", i);
+  }
+
 
 }
 
