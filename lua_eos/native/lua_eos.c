@@ -47,9 +47,12 @@
 
 #define EV_QUEUE_LENGTH    16
 
-#if 0
-#define EV_LOCK() xSemaphoreTake(ev_q_mutex, pdMS_TO_TICKS(10000))
-#define EV_UNLOCK() xSemaphoreGive(ev_q_mutex)
+#if 1
+//#define EV_LOCK() xSemaphoreTake(ev_q_mutex, pdMS_TO_TICKS(10000))
+//#define EV_UNLOCK() xSemaphoreGive(ev_q_mutex)
+#define EV_LOCK() mos_mutex_lock(ev_q_mutex)
+#define EV_UNLOCK() mos_mutex_unlock(ev_q_mutex)
+
 #else
 #define EV_LOCK() pdTRUE
 #define EV_UNLOCK() pdTRUE
@@ -67,7 +70,7 @@ static mos_queue_h_t event_queue;
 static void add_event_to_queue( const void * ev_item)
 {
 
-  if ( mos_queue_put( event_queue, (const void *) ev_item) != true) {
+  if ( mos_queue_put( event_queue, (const void *) ev_item) != MOS_PASS) {
     LOG_E("timer_callback: event Q is full");
   }
 
@@ -105,6 +108,7 @@ static int luac_eod_read_event_table(lua_State *L)
       LOG_E("luac_eod_read_event_table: missing event push callback");
       return 0;
     }
+    LOG ("task ID = %d, timer ID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
 
     lua_pushnumber(L, num_items + 1);
     lua_newtable(L);
@@ -121,9 +125,9 @@ static int luac_eod_read_event_table(lua_State *L)
 
 }
 
-static void timer_callback(mos_timer_h_t tm_h, void * arg)
+static void timer_callback(mos_timer_id_t timer_id)
 {
-  mos_timer_id_t timer_id = ( uint32_t ) arg;
+  //mos_timer_id_t timer_id = ( uint32_t ) arg;
 
   ev_queue_item_t ev_item;
   memset(&ev_item, 0, sizeof(ev_item));
@@ -143,6 +147,7 @@ static void timer_callback(mos_timer_h_t tm_h, void * arg)
 // expire in milliseconds
 static int luac_eos_set_timer(lua_State *L)
 {
+  LOG("luac_eos_set_timer: collecting values from LUA");
   int taskID = (int) lua_tointeger(L,1);
   int timerID = (int) lua_tointeger(L,2);
   int time = (int) lua_tointeger(L,3);
@@ -150,7 +155,7 @@ static int luac_eos_set_timer(lua_State *L)
 
   unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
 
-  mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, (void *)  _timerID);
+  mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
 
   if ( ! tm) {
      LOG_E("luac_eos_set_timer: xTimerCreate fail");

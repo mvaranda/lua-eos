@@ -138,8 +138,8 @@ void testMos::test_case1()
     //LOG("Expected id = %d, got %d", i, expired_timer_id);
     QVERIFY2(i == expired_timer_id, "mismatch timer id"); // must be equal
   }
+  QVERIFY2(list_num_entries == 0, "list_num_entries must be zero");
   LOG("Timers are fine.");
-
 
 }
 
