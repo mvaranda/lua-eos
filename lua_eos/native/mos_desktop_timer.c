@@ -111,7 +111,9 @@ bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t call
 
 static void timer_thread(void *arg)
 {
+#ifdef SHOW_TICK
     uint64_t last = 0;
+#endif
     timer_func_t        callback;
     mos_timer_id_t      id;
 
@@ -120,22 +122,22 @@ static void timer_thread(void *arg)
         usleep(TICK_PERIOD);
 
         tick_counter++;
-//        if (tick_counter == 90){
-//            LOG("TICK = 90");
-//        }
 
 
         mos_mutex_lock(mutex);
 
         list_entry_t  entry;
         list_entry_t  *next;
-        while (head) {
-            if (head->expire <= tick_counter) {
-                callback = head->callback;
-                id = head->id;
-                next = head->next;
-                memset(head, 0, sizeof(list_entry_t));
-                head = next;
+        list_entry_t  *ptr = head;
+        while (ptr) {
+            if (ptr->expire <= tick_counter) {
+                callback = ptr->callback;
+                id = ptr->id;
+                next = ptr->next;
+                memset(ptr, 0, sizeof(list_entry_t));
+                ptr = next;
+                head = ptr; // update header
+                list_num_entries--;
                 mos_mutex_unlock(mutex);
                 if (callback) {
                     callback(id);
@@ -144,16 +146,17 @@ static void timer_thread(void *arg)
                 continue;
 
             }
-            if (head)
-                head = head->next;
+            if (ptr)
+                ptr = ptr->next;
         }
 
         mos_mutex_unlock(mutex);
-
+#ifdef SHOW_TICK
         if (tick_counter - last > MILLISEC_TO_TICK(1000)) {
             last = tick_counter;
             LOG("tick");
         }
+#endif
     }
 }
 

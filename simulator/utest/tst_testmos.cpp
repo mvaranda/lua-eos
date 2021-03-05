@@ -24,7 +24,7 @@ static void reset_list(void){
 }
 
 static void timer_callback(mos_timer_id_t timer_id) {
-    LOG("Test timer callback called");
+    //LOG("Test timer callback called");
     expired_timer_id = timer_id;
 }
 
@@ -126,19 +126,19 @@ void testMos::test_case1()
   //----- test timers ------
 #define TEST_TM  200 // 200 ms
 #define SLEEP_60_PERCENT MILLISEC_TO_TICK( ((TEST_TM * 6) / 10))
+  LOG("Start timer service and test 20 timers");
   reset_list();
   mos_timer_init();
   bool r;
   for (i = 1; i <= 20; i++) {
     QVERIFY( mos_timer_create_single_shot( TEST_TM, timer_callback, i));
-//    usleep (SLEEP_60_PERCENT * TICK_PERIOD);
-//    QVERIFY(i != expired_timer_id); // must be different
-//    usleep (SLEEP_60_PERCENT * TICK_PERIOD);
-    //usleep ((TEST_TM * 2) * TICK_PERIOD);
-    sleep(1);
-    QVERIFY(i == expired_timer_id); // must be equal
-    LOG("Pass for id %d", i);
+    usleep (SLEEP_60_PERCENT  * TICK_PERIOD);
+    QVERIFY2(i != expired_timer_id, "Timer id has already been updated even before expiring time"); // must be different
+    usleep (SLEEP_60_PERCENT  * TICK_PERIOD);
+    //LOG("Expected id = %d, got %d", i, expired_timer_id);
+    QVERIFY2(i == expired_timer_id, "mismatch timer id"); // must be equal
   }
+  LOG("Timers are fine.");
 
 
 }
