@@ -19,8 +19,8 @@ static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
 /**
  * Create a button with a label and react on Click event.
  */
-#if 0
-void lv_ex_get_started_1(void)
+
+void lv_ex_get_started_2(void)
 {
     lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
     lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
@@ -30,7 +30,7 @@ void lv_ex_get_started_1(void)
     lv_obj_t * label = lv_label_create(btn, NULL);          /*Add a label to the button*/
     lv_label_set_text(label, "Button");                     /*Set the labels text*/
 }
-#else
+#
 
 extern const lv_img_dsc_t logo_0002;
 extern const lv_img_dsc_t logo_0006;
@@ -75,40 +75,47 @@ static const lv_img_dsc_t * frames[N_FRAMES] = {
 
 };
 
-lv_obj_t * icon;
+lv_obj_t * logo_obj;
+
+#define LOGO_TIMER 120
+#define LOGO_WAIT 15
 
 static void logo_task(void * arg)
 {
   static int i = 0;
 
   if (i < N_FRAMES) {
-        lv_img_set_src(icon, frames[i]);
-        //lv_obj_align(icon, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
+        lv_img_set_src(logo_obj, frames[i]);
+        lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_obj);
+        lv_task_once(task);
         i++;
-    }
+  }
+  else if (i < N_FRAMES + LOGO_WAIT) {
+    lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_obj);
+    lv_task_once(task);
+    i++;
+  }
+  else {
+      lv_obj_clean(lv_scr_act());
+      lv_ex_get_started_2();
+  }
 
 }
 
 void lv_ex_get_started_1(void)
 {
   int i;
-  icon = lv_img_create(lv_scr_act(), NULL);
+  logo_obj = lv_img_create(lv_scr_act(), NULL);
 
   /*From variable*/
-  lv_img_set_src(icon, frames[0]);
+  lv_img_set_src(logo_obj, frames[0]);
 
-  lv_obj_align(icon, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
+  lv_obj_align(logo_obj, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
 
-  lv_task_create(logo_task, 120, LV_TASK_PRIO_MID, icon);
-
-//  for (i = 0; i < N_FRAMES; i++) {
-//      lv_img_set_src(icon, frames[i]);
-//      lv_obj_align(icon, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
-
-//  }
+  lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_obj);
+  lv_task_once(task);
 
 }
 
 
-#endif
 
