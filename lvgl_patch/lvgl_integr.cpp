@@ -121,10 +121,17 @@ static void updateDisplay (const lv_area_t * area, lv_color_t * color_p, bool la
 {
     int32_t x, y;
     lv_color_t pixel;
+
+    QRgb pixel_output;
+
     for(y = area->y1; y <= area->y2; y++) {
         for(x = area->x1; x <= area->x2; x++) {
             pixel = *color_p;
-            gMainObj->display_image.setPixelColor(x,y, (QRgb) (*color_p).full);
+            pixel_output = pixel.ch.red << (16 + 3);
+            pixel_output |= pixel.ch.green << (8 + 2);
+            pixel_output |= pixel.ch.blue << 3;
+
+            gMainObj->display_image.setPixelColor(x,y, pixel_output);
             color_p++;
         }
     }

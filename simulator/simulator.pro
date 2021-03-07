@@ -94,6 +94,24 @@ SOURCES += \
     ../lua_eos/native/lua_eos.c \
     ../lua_eos/native/mos_desktop.c \
     ../lua_eos/native/mos_desktop_timer.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0002.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0006.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0010.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0014.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0018.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0022.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0026.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0030.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0034.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0038.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0042.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0046.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0050.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0054.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0058.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0062.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0066.c \
+    ../lua_eos/native/splash_logo/c_arrays/logo_0070.c \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
     ../lvgl/src/lv_core/lv_indev.c \
