@@ -1,0 +1,30 @@
+create a esp building folder as explained at:
+  https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/get-started/index.html#get-started-get-esp-idf
+
+clone or unzip:
+https://github.com/espressif/esp-dev-kits
+
+
+copy folder esp32-s2-kaluga-1 to be under esp
+
+copy this splash_logo to be under esp/esp32-s2-kaluga-1/examples/
+
+if python3 is not default then alias python=python3
+
+goto esp/esp-idf and source ./export.sh
+
+goto esp/esp32-s2-kaluga-1/examples/splash_logo
+
+do once:
+idf.py set-target esp32s2
+
+to build
+idf.py build
+
+to download:
+idf.py -p /dev/<cu.whatever> flash
+
+to monitor
+idf.py -p /dev/<cu.whatever> monitor
+
+
