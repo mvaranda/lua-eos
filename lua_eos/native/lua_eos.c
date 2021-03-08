@@ -138,12 +138,15 @@ static int luac_eod_read_event_table(lua_State *L)
       return 0;
     }
 
+
+#if 0 // debug only
     if (ev_item.event_id == EV_SYS_TIMER) {
         LOG ("task ID = %d, timer ID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
     }
     else if (ev_item.event_id == EV_SYS_TEXT_FROM_CONSOLE) {
         LOG ("msgFromConsoleToLua \"%s\"", ev_item.item.generic_text.text);
     }
+#endif
 
     lua_pushnumber(L, num_items + 1);
     lua_newtable(L);
@@ -170,7 +173,7 @@ static void timer_callback(mos_timer_id_t timer_id)
   ev_item.cb_event_push = cb_event_push_timer;
   ev_item.item.timer_item.taskID = timer_id >> 16;
   ev_item.item.timer_item.timerID = timer_id & 0xffff;
-  LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
+  //LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
   add_event_to_queue(&ev_item);
 
 }
@@ -184,13 +187,13 @@ static void timer_callback(mos_timer_id_t timer_id)
 static int luac_eos_set_timer(lua_State *L)
 {
 
-  LOG("luac_eos_set_timer: collecting values from LUA");
+  //LOG("luac_eos_set_timer: collecting values from LUA");
 
   int taskID = (int) lua_tointeger(L,1);
   int timerID = (int) lua_tointeger(L,2);
   int time = (int) lua_tointeger(L,3);
 
-  LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
+  //LOG("luac_eos_set_timer: taskID = %d, timerID = %d, time = %d", taskID, timerID, time);
 
   unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
 
@@ -288,7 +291,7 @@ void sendTextToConsoleController(char * msg)
         LOG_W("sendTextToConsoleController: len = 0");
         return;
     }
-    LOG("got msg: %s", msg);
+    //LOG("got msg: %s", msg);
     char * txt = MOS_MALLOC(len + 1);
     if ( ! txt) {
         LOG_E("sendTextToConsoleController: no memo");

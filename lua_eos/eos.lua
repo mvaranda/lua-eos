@@ -138,19 +138,19 @@ local function scheduler()
                 --print("** EVENT IS EXPIRED DELAY.. change to YIELD state")
                 task.state = ST_YIELD
               else
-                print("** EVENT IS TIMER")
+                --print("** EVENT IS TIMER")
               
               end
             end
           else
-            print("check task registration for event: " .. ev.ev_id)
+--            print("check task registration for event: " .. ev.ev_id)
             for kkk, sub in pairs(task.subscription) do
-              print("check for " .. task.name)
-              print("  sub.name = " .. sub.name )
-              print("  sub.id = " .. sub.id )
+--              print("check for " .. task.name)
+--              print("  sub.name = " .. sub.name )
+--              print("  sub.id = " .. sub.id )
               
               if sub.id == ev.ev_id then
-                print("********* add event to task " .. task.name)
+                --print("********* add event to task " .. task.name)
                 -- TODO: add exception for timer as task id must also match
                 table.insert(task.ev_q, {event=sub, arg=ev.arg})
               end

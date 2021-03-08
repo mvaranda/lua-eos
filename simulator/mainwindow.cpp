@@ -90,8 +90,6 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
         return;
     }
 
-    LOG("Line completed");
-
     // dispatch line to C program
     sendTextToConsoleController(msg);
     msg_len = 0;
