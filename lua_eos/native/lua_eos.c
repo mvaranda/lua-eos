@@ -99,7 +99,7 @@ void cb_event_push_text_from_console(lua_State *L, ev_queue_item_union_t * item_
   lua_settable(L, -3);
 
   lua_pushstring(L, "arg");                        // Key
-  lua_pushstring(L, "CARALHO"); //item_ptr->generic_text.text);   // value
+  lua_pushstring(L, item_ptr->generic_text.text);   // value
   lua_settable(L, -3);
   free(item_ptr->generic_text.text);
 }

@@ -152,7 +152,7 @@ local function scheduler()
               if sub.id == ev.ev_id then
                 print("********* add event to task " .. task.name)
                 -- TODO: add exception for timer as task id must also match
-                table.insert(task.ev_q, {event=sub, arg=ev})
+                table.insert(task.ev_q, {event=sub, arg=ev.arg})
               end
             end
           end  
@@ -327,7 +327,7 @@ function task3( ctx )
 --    y=y+1
 --    eos.yield()
     local ev, arg = eos.wait_event(ctx)
-    print("task3: event = " .. ev.name .. " msg = " .. arg)
+    print("task3: event = " .. ev.name .. " msg = " .. ev.arg)
     
 
   end
@@ -363,7 +363,9 @@ function task2( ctx )
 --    y=y+1
 --    eos.yield()
     local ev, arg = eos.wait_event(ctx)
-    print("task2: event = " .. ev.name .. " msg = " .. ev.arg)
+    --print(ev)
+    --print(arg)
+    print("task2: event = " .. ev.name .. " msg = " .. arg)
   end
 end
 
