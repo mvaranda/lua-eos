@@ -23,12 +23,13 @@ TermDlg::TermDlg(QWidget *parent) :
   ui(new Ui::TermDlg)
 {
   ui->setupUi(this);
+  setWindowFlags(Qt::Dialog);
 
   Qt::WindowFlags flags = windowFlags();
   //flags |= Qt::WindowMaximizeButtonHint;
   //flags |= Qt::WindowContextHelpButtonHint;
   flags &= ~Qt::WindowContextHelpButtonHint;
-  setWindowFlags(flags);
+  //setWindowFlags(flags);
 
   m_console = new Console();
   m_console->setMode(MODE_TERMINAL);

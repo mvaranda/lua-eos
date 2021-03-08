@@ -55,6 +55,8 @@
 #include <QDebug>
 #include <QMenu>
 
+#define FONT_SIZE 18
+
 static QStringList htmlColor =
 {
     "Green",
@@ -103,7 +105,7 @@ Console::Console(QWidget *parent) :
     setPalette(p_green);
 
     QTextDocument *doc = document();
-    QFont font("Courier New", 14);
+    QFont font("Courier New", FONT_SIZE);
     doc->setDefaultFont(font);
     setReadOnly(false);
     setUndoRedoEnabled(false);
@@ -254,7 +256,7 @@ void Console::keyPressEvent(QKeyEvent *e)
             QPlainTextEdit::keyPressEvent(e);
         }
 
-        // Send the key to the camera
+        // Send the key to the console controller
         emit getData(e->text().toLocal8Bit());
     }
 }

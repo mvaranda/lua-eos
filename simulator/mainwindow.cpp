@@ -24,6 +24,7 @@
 #include "lvgl_integr.h"
 #include "log.h"
 #include "eos_init.h"
+#include "lua_eos.h"
 
 #define LUA_EOS_VERSION "0.0"
 
@@ -47,17 +48,19 @@ MainWindow::MainWindow(QWidget *parent)
     //display_image.fill(Qt::green);
     //ui->lb_display->setPixmap(QPixmap::fromImage(display_image));
     //ui->lb_display->update();
-#if 0
-    m_term = new TermDlg(0);
+#if 1
+    m_term = new TermDlg(this);
     m_term_console = m_term->m_console;
-    m_term->show();
     connect(m_term_console, &Console::getData, this, &MainWindow::writeDataFromTerm);
+    m_term->show();
+    //m_term->setFocus();
 #endif
 
     lv_integr_run();
 
     timerId = startTimer(LVGL_TICK_TIME);
-    luaCppInit();
+    //luaCppInit();
+    luaInit.start();
 
 }
 
@@ -82,7 +85,7 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
     memcpy(&msg[msg_len], data.data(), to_transfer);
     msg_len += to_transfer;
 
-    // if last char is either CR or LF we send to camera
+    // if last char is either CR or LF we send to console controller
     if (msg[msg_len - 1] != '\r') {
         return;
     }
@@ -90,7 +93,7 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
     LOG("Line completed");
 
     // dispatch line to C program
-    //protoSendToCamConsole(msg);
+    sendTextToConsoleController(msg);
     msg_len = 0;
     memset(msg, 0, sizeof(msg));
 }

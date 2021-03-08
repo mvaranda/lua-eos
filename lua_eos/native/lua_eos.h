@@ -36,6 +36,7 @@ typedef enum {
   EV_SYS_SHUT_DOWN = 2,
 
   EV_SYS_TIMER = 3,
+  EV_SYS_TEXT_FROM_CONSOLE = 4,
 
 } sys_events_t;
 
@@ -44,21 +45,43 @@ typedef struct ev_queue_item_timer_st {
     int           timerID;
 } ev_queue_item_timer_t;
 
+typedef struct ev_queue_item_text_st {
+    char *           text;
+} ev_queue_item_text_t;
+
 typedef union ev_queue_item_union_st {
     ev_queue_item_timer_t       timer_item;
+    ev_queue_item_text_t        generic_text;
 } ev_queue_item_union_t;
+
+//typedef union ev_item_st {
+//    sys_events_t                event_id;
+//    ev_queue_item_union_t       item_union;
+//} ev_item_t;
+
 
 typedef void (*cb_event_push_t)(lua_State *L, ev_queue_item_union_t * item_ptr);
 
 
 typedef struct ev_queue_item_st {
-    cb_event_push_t            cb_event_push;
+    sys_events_t                event_id;
+    cb_event_push_t             cb_event_push;
     ev_queue_item_union_t       item;
 } ev_queue_item_t;
 
 
 
 void luaTask(void * arg);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void sendTextToConsoleController(char * msg);
+
+#ifdef __cplusplus
+}
+#endif
 
 //---------------------------------------------------------
 #endif

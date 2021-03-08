@@ -22,6 +22,7 @@
 #include <QImage>
 #include <QTimer>
 #include "termdlg.h"
+#include "eos_init.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -49,6 +50,7 @@ private:
   int timerId;
   TermDlg * m_term;
   Console * m_term_console;
+  LuaInit luaInit;
 
 };
 #endif // MAINWINDOW_H

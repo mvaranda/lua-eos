@@ -78,13 +78,17 @@ eos = {}
 local tasks = {}
 
 -- the following id's must match with sys_events_t enumeration
-EV_SYS_START_UP =  {id = 1,    name = "EV_SYS_START_UP",        pri = false}
-EV_SYS_SHUT_DOWN = {id = 2,    name = "EV_SYS_SHUT_DOWN",       pri = false}
-EV_SYS_TIMER =     {id = 3,    name = "EV_SYS_TIMER",           pri = false}
+EV_SYS_START_UP =           {id = 1,    name = "EV_SYS_START_UP",             pri = false}
+EV_SYS_SHUT_DOWN =          {id = 2,    name = "EV_SYS_SHUT_DOWN",            pri = false}
+EV_SYS_TIMER =              {id = 3,    name = "EV_SYS_TIMER",                pri = false}
+EV_SYS_TEXT_FROM_CONSOLE =  {id = 4,    name = "EV_SYS_TEXT_FROM_CONSOLE",    pri = false}
+
 
 local events_list = {
   EV_SYS_START_UP, 
-  EV_SYS_SHUT_DOWN
+  EV_SYS_SHUT_DOWN,
+  -- timer is a special case... no need registration
+  EV_SYS_TEXT_FROM_CONSOLE
 }
 
 local user_event = 1000
@@ -139,8 +143,14 @@ local function scheduler()
               end
             end
           else
+            print("check task registration for event: " .. ev.ev_id)
             for kkk, sub in pairs(task.subscription) do
+              print("check for " .. task.name)
+              print("  sub.name = " .. sub.name )
+              print("  sub.id = " .. sub.id )
+              
               if sub.id == ev.ev_id then
+                print("********* add event to task " .. task.name)
                 -- TODO: add exception for timer as task id must also match
                 table.insert(task.ev_q, {event=sub, arg=ev})
               end
@@ -294,7 +304,7 @@ function task1( ctx )
 --      eos.post(ev, "message from task 1")
 --    end
     --eos.yield()
-    eos.delay(ctx, 100)
+    eos.delay(ctx, 5000)
     
   end
 end
@@ -333,11 +343,18 @@ function task2( ctx )
   if res == false then
     print(msg)
   end
+  
   res,msg = eos.subscribe_event_by_name(ctx, "event_1")
   if res == false then
     print(msg)
   end
-
+  
+  res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
+  if res == false then
+    print(msg)
+  end
+  
+  
   eos.create_task(task3, "task3")
   
   local y = 1
@@ -346,12 +363,12 @@ function task2( ctx )
 --    y=y+1
 --    eos.yield()
     local ev, arg = eos.wait_event(ctx)
-    print("task2: event = ", ev.name, " msg = ", arg)
+    print("task2: event = " .. ev.name .. " msg = " .. ev.arg)
   end
 end
 
 eos.create_task(task1, "task1")
---eos.create_task(task2, "task2")
+eos.create_task(task2, "task2")
 eos.scheduler()
 
 

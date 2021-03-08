@@ -15,7 +15,7 @@
  ***************************************************************
  */
 
-#include <QThread>
+//#include <QThread>
 #include "eos_init.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +24,19 @@
 #include <unistd.h>
 #include <QDir>
 
+QThread * luaCppInit(void);
 
-static QThread *thread;
+LuaInit::LuaInit() {
+
+}
+
+void LuaInit::start( void )
+{
+    thread = luaCppInit();
+}
+
+//static QThread *thread;
+
 
 extern "C" {
 #include "lua.h"
@@ -38,7 +49,9 @@ extern "C" {
 
 extern void rtos_entry(void);
 
+
 };
+
 
 static void luaCppThread(void)
 {
@@ -54,12 +67,13 @@ static void luaCppThread(void)
 #endif
 }
 
-void luaCppInit(void)
+QThread * luaCppInit(void)
 {
-    thread = QThread::create([]{ luaCppThread(); });
+    QThread * thread = QThread::create([]{ luaCppThread(); });
     thread->setStackSize(1024 * 1024);
     LOG("Stack size = %d", thread->stackSize());
 
     thread->start();
+    return thread;
 }
 

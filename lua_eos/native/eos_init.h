@@ -16,9 +16,34 @@
  *
  ***************************************************************
  */
+#include <QObject>
+#include <QThread>
+
+QThread * luaCppInit(void);
+
+class LuaInit : public QObject
+{
+    Q_OBJECT
+
+public:
+    LuaInit();
+
+    void start( void );
+
+//public slots:
+//    void luaToConsole(char * msg);
+
+signals:
+    void luaToConsole(char * msg);
+
+private:
+    QThread *  thread;
+};
 
 
-void luaCppInit(void);
+
+
+
 
 
 //-----------------------------------------------------
