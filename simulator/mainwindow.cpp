@@ -60,8 +60,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     timerId = startTimer(LVGL_TICK_TIME);
     //luaCppInit();
+
+    connect(&luaInit, &LuaInit::luaToConsole, this, &MainWindow::forwardToConsole);
     luaInit.start();
 
+}
+
+void MainWindow::forwardToConsole(char * msg)
+{
+    m_term_console->putString(C_GREEN, msg);
+    free(msg);
 }
 
 void MainWindow::writeDataFromTerm(const QByteArray &data)

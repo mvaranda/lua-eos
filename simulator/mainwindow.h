@@ -44,6 +44,7 @@ private slots:
   void onMousePressed(int x, int y);
   void onMouseReleased(int x, int y);
   void writeDataFromTerm(const QByteArray &data);
+  void forwardToConsole(char * msg);
 
 
 private:

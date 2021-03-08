@@ -18,7 +18,7 @@
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
 
-print = eos_print_str
+print = eos_print
 
 function show(t)
   for k,v in pairs(t) do
@@ -337,6 +337,7 @@ end
 
 function task2( ctx )
   print ("starting task " .. ctx.name)
+  eos_print("starting task 2")
   
   -- subscribe for events
   local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_START_UP")
@@ -369,8 +370,41 @@ function task2( ctx )
   end
 end
 
-eos.create_task(task1, "task1")
-eos.create_task(task2, "task2")
+function lua_error_handler( err )
+   print( "ERROR:", err )
+end
+
+function luashell( ctx )
+  print ("LUA Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n")
+  
+  -- subscribe for events
+  res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
+  if res == false then
+    print(msg)
+  end
+  local f
+  local err
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    f = load(arg)
+    local ok, e = xpcall( f, lua_error_handler )
+    if of == false then print(e) end
+--    if e ~= nil then print(e) end
+--    if pcall(f) then
+--      --print("Success")
+--    else
+--	    print("\nFailure")
+--    end
+    --f()
+    print("\n>")
+  end
+
+end
+
+
+eos.create_task(luashell, "luashell")
+--eos.create_task(task1, "task1")
+--eos.create_task(task2, "task2")
 eos.scheduler()
 
 

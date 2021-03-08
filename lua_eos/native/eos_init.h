@@ -29,6 +29,7 @@ public:
     LuaInit();
 
     void start( void );
+    void sendToConsole(char * txt);
 
 //public slots:
 //    void luaToConsole(char * msg);

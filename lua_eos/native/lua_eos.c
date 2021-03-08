@@ -207,13 +207,18 @@ static int luac_eos_set_timer(lua_State *L)
   return 0;
 }
 
+extern void toConsole(char * msg);
+
 static int luac_eos_print_str(lua_State *L)
 {
   static c = 0;
   char * s;
 
   s = luaL_checkstring(L, 1);
-  if (s) qDebugC(s);
+  //if (s) qDebugC(s);
+  if (s) {
+      toConsole(s);
+  }
 
   return 0;
 }
@@ -228,7 +233,7 @@ static void register_luacs(lua_State *L)
   lua_setglobal(L, "eod_read_event_table");
 
   lua_pushcfunction(L, luac_eos_print_str);
-  lua_setglobal(L, "eos_print_str");
+  lua_setglobal(L, "eos_print");
 
 
 }

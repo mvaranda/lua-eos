@@ -23,16 +23,44 @@
 #include <signal.h>
 #include <unistd.h>
 #include <QDir>
+#include <string.h>
+#include "log.h"
+#include "mos.h"
 
 QThread * luaCppInit(void);
 
-LuaInit::LuaInit() {
+static LuaInit * luaInitObjtPtr;
 
+LuaInit::LuaInit() {
+  luaInitObjtPtr = this;
 }
 
 void LuaInit::start( void )
 {
     thread = luaCppInit();
+}
+
+void LuaInit::sendToConsole(char * msg)
+{
+    size_t len = strlen(msg);
+    if (len == 0) {
+        LOG_W("sendToConsole: len = 0");
+        return;
+    }
+    len; // add room for the zero terminator
+    char * buf = (char *) malloc(len + 2);
+    if (buf == NULL) {
+        LOG_E("sendToConsole: no memo");
+        return;
+    }
+    memcpy(buf, msg, len);
+#if 1
+    buf[len] = 0;
+#else
+    buf[len] = '\n';
+    buf[len + 1] = 0;
+#endif
+    emit luaToConsole(buf);
 }
 
 //static QThread *thread;
@@ -49,9 +77,12 @@ extern "C" {
 
 extern void rtos_entry(void);
 
+void toConsole(char * msg)
+{
+    luaInitObjtPtr->sendToConsole(msg);
+}
 
 };
-
 
 static void luaCppThread(void)
 {
