@@ -18,7 +18,15 @@
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
 
-print = eos_print
+function print(m)
+  eos_print(m)
+  eos_print("\n")
+end
+
+function print_sl(m)
+  eos_print(m)
+end
+--print = eos_print
 
 function show(t)
   for k,v in pairs(t) do
@@ -310,7 +318,7 @@ function luashell( ctx )
 --	    print("\nFailure")
 --    end
     --f()
-    print("\n>")
+    print_sl("\n>")
   end
 
 end

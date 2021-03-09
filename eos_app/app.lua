@@ -15,6 +15,7 @@
 -- ***************************************************************
 -- */
 
+global_demo = 0
 
 function app( ctx )
   print ("starting task " .. ctx.name)
@@ -28,12 +29,12 @@ function app( ctx )
   
   eos.create_task(task_demo, "task_demo")
   
-  local x = 10
+
   while(1) do
-    print("app is alive, x = " .. x)
-    x=x+1
+    global_demo = global_demo+1
+    print("app is alive, global_demo = " .. global_demo)
     eos.post(ev, "message from task 1")
-    eos.delay(ctx, 2000)
+    eos.delay(ctx, 1000)
     
   end
 end

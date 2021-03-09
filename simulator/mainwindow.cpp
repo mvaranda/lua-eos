@@ -68,7 +68,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::forwardToConsole(char * msg)
 {
+#if 1
     m_term_console->putString(C_GREEN, msg);
+#else
+    // debug only
+    m_term_console->putHexData((source_msg_t)0, QByteArray((char*)msg, strlen(msg)));
+#endif
     free(msg);
 }
 
