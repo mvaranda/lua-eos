@@ -56,6 +56,7 @@
 #include <QMenu>
 
 #define FONT_SIZE 18
+#define FONT "Courier" //"Courier New"
 
 static QStringList htmlColor =
 {
@@ -105,7 +106,7 @@ Console::Console(QWidget *parent) :
     setPalette(p_green);
 
     QTextDocument *doc = document();
-    QFont font("Courier New", FONT_SIZE);
+    QFont font(FONT, FONT_SIZE);
     doc->setDefaultFont(font);
     setReadOnly(false);
     setUndoRedoEnabled(false);

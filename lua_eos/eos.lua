@@ -284,92 +284,6 @@ function eos.error(ctx, msg)
   ctx.state = ST_ERROR
 end
 
-function task1( ctx )
-  print ("starting task " .. ctx.name)
-  
-  local ev = eos.create_user_event("event_1")
-  if ev == nil then
-    print ("error")
-    eos.error(ctx, "error")
-    return
-  end
-  
-  local x = 10
-  while(1) do
-    --print("task1, x = " .. x)
-    --eos_print_str("task1, x = " .. x)
-    print("task1, x = " .. x)
-    x=x+1
---    if (x % 5) == 0 then
---      eos.post(ev, "message from task 1")
---    end
-    --eos.yield()
-    eos.delay(ctx, 5000)
-    
-  end
-end
-
-function task3( ctx )
-  print ("starting task " .. ctx.name)
-  
-  eos_set_timer(ctx.task_id, 5, 2000)
-  eos_set_timer(ctx.task_id, 6, 2000)
-  
-  res,msg = eos.subscribe_event_by_name(ctx, "event_1")
-  if res == false then
-    print(msg)
-  end
-  
-  local y = 1
-  local t
-  while(1) do
---    print("task2, y = " .. y)
---    y=y+1
---    eos.yield()
-    local ev, arg = eos.wait_event(ctx)
-    print("task3: event = " .. ev.name .. " msg = " .. ev.arg)
-    
-
-  end
-end
-
-
-
-function task2( ctx )
-  print ("starting task " .. ctx.name)
-  eos_print("starting task 2")
-  
-  -- subscribe for events
-  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_START_UP")
-  if res == false then
-    print(msg)
-  end
-  
-  res,msg = eos.subscribe_event_by_name(ctx, "event_1")
-  if res == false then
-    print(msg)
-  end
-  
-  res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
-  if res == false then
-    print(msg)
-  end
-  
-  
-  eos.create_task(task3, "task3")
-  
-  local y = 1
-  while(1) do
---    print("task2, y = " .. y)
---    y=y+1
---    eos.yield()
-    local ev, arg = eos.wait_event(ctx)
-    --print(ev)
-    --print(arg)
-    print("task2: event = " .. ev.name .. " msg = " .. arg)
-  end
-end
-
 function lua_error_handler( err )
    print( "ERROR:", err )
 end
@@ -403,8 +317,8 @@ end
 
 
 eos.create_task(luashell, "luashell")
---eos.create_task(task1, "task1")
---eos.create_task(task2, "task2")
+eos.create_task(app, "app")
+
 eos.scheduler()
 
 

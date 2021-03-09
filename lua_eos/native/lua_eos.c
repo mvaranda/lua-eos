@@ -41,6 +41,8 @@
 
 
 #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
+#define EOS_APP_FILENAME "../eos_app/app.lua"
+
 #define READ_BUF_SIZE 1024
 
 
@@ -264,7 +266,7 @@ void luaTask(void * arg)
   register_luacs(L);
 
   int err;
-  if ((err = luaL_loadfile(L, START_LUA_EOS_FILENAME)) != 0) {
+  if ((err = luaL_loadfile(L, EOS_APP_FILENAME)) != 0) {
     switch(err) {
     case LUA_ERRFILE:
       LOG_E("loadfile: fail to open eos.lua");
@@ -285,6 +287,32 @@ void luaTask(void * arg)
     LOG_E( "%s", lua_tostring(L, -1));
     lua_pop(L, 1);  /* pop error message from the stack */
   }
+
+#if 1
+  if ((err = luaL_loadfile(L, START_LUA_EOS_FILENAME )) != 0) {
+      switch(err) {
+      case LUA_ERRFILE:
+          LOG_E("loadfile: fail to open eos.lua");
+          break;
+      case LUA_ERRSYNTAX: LOG_E("loadfile: syntax error during pre-compilation");
+          break;
+      case LUA_ERRMEM:
+          LOG_E("loadfile: memory allocation error.");
+          break;
+      default:
+          LOG_E("loadfile: unknown error.");
+          break;
+      }
+      return;
+  }
+
+
+  err = lua_pcall(L, 0, 0, 0);
+  if (err) {
+    LOG_E( "%s", lua_tostring(L, -1));
+    lua_pop(L, 1);  /* pop error message from the stack */
+  }
+#endif
 
   LOG_E("lua thread terminated");
 }
