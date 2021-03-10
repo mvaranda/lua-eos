@@ -16,6 +16,7 @@
 -- */
 
 global_demo = 0
+glog = false
 
 function app( ctx )
   print ("starting task " .. ctx.name)
@@ -32,8 +33,10 @@ function app( ctx )
 
   while(1) do
     global_demo = global_demo+1
-    print("app is alive, global_demo = " .. global_demo)
-    eos.post(ev, "message from task 1")
+    if glog == true then 
+      print("app is alive, global_demo = " .. global_demo)
+    end
+    --eos.post(ev, "message from task 1")
     eos.delay(ctx, 1000)
     
   end
