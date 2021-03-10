@@ -48,10 +48,16 @@ function task_demo( ctx )
   eos_set_timer(ctx.task_id, 5, 1000)
   eos_set_timer(ctx.task_id, 6, 1500)
   
-  res,msg = eos.subscribe_event_by_name(ctx, "event_1")
+  local res,msg = eos.subscribe_event_by_name(ctx, "event_1")
   if res == false then
     print(msg)
   end
+  
+  res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TIMER")
+  if res == false then
+    print(msg)
+  end
+
   
   local t
   while(1) do

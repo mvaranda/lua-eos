@@ -95,6 +95,7 @@ EV_SYS_TEXT_FROM_CONSOLE =  {id = 4,    name = "EV_SYS_TEXT_FROM_CONSOLE",    pr
 local events_list = {
   EV_SYS_START_UP, 
   EV_SYS_SHUT_DOWN,
+  EV_SYS_TIMER,
   -- timer is a special case... no need registration
   EV_SYS_TEXT_FROM_CONSOLE
 }
@@ -138,17 +139,9 @@ local function scheduler()
       if nat_ev ~= nil then
         for kk,ev in pairs(nat_ev) do
           -- check if timer 
-          if ev.ev_id == EV_SYS_TIMER.id then
-            
-            if ev.task_id == task.task_id then
-              -- if timer ID = 0 this is a delay
-              if ev.timer_id == 0 then
-                --print("** EVENT IS EXPIRED DELAY.. change to YIELD state")
-                task.state = ST_YIELD
-              else
-                --print("** EVENT IS TIMER")
-              
-              end
+          if ev.ev_id == EV_SYS_TIMER.id and ev.task_id == task.task_id and ev.timer_id == 0 then
+            if ev.timer_id == 0 then
+              task.state = ST_YIELD
             end
           else
 --            print("check task registration for event: " .. ev.ev_id)
@@ -160,7 +153,13 @@ local function scheduler()
               if sub.id == ev.ev_id then
                 --print("********* add event to task " .. task.name)
                 -- TODO: add exception for timer as task id must also match
-                table.insert(task.ev_q, {event=sub, arg=ev.arg})
+                local arg
+                if ev.ev_id == EV_SYS_TIMER.id then
+                  arg = ev.timer_id
+                else
+                  arg = ev.arg
+                end
+                table.insert(task.ev_q, {event=sub, arg=arg})
               end
             end
           end  
@@ -175,6 +174,9 @@ local function scheduler()
       elseif task.state ==  ST_WAIT_EVENT then
         if #task.ev_q > 0 then
           local e = table.remove(task.ev_q, 1)
+--          print("show event from Q:")
+--          show(e)
+--          print("--------------------")
           success, args = coroutine.resume(task.co, task, e.event, e.arg)
         end
       elseif task.state ==  ST_ERROR then
