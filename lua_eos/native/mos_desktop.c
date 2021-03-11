@@ -43,13 +43,19 @@ void mos_free (void * p) { return free(p); }
 
 mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, uint32_t iStackSize, uint32_t iPriority )
 {
+#ifdef WIN32
+  pthread_t * thread = (pthread_t *) MOS_MALLOC(sizeof(pthread_t));
+  int t = pthread_create(thread, NULL,
+                            (void *(*) (void *)) thread_func, NULL);
+#else
     pthread_t thread;
     int t = pthread_create(&thread, NULL,
                               (void *(*) (void *)) thread_func, NULL);
+#endif
     if (t) {
         return NULL;
     }
-    return thread;
+    return (mos_thread_h_t) thread;
 }
 
 typedef struct queue_st {
