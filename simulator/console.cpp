@@ -210,14 +210,27 @@ void Console::setLocalEchoEnabled(bool set)
 {
     m_localEchoEnabled = set;
 }
+#include <QApplication>
+#include <QClipboard>
 
 void Console::keyPressEvent(QKeyEvent *e)
 {
     // Ignore cut/past key sequences.
-    if (e->matches(QKeySequence::Cut) || e->matches(QKeySequence::Paste))
+    if (e->matches(QKeySequence::Paste))
     {
+        LOG("Paste called");
+        QClipboard * clipboard = QApplication::clipboard();
+        QString t = clipboard->text(QClipboard::Clipboard);
+        putData(t);
+        emit getData(t.toLocal8Bit());
+
         return;
     }
+
+    if (e->matches(QKeySequence::Cut) ) {
+        return;
+    }
+
 
 #if 0
     if (e->text().length() > 0)

@@ -18,7 +18,13 @@
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
 
-function print(m)
+function print(txt)
+  local m
+  if type(txt) == 'string' then
+    m = txt
+  else
+    m = tostring(txt)
+  end
   eos_print(m)
   eos_print("\n")
 end
@@ -303,7 +309,6 @@ LUA_PROMPT_MULTI = "Lua>> "
 
 function luashell( ctx )
   local f,msg, ok
-  local err
   local chunk = ""
   local more = false
 
