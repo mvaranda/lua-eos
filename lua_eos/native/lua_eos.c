@@ -240,6 +240,9 @@ static void register_luacs(lua_State *L)
 
 }
 
+void lua_bindings_registration(lua_State *L); // TODO: use header
+
+
 void luaTask(void * arg)
 {
   LOG("luaInit...");
@@ -264,6 +267,7 @@ void luaTask(void * arg)
 
   luaL_openlibs(L);
   register_luacs(L);
+  lua_bindings_registration(L);
 
   int err;
   if ((err = luaL_loadfile(L, EOS_APP_FILENAME)) != 0) {
