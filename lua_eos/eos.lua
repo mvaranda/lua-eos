@@ -298,29 +298,32 @@ function lua_error_handler( err )
    print( "ERROR:", err )
 end
 
+LUA_PROMPT = "\nLua> "
+LUA_PROMPT_MULTI = "\nLua>> "
+
 function luashell( ctx )
-  print ("LUA Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n")
+  print_sl ("Lua EOS Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n" .. LUA_PROMPT)
   
   -- subscribe for events
   res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
   if res == false then
     print(msg)
   end
-  local f
+  local f,msg, ok
   local err
   while(1) do
     local ev, arg = eos.wait_event(ctx)
-    f = load(arg)
-    local ok, e = xpcall( f, lua_error_handler )
-    if of == false then print(e) end
---    if e ~= nil then print(e) end
---    if pcall(f) then
---      --print("Success")
---    else
---	    print("\nFailure")
---    end
-    --f()
-    print_sl("\n>")
+    f, msg = load(arg)
+    if f == nil then
+      print("load: " .. msg)
+    else
+      --local ok, e = xpcall( f, lua_error_handler )
+      local ok, msg = pcall(f)
+
+      if ok == false then
+        print(msg) end
+      end
+    print_sl(LUA_PROMPT)
   end
 
 end

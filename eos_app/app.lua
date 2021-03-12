@@ -19,7 +19,7 @@ global_demo = 0
 glog = false
 
 function app( ctx )
-  print ("starting task " .. ctx.name)
+  --print ("starting task " .. ctx.name)
   
   local ev = eos.create_user_event("event_1")
   if ev == nil then
@@ -28,7 +28,7 @@ function app( ctx )
     return
   end
   
-  eos.create_task(task_demo, "task_demo")
+  --eos.create_task(task_demo, "task_demo")
   
 
   while(1) do
@@ -43,7 +43,7 @@ function app( ctx )
 end
 
 function task_demo( ctx )
-  print ("starting task " .. ctx.name)
+  --print ("starting task " .. ctx.name)
   
   eos_set_timer(ctx.task_id, 5, 1000)
   eos_set_timer(ctx.task_id, 6, 1500)
