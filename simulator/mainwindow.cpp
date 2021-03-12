@@ -77,6 +77,12 @@ void MainWindow::forwardToConsole(char * msg)
     free(msg);
 }
 
+#ifdef MACOS
+  #define BACKSPACE_CHAR 0x7f
+#else
+  #define BACKSPACE_CHAR 0x08
+#endif
+
 void MainWindow::writeDataFromTerm(const QByteArray &data)
 {
     // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
@@ -86,6 +92,17 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
     if (data.size() == 0) return;
 
     int to_transfer = data.size();
+
+    if (to_transfer == 1) {
+        const char * c = data.data();
+        if (*c == BACKSPACE_CHAR) { // note: 0x7f is for Mac
+          msg[msg_len] = 0;
+          if (msg_len > 1)
+              msg_len--;
+          return;
+        }
+    }
+
     int fit = sizeof(msg) - (msg_len + 1);
     if (to_transfer > fit)
         to_transfer = fit;

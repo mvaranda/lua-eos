@@ -298,34 +298,55 @@ function lua_error_handler( err )
    print( "ERROR:", err )
 end
 
-LUA_PROMPT = "\nLua> "
-LUA_PROMPT_MULTI = "\nLua>> "
+LUA_PROMPT = "Lua> "
+LUA_PROMPT_MULTI = "Lua>> "
 
 function luashell( ctx )
+  local f,msg, ok
+  local err
+  local chunk = ""
+  local more = false
+
   print_sl ("Lua EOS Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n" .. LUA_PROMPT)
   
   -- subscribe for events
-  res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
-  if res == false then
+  ok,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
+  if ok == false then
     print(msg)
   end
-  local f,msg, ok
-  local err
+
   while(1) do
     local ev, arg = eos.wait_event(ctx)
-    f, msg = load(arg)
+    if more == true then
+      chunk = chunk .. arg
+      f, msg = load(chunk)
+    else
+      f, msg = load(arg)
+    end
     if f == nil then
-      print("load: " .. msg)
+      if string.find(msg, "<eof>") ~= nil then
+        if more == false then -- if first time:
+          chunk = chunk .. arg
+          more = true
+        end
+        print_sl(LUA_PROMPT_MULTI)
+      else
+        print("load: " .. msg)
+        chunk = ""
+        more = false
+      end
     else
       --local ok, e = xpcall( f, lua_error_handler )
       local ok, msg = pcall(f)
 
       if ok == false then
-        print(msg) end
+        print(msg)
       end
-    print_sl(LUA_PROMPT)
+      chunk = ""
+      more = false
+      print_sl(LUA_PROMPT)
+    end
   end
-
 end
 
 

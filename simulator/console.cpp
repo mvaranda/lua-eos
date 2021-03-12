@@ -242,7 +242,7 @@ void Console::keyPressEvent(QKeyEvent *e)
     case Qt::Key_PageUp:
     case Qt::Key_PageDown:
     case Qt::Key_Shift:
-    case Qt::Key_Backspace:
+    //case Qt::Key_Backspace:
         QPlainTextEdit::keyPressEvent(e);
         return;
     }

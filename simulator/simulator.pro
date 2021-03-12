@@ -22,6 +22,8 @@ DEFINES += MOS_DESKTOP
 
 DEFINES += projCOVERAGE_TEST=1
 
+mac: DEFINES += MACOS
+
 INCLUDEPATH += ../lvgl \
   ../lvgl_patch \
   ../lvgl/src/lv_core \
