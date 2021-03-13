@@ -261,6 +261,7 @@ HEADERS += \
     ../lua/src/lundump.h \
     ../lua/src/lvm.h \
     ../lua/src/lzio.h \
+    ../lua_eos/native/eos_config.h \
     ../lua_eos/native/eos_init.h \
     ../lua_eos/native/eos_lua.h \
     ../lua_eos/native/lua_eos.h \

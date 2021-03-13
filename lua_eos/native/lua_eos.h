@@ -18,6 +18,7 @@
  */
 
 #include "lua.h"
+#include "stdbool.h"
 
 #ifdef MOS_DESKTOP
   #define LOWEST_PRIORITY 1 // assume low value has low priority
@@ -37,6 +38,7 @@ typedef enum {
 
   EV_SYS_TIMER = 3,
   EV_SYS_TEXT_FROM_CONSOLE = 4,
+  EV_SYS_SPLASH_DONE = 5,
 
 } sys_events_t;
 
@@ -60,16 +62,18 @@ typedef union ev_queue_item_union_st {
 //} ev_item_t;
 
 
-typedef void (*cb_event_push_t)(lua_State *L, ev_queue_item_union_t * item_ptr);
 
 
 typedef struct ev_queue_item_st {
     sys_events_t                event_id;
-    cb_event_push_t             cb_event_push;
+    void *                      cb_event_push;
     ev_queue_item_union_t       item;
 } ev_queue_item_t;
 
+typedef void (*cb_event_push_t)(lua_State *L, ev_queue_item_t * queue_item_ptr);
 
+
+bool add_text_event(sys_events_t id, char * txt);
 
 void luaTask(void * arg);
 

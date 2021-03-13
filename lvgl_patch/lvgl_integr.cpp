@@ -30,7 +30,7 @@ static void updateDisplay (const lv_area_t * area, lv_color_t * color_p, bool la
 extern "C" {
 #endif
 
-extern void lv_ex_get_started_1(void);
+//extern void lv_ex_get_started_1(void);
 
 static lv_indev_drv_t indev_drv;
 static lv_disp_drv_t disp_drv;               /*Descriptor of a display driver*/
@@ -64,7 +64,7 @@ void lv_integr_run(void) {
   /*Register the driver in LVGL and save the created input device object*/
   lv_indev_t * my_indev = lv_indev_drv_register(&indev_drv);
 
-  lv_ex_get_started_1();
+  // lv_ex_get_started_1();
 
 }
 

@@ -25,6 +25,8 @@
 #include "log.h"
 #include "eos_init.h"
 #include "lua_eos.h"
+#include "eos_config.h"
+
 
 #define LUA_EOS_VERSION "0.0"
 
@@ -56,10 +58,12 @@ MainWindow::MainWindow(QWidget *parent)
     //m_term->setFocus();
 #endif
 
+#ifdef HAS_LVGL
     lv_integr_run();
+#endif
 
     timerId = startTimer(LVGL_TICK_TIME);
-    //luaCppInit();
+
 
     connect(&luaInit, &LuaInit::luaToConsole, this, &MainWindow::forwardToConsole);
     luaInit.start();

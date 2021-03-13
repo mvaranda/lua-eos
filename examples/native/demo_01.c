@@ -1,6 +1,10 @@
+
+#include <stdio.h>
 #include "lv_conf.h"
 #include "lvgl.h"
-#include <stdio.h>
+#include "lua.h"
+#include "lua_eos.h"
+
 //
 
 static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
@@ -80,6 +84,7 @@ lv_obj_t * logo_obj;
 #define LOGO_TIMER 120
 #define LOGO_WAIT 15
 
+
 static void logo_task(void * arg)
 {
   static int i = 0;
@@ -97,7 +102,8 @@ static void logo_task(void * arg)
   }
   else {
       lv_obj_clean(lv_scr_act());
-      lv_ex_get_started_2();
+      add_text_event( EV_SYS_SPLASH_DONE, "done");
+      //lv_ex_get_started_2();
   }
 
 }
@@ -115,6 +121,18 @@ void lv_ex_get_started_1(void)
   lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_obj);
   lv_task_once(task);
 
+}
+
+int bind_lv_show_splash(lua_State *L)
+{
+    lv_ex_get_started_1();
+    return 0;
+}
+
+void lvgl_splash_init(lua_State *L)
+{
+    lua_pushcfunction(L, bind_lv_show_splash);
+    lua_setglobal(L, "show_splash");
 }
 
 
