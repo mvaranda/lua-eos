@@ -58,7 +58,6 @@ INCLUDEPATH += $${FREERTOS_DIR}/Demo/Posix_GCC
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    ../examples/native/demo_01.c \
     ../lua/src/lapi.c \
     ../lua/src/lauxlib.c \
     ../lua/src/lbaselib.c \
@@ -97,6 +96,7 @@ SOURCES += \
     ../lua_eos/native/lua_eos.c \
     ../lua_eos/native/mos_desktop.c \
     ../lua_eos/native/mos_desktop_timer.c \
+    ../lua_eos/native/splash.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0002.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0006.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0010.c \
@@ -267,6 +267,7 @@ HEADERS += \
     ../lua_eos/native/lua_eos.h \
     ../lua_eos/native/mos.h \
     ../lua_eos/native/mos_desktop_timer.h \
+    ../lua_eos/native/splash.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
     ../lvgl/src/lv_conf_kconfig.h \

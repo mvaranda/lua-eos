@@ -93,19 +93,6 @@ void cb_event_push_timer(lua_State *L, ev_queue_item_t * item_ptr)
   lua_settable(L, -3);
 }
 
-
-void cb_event_push_text_from_console(lua_State *L, ev_queue_item_t * item_ptr)
-{
-  lua_pushstring(L, "ev_id");                      // Key
-  lua_pushinteger(L, EV_SYS_TEXT_FROM_CONSOLE);    // value
-  lua_settable(L, -3);
-
-  lua_pushstring(L, "arg");                        // Key
-  lua_pushstring(L, item_ptr->item.generic_text.text);   // value
-  lua_settable(L, -3);
-  free(item_ptr->item.generic_text.text);
-}
-
 static void cb_event_push_text (lua_State *L, ev_queue_item_t * item_ptr)
 {
   lua_pushstring(L, "ev_id");                      // Key
@@ -359,28 +346,5 @@ void luaTask(void * arg)
 
 void sendTextToConsoleController(char * msg)
 {
-#if 1
-    add_text_event( EV_SYS_TEXT_FROM_CONSOLE, msg);
-#else
-    int len = strlen(msg);
-    if (len == 0) {
-        LOG_W("sendTextToConsoleController: len = 0");
-        return;
-    }
-    //LOG("got msg: %s", msg);
-    char * txt = MOS_MALLOC(len + 1);
-    if ( ! txt) {
-        LOG_E("sendTextToConsoleController: no memo");
-        return;
-    }
-    memcpy(txt, msg, len+1);
-
-    ev_queue_item_t ev_item;
-    memset(&ev_item, 0, sizeof(ev_item));
-    ev_item.event_id = EV_SYS_TEXT_FROM_CONSOLE;
-    ev_item.cb_event_push = cb_event_push_text_from_console;
-    ev_item.item.generic_text.text = txt;
-    // LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
-    add_event_to_queue(&ev_item);
-#endif
+  add_text_event( EV_SYS_TEXT_FROM_CONSOLE, msg);
 }

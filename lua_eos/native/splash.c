@@ -1,3 +1,19 @@
+/***************************************************************
+ *
+ *                 This code is part of LUA_EOS
+ *
+ * Copyrights 2021 - Varanda Labs Inc.
+ *
+ * License:
+ *   Creative Commons: CC BY-NC-SA 4.0
+ *   Attribution-NonCommercial-ShareAlike 4.0 International
+ *   https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+ *
+ *   Note: for purchasing a commertial license contact:
+ *     m@varanda.ca
+ *
+ ***************************************************************
+ */
 
 #include <stdio.h>
 #include "lv_conf.h"
@@ -5,7 +21,6 @@
 #include "lua.h"
 #include "lua_eos.h"
 
-//
 
 static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
 {
@@ -24,7 +39,8 @@ static void btn_event_cb(lv_obj_t * btn, lv_event_t event)
  * Create a button with a label and react on Click event.
  */
 
-void lv_ex_get_started_2(void)
+#if 0
+static void lv_ex_get_started_2(void)
 {
     lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
     lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
@@ -34,7 +50,7 @@ void lv_ex_get_started_2(void)
     lv_obj_t * label = lv_label_create(btn, NULL);          /*Add a label to the button*/
     lv_label_set_text(label, "Button");                     /*Set the labels text*/
 }
-#
+#endif
 
 extern const lv_img_dsc_t logo_0002;
 extern const lv_img_dsc_t logo_0006;
@@ -103,12 +119,11 @@ static void logo_task(void * arg)
   else {
       lv_obj_clean(lv_scr_act());
       add_text_event( EV_SYS_SPLASH_DONE, "done");
-      //lv_ex_get_started_2();
   }
 
 }
 
-void lv_ex_get_started_1(void)
+static void lv_show_splash(void)
 {
   int i;
   logo_obj = lv_img_create(lv_scr_act(), NULL);
@@ -123,9 +138,9 @@ void lv_ex_get_started_1(void)
 
 }
 
-int bind_lv_show_splash(lua_State *L)
+static int bind_lv_show_splash(lua_State *L)
 {
-    lv_ex_get_started_1();
+    lv_show_splash();
     return 0;
 }
 
