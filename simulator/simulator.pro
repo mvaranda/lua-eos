@@ -94,6 +94,7 @@ SOURCES += \
     ../lua_eos/native/bidings.c \
     ../lua_eos/native/eos_init.cpp \
     ../lua_eos/native/lua_eos.c \
+    ../lua_eos/native/lvgl_lua.c \
     ../lua_eos/native/mos_desktop.c \
     ../lua_eos/native/mos_desktop_timer.c \
     ../lua_eos/native/splash.c \
@@ -223,7 +224,6 @@ SOURCES += \
     ../lvgl/src/lv_widgets/lv_tileview.c \
     ../lvgl/src/lv_widgets/lv_win.c \
     ../lvgl_patch/lvgl_integr.cpp \
-    ../lvgl_patch/lvgl_lua.c \
     ../utils/malloc.c \
     clabel.cpp \
     console.cpp \
@@ -265,6 +265,7 @@ HEADERS += \
     ../lua_eos/native/eos_init.h \
     ../lua_eos/native/eos_lua.h \
     ../lua_eos/native/lua_eos.h \
+    ../lua_eos/native/lvgl_lua.h \
     ../lua_eos/native/mos.h \
     ../lua_eos/native/mos_desktop_timer.h \
     ../lua_eos/native/splash.h \

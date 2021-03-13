@@ -60,8 +60,6 @@ lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_
 lv_task_once(task);
 
 
-
-
     lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     //Add a button the current screen
     lv_obj_set_pos(btn, 10, 10);                            // Set its position
     lv_obj_set_size(btn, 120, 50);                          // Set its size
@@ -88,10 +86,45 @@ static int bind_lv_img_create(lua_State *L)
     return 1;
 }
 
+static int bind_lv_btn_create(lua_State *L)
+{
+    // lv_obj_t *lv_img_create(lv_obj_t *par, const lv_obj_t *copy)
+    void * par = lua_touserdata(L,1);
+    void * copy = lua_touserdata(L,2);
+
+    lv_obj_t * obj = lv_btn_create(par, (const lv_obj_t *) copy);
+    LOG("lv_btn_create creted: 0x%x", obj);
+    if (! obj) {
+        lua_pushnil(L);
+    }
+    else {
+        lua_pushlightuserdata(L, obj);
+    }
+    return 1;
+}
+
+static int bind_lv_scr_act(lua_State *L)
+{
+    void * obj = lv_scr_act();
+    if (! obj) {
+        lua_pushnil(L);
+    }
+    else {
+        lua_pushlightuserdata(L, obj);
+    }
+    return 1;
+}
+
 void lvgl_lua_init(lua_State *L)
 {
     lua_pushcfunction(L, bind_lv_img_create);
     lua_setglobal(L, "lv_img_create");
+
+    lua_pushcfunction(L, bind_lv_scr_act);
+    lua_setglobal(L, "lv_scr_act");
+
+    lua_pushcfunction(L, bind_lv_btn_create);
+    lua_setglobal(L, "lv_btn_create");
 
 }
 

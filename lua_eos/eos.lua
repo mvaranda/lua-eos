@@ -91,6 +91,9 @@ end
 eos = {}
 local tasks = {}
 
+local EOS_PATH = "../lua_eos/?.lua;"
+package.path = EOS_PATH
+
 -- the following id's must match with sys_events_t enumeration
 EV_SYS_START_UP =           {id = 1,    name = "EV_SYS_START_UP",             pri = false}
 EV_SYS_SHUT_DOWN =          {id = 2,    name = "EV_SYS_SHUT_DOWN",            pri = false}
