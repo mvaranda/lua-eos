@@ -115,6 +115,51 @@ static int bind_lv_scr_act(lua_State *L)
     return 1;
 }
 
+static int bind_lv_obj_set_pos(lua_State *L)
+{
+    void * obj = lua_touserdata(L,1);
+    long long x = lua_tointeger(L,2);
+    long long y = lua_tointeger(L,3);
+    lv_obj_set_pos(obj, x, y);
+    return 0;
+}
+
+static int bind_lv_obj_set_size(lua_State *L)
+{
+    void * obj = lua_touserdata(L,1);
+    long long x = lua_tointeger(L,2);
+    long long y = lua_tointeger(L,3);
+    lv_obj_set_size(obj, x, y);
+    return 0;
+}
+
+
+static int bind_lv_label_create(lua_State *L)
+{
+    // lv_obj_t *lv_img_create(lv_obj_t *par, const lv_obj_t *copy)
+    void * par = lua_touserdata(L,1);
+    void * copy = lua_touserdata(L,2);
+
+    lv_obj_t * obj = lv_label_create(par, (const lv_obj_t *) copy);
+    LOG("lv_lable_create creted: 0x%x", obj);
+    if (! obj) {
+        lua_pushnil(L);
+    }
+    else {
+        lua_pushlightuserdata(L, obj);
+    }
+    return 1;
+}
+
+static int bind_lv_label_set_text(lua_State *L)
+{
+    void * obj = lua_touserdata(L,1);
+    const char * txt = lua_tostring(L,2);
+    lv_label_set_text(obj, txt);
+    return 0;
+}
+
+
 void lvgl_lua_init(lua_State *L)
 {
     lua_pushcfunction(L, bind_lv_img_create);
@@ -125,6 +170,20 @@ void lvgl_lua_init(lua_State *L)
 
     lua_pushcfunction(L, bind_lv_btn_create);
     lua_setglobal(L, "lv_btn_create");
+
+    lua_pushcfunction(L, bind_lv_obj_set_pos);
+    lua_setglobal(L, "lv_obj_set_pos");
+
+    lua_pushcfunction(L, bind_lv_obj_set_size);
+    lua_setglobal(L, "lv_obj_set_size");
+
+    lua_pushcfunction(L, bind_lv_label_create);
+    lua_setglobal(L, "lv_label_create");
+
+    lua_pushcfunction(L, bind_lv_label_set_text);
+    lua_setglobal(L, "lv_label_set_text");
+
+
 
 }
 
