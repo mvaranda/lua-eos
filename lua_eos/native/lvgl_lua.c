@@ -26,10 +26,9 @@
 #include "lualib.h"
 #include "log.h"
 #include "lua_eos.h"
-//#include "ui_mainwindow.h"
+
 #include "lvgl.h"
-//#include "lvgl_integr.h"
-//#include "log.h"
+
 
 #include "lauxlib.h"
 #include "lualib.h"
@@ -68,6 +67,47 @@ lv_task_once(task);
     lv_obj_t * label = lv_label_create(btn, NULL);          // Add a label to the button
     lv_label_set_text(label, "Button");                     //Set the labels text
 */
+//typedef void (*create_func_prototype_t)(void *obj, lv_event_t event);
+typedef lv_obj_t * (*create_func_prototype_t) (lv_obj_t *parent, const lv_obj_t *copy);
+
+typedef struct create_func_st {
+    uint32_t                    id;
+    create_func_prototype_t     func;
+} create_func_t;
+
+static const create_func_t create_func_info[] = {
+  { 0, lv_obj_create },             // { name = "lv_obj_create",           func_id = 0 },
+  { 1, lv_label_create },           // { name = "lv_lable_create",         func_id = 1 },
+  { 2, lv_btn_create },             // { name = "lv_btn_create",           func_id = 2 },
+  { 3, NULL}
+};
+
+#define CREATE_FUNC_INFO_LEN ((sizeof(create_func_info) / sizeof(create_func_t)) - 1)
+
+static int bind_lv_create(lua_State *L)
+{
+    long long func_id = lua_tointeger(L,1);
+    void * par = lua_touserdata(L,2);
+    void * copy = lua_touserdata(L,3);
+
+    if (func_id >= CREATE_FUNC_INFO_LEN || func_id < 0) {
+        LOG_E("bind_lv_create: invalid func_id %d", func_id);
+        lua_pushnil(L);
+        return 1;
+    }
+
+    create_func_prototype_t f = create_func_info[func_id].func;
+
+    lv_obj_t * obj = f(par, (const lv_obj_t *) copy);
+    LOG("bind_lv_create creted: 0x%x", obj);
+    if (! obj) {
+        lua_pushnil(L);
+    }
+    else {
+        lua_pushlightuserdata(L, obj);
+    }
+    return 1;
+}
 
 static int bind_lv_img_create(lua_State *L)
 {
@@ -162,14 +202,17 @@ static int bind_lv_label_set_text(lua_State *L)
 
 void lvgl_lua_init(lua_State *L)
 {
-    lua_pushcfunction(L, bind_lv_img_create);
-    lua_setglobal(L, "lv_img_create");
+    lua_pushcfunction(L, bind_lv_create);
+    lua_setglobal(L, "bind_lv_create");
+
+//    lua_pushcfunction(L, bind_lv_img_create);
+//    lua_setglobal(L, "lv_img_create");
 
     lua_pushcfunction(L, bind_lv_scr_act);
     lua_setglobal(L, "lv_scr_act");
 
-    lua_pushcfunction(L, bind_lv_btn_create);
-    lua_setglobal(L, "lv_btn_create");
+//    lua_pushcfunction(L, bind_lv_btn_create);
+//    lua_setglobal(L, "lv_btn_create");
 
     lua_pushcfunction(L, bind_lv_obj_set_pos);
     lua_setglobal(L, "lv_obj_set_pos");
@@ -177,8 +220,8 @@ void lvgl_lua_init(lua_State *L)
     lua_pushcfunction(L, bind_lv_obj_set_size);
     lua_setglobal(L, "lv_obj_set_size");
 
-    lua_pushcfunction(L, bind_lv_label_create);
-    lua_setglobal(L, "lv_label_create");
+//    lua_pushcfunction(L, bind_lv_label_create);
+//    lua_setglobal(L, "lv_label_create");
 
     lua_pushcfunction(L, bind_lv_label_set_text);
     lua_setglobal(L, "lv_label_set_text");
