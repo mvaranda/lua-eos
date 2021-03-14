@@ -49,6 +49,15 @@ extern "C" {
 
 // bindings
 /*
+ *
+
+require "lvgl"
+btn = lv_btn_create(lv_scr_act(), 0)
+lv_obj_set_pos(btn, 10, 10)
+lv_obj_set_size(btn, 120, 50)
+label = lv_label_create(btn, 0)
+lv_label_set_text(label, "Button")
+
 int lv_img_create(lv_scr_act(), NULL);
 
 lv_img_set_src(logo_obj, frames[0]);
@@ -205,14 +214,8 @@ void lvgl_lua_init(lua_State *L)
     lua_pushcfunction(L, bind_lv_create);
     lua_setglobal(L, "bind_lv_create");
 
-//    lua_pushcfunction(L, bind_lv_img_create);
-//    lua_setglobal(L, "lv_img_create");
-
     lua_pushcfunction(L, bind_lv_scr_act);
     lua_setglobal(L, "lv_scr_act");
-
-//    lua_pushcfunction(L, bind_lv_btn_create);
-//    lua_setglobal(L, "lv_btn_create");
 
     lua_pushcfunction(L, bind_lv_obj_set_pos);
     lua_setglobal(L, "lv_obj_set_pos");
@@ -220,13 +223,8 @@ void lvgl_lua_init(lua_State *L)
     lua_pushcfunction(L, bind_lv_obj_set_size);
     lua_setglobal(L, "lv_obj_set_size");
 
-//    lua_pushcfunction(L, bind_lv_label_create);
-//    lua_setglobal(L, "lv_label_create");
-
     lua_pushcfunction(L, bind_lv_label_set_text);
     lua_setglobal(L, "lv_label_set_text");
-
-
 
 }
 
