@@ -18,7 +18,30 @@
 global_demo = 0
 glog = false
 
-function app( ctx )
+local EOS_PATH = "../lua_eos/?.lua;"
+package.path = EOS_PATH
+
+require "lvgl"
+
+function app(ctx)
+  btn = lv_btn_create(lv_scr_act(), 0)
+  lv_obj_set_pos(btn, 10, 10)
+  lv_obj_set_size(btn, 120, 50)
+  label = lv_label_create(btn, 0)
+  lv_label_set_text(label, "Button")
+  local function f() print("Hi") end
+  ok, msg = eos.subscribe_event_by_name(ctx, "EV_SYS_LVGL")
+  lv_obj_set_event_cb(btn, f)
+  
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    print("task_demo: event = " .. ev.name .. " arg = " .. tostring(arg) )
+    show(arg)
+  end
+
+end
+
+function _app( ctx )
   --print ("starting task " .. ctx.name)
   
   local ev = eos.create_user_event("event_1")

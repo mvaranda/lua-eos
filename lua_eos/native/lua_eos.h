@@ -19,6 +19,11 @@
 
 #include "lua.h"
 #include "stdbool.h"
+#include "eos_config.h"
+
+#ifdef HAS_LVGL
+  #include "lvgl.h"
+#endif
 
 #ifdef MOS_DESKTOP
   #define LOWEST_PRIORITY 1 // assume low value has low priority
@@ -39,6 +44,7 @@ typedef enum {
   EV_SYS_TIMER = 3,
   EV_SYS_TEXT_FROM_CONSOLE = 4,
   EV_SYS_SPLASH_DONE = 5,
+  EV_SYS_LVGL = 6,
 
 } sys_events_t;
 
@@ -51,17 +57,22 @@ typedef struct ev_queue_item_text_st {
     char *           text;
 } ev_queue_item_text_t;
 
+#ifdef HAS_LVGL
+typedef struct ev_queue_item_lvgl_st {
+    lv_obj_t *      obj;
+    lv_event_t      lv_event;
+} ev_queue_item_lvgl_t;
+#endif
+
 typedef union ev_queue_item_union_st {
     ev_queue_item_timer_t       timer_item;
     ev_queue_item_text_t        generic_text;
+
+#ifdef HAS_LVGL
+    ev_queue_item_lvgl_t        lvgl_item;
+#endif
+
 } ev_queue_item_union_t;
-
-//typedef union ev_item_st {
-//    sys_events_t                event_id;
-//    ev_queue_item_union_t       item_union;
-//} ev_item_t;
-
-
 
 
 typedef struct ev_queue_item_st {
@@ -71,7 +82,7 @@ typedef struct ev_queue_item_st {
 } ev_queue_item_t;
 
 typedef void (*cb_event_push_t)(lua_State *L, ev_queue_item_t * queue_item_ptr);
-
+void add_event_to_queue( const void * ev_item);
 
 bool add_text_event(sys_events_t id, char * txt);
 

@@ -31,6 +31,11 @@ local function create_factory()
   end
 end
 
+function lv_obj_set_event_cb(obj, func)
+  objects[obj]["callback"] = func
+  bind_lv_obj_set_event_cb(obj)
+end
+
 create_factory()
 
 --local f

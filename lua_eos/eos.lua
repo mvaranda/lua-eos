@@ -100,6 +100,7 @@ EV_SYS_SHUT_DOWN =          {id = 2,    name = "EV_SYS_SHUT_DOWN",            pr
 EV_SYS_TIMER =              {id = 3,    name = "EV_SYS_TIMER",                pri = false}
 EV_SYS_TEXT_FROM_CONSOLE =  {id = 4,    name = "EV_SYS_TEXT_FROM_CONSOLE",    pri = false}
 EV_SYS_SPLASH_DONE =        {id = 5,    name = "EV_SYS_SPLASH_DONE",          pri = false}
+EV_SYS_LVGL =               {id = 6,    name = "EV_SYS_LVGL",                 pri = false}
 
 
 
@@ -109,7 +110,8 @@ local events_list = {
   EV_SYS_TIMER,
   -- timer is a special case... no need registration
   EV_SYS_TEXT_FROM_CONSOLE,
-  EV_SYS_SPLASH_DONE
+  EV_SYS_SPLASH_DONE,
+  EV_SYS_LVGL
 }
 
 local user_event = 1000
@@ -166,7 +168,7 @@ local function scheduler()
                 --print("********* add event to task " .. task.name)
                 -- TODO: add exception for timer as task id must also match
                 local arg
-                if ev.ev_id == EV_SYS_TIMER.id then
+                if ev.ev_id == EV_SYS_TIMER then
                   arg = ev.timer_id
                 else
                   arg = ev.arg
@@ -314,23 +316,24 @@ LUA_PROMPT = "Lua> "
 LUA_PROMPT_MULTI = "Lua>> "
 
 function luashell( ctx )
+  shell_ctx = ctx -- global
   local f,msg, ok
   local chunk = ""
   local more = false
   
-  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_SPLASH_DONE")
-  if res == false then
-    print(msg)
-  end
-  
-  show_splash()
-  
-  while(1) do
-    local ev, arg = eos.wait_event(ctx)
-    if ev.name == "EV_SYS_SPLASH_DONE" then
-      break;
-    end
-  end
+--  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_SPLASH_DONE")
+--  if res == false then
+--    print(msg)
+--  end
+--  
+--  show_splash()
+--  
+--  while(1) do
+--    local ev, arg = eos.wait_event(ctx)
+--    if ev.name == "EV_SYS_SPLASH_DONE" then
+--      break;
+--    end
+--  end
     
 
   print_sl ("Lua EOS Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n" .. LUA_PROMPT)
@@ -338,6 +341,7 @@ function luashell( ctx )
   -- subscribe for events
   ok,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
   if ok == false then
+    print("subscribe_event_by_name error")
     print(msg)
   end
 
@@ -373,12 +377,38 @@ function luashell( ctx )
       print_sl(LUA_PROMPT)
     end
   end
+  print("Exiting Shell thred")
+end
+
+local function launcher(ctx)
+  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_SPLASH_DONE")
+  if res == false then
+    print(msg)
+  end
+  
+  show_splash()
+  
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    if ev.name == "EV_SYS_SPLASH_DONE" then
+      break;
+    end
+  end
+  eos.create_task(luashell, "luashell")
+  eos.create_task(app, "app")
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    if ev.name == "EV_SYS_SPLASH_DONE" then
+      print("dummy");
+    end
+  end
 end
 
 
-eos.create_task(luashell, "luashell")
-eos.create_task(app, "app")
+--eos.create_task(luashell, "luashell")
+--eos.create_task(app, "app")
 
+eos.create_task(launcher, "launcher")
 eos.scheduler()
 
 
