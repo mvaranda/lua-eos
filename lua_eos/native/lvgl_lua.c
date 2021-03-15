@@ -14,30 +14,11 @@
  *
  ***************************************************************
  */
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <memory.h>
 
-//#include "mos.h"
-
-#include "lauxlib.h"
-#include "lualib.h"
 #include "log.h"
 #include "lua_eos.h"
-
 #include "lvgl.h"
 
-
-#include "lauxlib.h"
-#include "lualib.h"
-#include "log.h"
-#include "lua_eos.h"
-
-
-
-//static void updateDisplay (const lv_area_t * area, lv_color_t * color_p, bool last);
 
 
 #ifdef __cplusplus
@@ -48,35 +29,7 @@ extern "C" {
 
 
 // bindings
-/*
- *
 
-require "lvgl"
-btn = lv_btn_create(lv_scr_act(), 0)
-lv_obj_set_pos(btn, 10, 10)
-lv_obj_set_size(btn, 120, 50)
-label = lv_label_create(btn, 0)
-lv_label_set_text(label, "Button")
-
-int lv_img_create(lv_scr_act(), NULL);
-
-lv_img_set_src(logo_obj, frames[0]);
-
-lv_obj_align(logo_obj, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
-
-lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_obj);
-lv_task_once(task);
-
-
-    lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     //Add a button the current screen
-    lv_obj_set_pos(btn, 10, 10);                            // Set its position
-    lv_obj_set_size(btn, 120, 50);                          // Set its size
-    lv_obj_set_event_cb(btn, btn_event_cb);                 // Assign a callback to the button
-
-    lv_obj_t * label = lv_label_create(btn, NULL);          // Add a label to the button
-    lv_label_set_text(label, "Button");                     //Set the labels text
-*/
-//typedef void (*create_func_prototype_t)(void *obj, lv_event_t event);
 typedef lv_obj_t * (*create_func_prototype_t) (lv_obj_t *parent, const lv_obj_t *copy);
 
 typedef struct create_func_st {
@@ -95,7 +48,7 @@ static const create_func_t create_func_info[] = {
 
 static int bind_lv_create(lua_State *L)
 {
-    long long func_id = lua_tointeger(L,1);
+    int32_t func_id = (uint32_t) lua_tointeger(L,1);
     void * par = lua_touserdata(L,2);
     void * copy = lua_touserdata(L,3);
 
@@ -118,39 +71,7 @@ static int bind_lv_create(lua_State *L)
     return 1;
 }
 
-static int bind_lv_img_create(lua_State *L)
-{
-    // lv_obj_t *lv_img_create(lv_obj_t *par, const lv_obj_t *copy)
-    void * par = lua_touserdata(L,1);
-    void * copy = lua_touserdata(L,2);
 
-    lv_obj_t * obj = lv_img_create(par, (const lv_obj_t *) copy);
-    LOG("lv_img_create creted: 0x%x", obj);
-    if (! obj) {
-        lua_pushnil(L);
-    }
-    else {
-        lua_pushlightuserdata(L, obj);
-    }
-    return 1;
-}
-
-static int bind_lv_btn_create(lua_State *L)
-{
-    // lv_obj_t *lv_img_create(lv_obj_t *par, const lv_obj_t *copy)
-    void * par = lua_touserdata(L,1);
-    void * copy = lua_touserdata(L,2);
-
-    lv_obj_t * obj = lv_btn_create(par, (const lv_obj_t *) copy);
-    LOG("lv_btn_create creted: 0x%x", obj);
-    if (! obj) {
-        lua_pushnil(L);
-    }
-    else {
-        lua_pushlightuserdata(L, obj);
-    }
-    return 1;
-}
 
 static int bind_lv_scr_act(lua_State *L)
 {
@@ -167,8 +88,8 @@ static int bind_lv_scr_act(lua_State *L)
 static int bind_lv_obj_set_pos(lua_State *L)
 {
     void * obj = lua_touserdata(L,1);
-    long long x = lua_tointeger(L,2);
-    long long y = lua_tointeger(L,3);
+    short x = (short) lua_tointeger(L,2);
+    short y = (short) lua_tointeger(L,3);
     lv_obj_set_pos(obj, x, y);
     return 0;
 }
@@ -176,28 +97,10 @@ static int bind_lv_obj_set_pos(lua_State *L)
 static int bind_lv_obj_set_size(lua_State *L)
 {
     void * obj = lua_touserdata(L,1);
-    long long x = lua_tointeger(L,2);
-    long long y = lua_tointeger(L,3);
+    short x =  (short) lua_tointeger(L,2);
+    short y =  (short) lua_tointeger(L,3);
     lv_obj_set_size(obj, x, y);
     return 0;
-}
-
-
-static int bind_lv_label_create(lua_State *L)
-{
-    // lv_obj_t *lv_img_create(lv_obj_t *par, const lv_obj_t *copy)
-    void * par = lua_touserdata(L,1);
-    void * copy = lua_touserdata(L,2);
-
-    lv_obj_t * obj = lv_label_create(par, (const lv_obj_t *) copy);
-    LOG("lv_lable_create creted: 0x%x", obj);
-    if (! obj) {
-        lua_pushnil(L);
-    }
-    else {
-        lua_pushlightuserdata(L, obj);
-    }
-    return 1;
 }
 
 static int bind_lv_label_set_text(lua_State *L)
@@ -208,6 +111,51 @@ static int bind_lv_label_set_text(lua_State *L)
     return 0;
 }
 
+static void cb_event_push_lvgl (lua_State *L, ev_queue_item_t * item_ptr)
+{
+  lua_pushstring(L, "ev_id");                      // Key
+  lua_pushinteger(L, item_ptr->event_id);    // value
+  lua_settable(L, -3);
+
+  //--------- arg table ----------
+  lua_pushstring(L, "arg");
+  lua_newtable(L);
+  // field 1
+  lua_pushstring(L, "obj");                      // Key
+  lua_pushlightuserdata(L, item_ptr->item.lvgl_item.obj);    // value
+  lua_settable(L, -3);
+
+  // field 2
+  lua_pushstring(L, "lvgl_event");                        // Key
+  lua_pushinteger(L, item_ptr->item.lvgl_item.lv_event);   // value
+  lua_settable(L, -3);
+
+
+  lua_settable(L, -3);
+  //-------------------------------
+
+}
+
+static void lv_cb(lv_obj_t * obj, lv_event_t event)
+{
+
+    ev_queue_item_t ev_item;
+    memset(&ev_item, 0, sizeof(ev_item));
+    ev_item.event_id = EV_SYS_LVGL;
+    ev_item.cb_event_push = (void *) cb_event_push_lvgl;
+    ev_item.item.lvgl_item.obj = obj;
+    ev_item.item.lvgl_item.lv_event = event;
+    // LOG("add EV_SYS_LVGL event %d", event);
+    add_event_to_queue(&ev_item);
+
+}
+
+static int bind_lv_obj_set_event_cb (lua_State *L)
+{
+    void * obj = lua_touserdata(L,1);
+    lv_obj_set_event_cb(obj, lv_cb);
+    return 0;
+}
 
 void lvgl_lua_init(lua_State *L)
 {
@@ -225,6 +173,10 @@ void lvgl_lua_init(lua_State *L)
 
     lua_pushcfunction(L, bind_lv_label_set_text);
     lua_setglobal(L, "lv_label_set_text");
+
+    lua_pushcfunction(L, bind_lv_obj_set_event_cb);
+    lua_setglobal(L, "bind_lv_obj_set_event_cb");
+
 
 }
 

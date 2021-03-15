@@ -69,7 +69,7 @@ static mos_mutex_h_t ev_q_mutex = NULL;
 static mos_queue_h_t event_queue;
 //static uint8_t event_queue_buff[ EV_QUEUE_LENGTH * sizeof( ev_queue_item_t ) ];
 
-static void add_event_to_queue( const void * ev_item)
+void add_event_to_queue( const void * ev_item)
 {
 
   if ( mos_queue_put( event_queue, (const void *) ev_item) != MOS_PASS) {
