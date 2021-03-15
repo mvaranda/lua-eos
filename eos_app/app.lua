@@ -23,20 +23,56 @@ package.path = EOS_PATH
 
 require "lvgl"
 
+
+
+-- -------- Variables and callback for button 1 -----
+local label_1
+local btn_1_cnt = 1
+
+function btn_1_cb (obj, ev)
+  if ev == LV_EVENT_PRESSED then
+    lv_label_set_text(label_1, "Button " .. tostring(btn_1_cnt))
+    btn_1_cnt = btn_1_cnt + 1
+  end
+end
+
+-- -------- Variables and callback for button 2 -----
+local label_2
+local btn_2_cnt = 1
+
+function btn_2_cb (obj, ev)
+  if ev == LV_EVENT_PRESSED then
+    lv_label_set_text(label_2, "Button " .. tostring(btn_2_cnt))
+    btn_2_cnt = btn_2_cnt + 1
+  end
+end
+
+-- -------------- Main App ------------
 function app(ctx)
-  btn = lv_btn_create(lv_scr_act(), 0)
-  lv_obj_set_pos(btn, 10, 10)
-  lv_obj_set_size(btn, 120, 50)
-  label = lv_label_create(btn, 0)
-  lv_label_set_text(label, "Button")
-  local function f() print("Hi") end
   ok, msg = eos.subscribe_event_by_name(ctx, "EV_SYS_LVGL")
-  lv_obj_set_event_cb(btn, f)
+  if ok == false then
+    print(msg)
+  end
   
+  btn_1 = lv_btn_create(lv_scr_act(), 0)
+  lv_obj_set_pos(btn_1, 10, 10)
+  lv_obj_set_size(btn_1, 120, 50)
+  label_1 = lv_label_create(btn_1, 0)
+  lv_label_set_text(label_1, "Button")
+  lv_obj_set_event_cb(btn_1, btn_1_cb)
+
+  btn_2 = lv_btn_create(lv_scr_act(), 0)
+  lv_obj_set_pos(btn_2, 150, 10)
+  lv_obj_set_size(btn_2, 120, 50)
+  label_2 = lv_label_create(btn_2, 0)
+  lv_label_set_text(label_2, "Button")
+  lv_obj_set_event_cb(btn_2, btn_2_cb)
+
   while(1) do
     local ev, arg = eos.wait_event(ctx)
-    print("task_demo: event = " .. ev.name .. " arg = " .. tostring(arg) )
-    show(arg)
+    --print("task_demo: event = " .. ev.name .. " arg = " .. tostring(arg) )
+    --show(arg)
+    lvgl_dispatch(arg.obj, arg.lvgl_event)
   end
 
 end

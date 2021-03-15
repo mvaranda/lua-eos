@@ -174,7 +174,7 @@ static void cb_event_push_lvgl (lua_State *L, ev_queue_item_t * item_ptr)
 
   // field 2
   lua_pushstring(L, "lvgl_event");                        // Key
-  lua_pushnumber(L, item_ptr->item.lvgl_item.lv_event);   // value
+  lua_pushinteger(L, item_ptr->item.lvgl_item.lv_event);   // value
   lua_settable(L, -3);
 
 
@@ -192,7 +192,7 @@ static void lv_cb(lv_obj_t * obj, lv_event_t event)
     ev_item.cb_event_push = (void *) cb_event_push_lvgl;
     ev_item.item.lvgl_item.obj = obj;
     ev_item.item.lvgl_item.lv_event = event;
-    LOG("add EV_SYS_LVGL event %d", event);
+    // LOG("add EV_SYS_LVGL event %d", event);
     add_event_to_queue(&ev_item);
 
 }

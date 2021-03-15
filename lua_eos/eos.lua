@@ -36,7 +36,7 @@ end
 
 function show(t)
   for k,v in pairs(t) do
-    print(k,v)
+    print(tostring(k).. ": " .. tostring(v))
     if type(v) == 'table' then
       show(v) -- recursive
     end
