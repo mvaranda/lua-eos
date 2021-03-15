@@ -222,7 +222,8 @@ static int luac_eos_set_timer(lua_State *L)
 
   unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
 
-  mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
+  // mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
+  bool tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
 
   if ( ! tm) {
      LOG_E("luac_eos_set_timer: xTimerCreate fail");
