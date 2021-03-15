@@ -14,30 +14,11 @@
  *
  ***************************************************************
  */
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <memory.h>
 
-//#include "mos.h"
-
-#include "lauxlib.h"
-#include "lualib.h"
 #include "log.h"
 #include "lua_eos.h"
-
 #include "lvgl.h"
 
-
-#include "lauxlib.h"
-#include "lualib.h"
-#include "log.h"
-#include "lua_eos.h"
-
-
-
-//static void updateDisplay (const lv_area_t * area, lv_color_t * color_p, bool last);
 
 
 #ifdef __cplusplus
@@ -48,35 +29,7 @@ extern "C" {
 
 
 // bindings
-/*
- *
 
-require "lvgl"
-btn = lv_btn_create(lv_scr_act(), 0)
-lv_obj_set_pos(btn, 10, 10)
-lv_obj_set_size(btn, 120, 50)
-label = lv_label_create(btn, 0)
-lv_label_set_text(label, "Button")
-
-int lv_img_create(lv_scr_act(), NULL);
-
-lv_img_set_src(logo_obj, frames[0]);
-
-lv_obj_align(logo_obj, NULL, LV_ALIGN_IN_RIGHT_MID, 0, 0);
-
-lv_task_t * task = lv_task_create(logo_task, LOGO_TIMER, LV_TASK_PRIO_MID, logo_obj);
-lv_task_once(task);
-
-
-    lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     //Add a button the current screen
-    lv_obj_set_pos(btn, 10, 10);                            // Set its position
-    lv_obj_set_size(btn, 120, 50);                          // Set its size
-    lv_obj_set_event_cb(btn, btn_event_cb);                 // Assign a callback to the button
-
-    lv_obj_t * label = lv_label_create(btn, NULL);          // Add a label to the button
-    lv_label_set_text(label, "Button");                     //Set the labels text
-*/
-//typedef void (*create_func_prototype_t)(void *obj, lv_event_t event);
 typedef lv_obj_t * (*create_func_prototype_t) (lv_obj_t *parent, const lv_obj_t *copy);
 
 typedef struct create_func_st {
@@ -95,7 +48,7 @@ static const create_func_t create_func_info[] = {
 
 static int bind_lv_create(lua_State *L)
 {
-    uint32_t func_id = (uint32_t) lua_tointeger(L,1);
+    int32_t func_id = (uint32_t) lua_tointeger(L,1);
     void * par = lua_touserdata(L,2);
     void * copy = lua_touserdata(L,3);
 
@@ -135,8 +88,8 @@ static int bind_lv_scr_act(lua_State *L)
 static int bind_lv_obj_set_pos(lua_State *L)
 {
     void * obj = lua_touserdata(L,1);
-    long long x = lua_tointeger(L,2);
-    long long y = lua_tointeger(L,3);
+    short x = (short) lua_tointeger(L,2);
+    short y = (short) lua_tointeger(L,3);
     lv_obj_set_pos(obj, x, y);
     return 0;
 }
@@ -144,8 +97,8 @@ static int bind_lv_obj_set_pos(lua_State *L)
 static int bind_lv_obj_set_size(lua_State *L)
 {
     void * obj = lua_touserdata(L,1);
-    long long x = lua_tointeger(L,2);
-    long long y = lua_tointeger(L,3);
+    short x =  (short) lua_tointeger(L,2);
+    short y =  (short) lua_tointeger(L,3);
     lv_obj_set_size(obj, x, y);
     return 0;
 }
