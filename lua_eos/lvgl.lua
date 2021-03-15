@@ -60,12 +60,17 @@ function lv_obj_set_event_cb(obj, func)
   bind_lv_obj_set_event_cb(obj)
 end
 
-function lvgl_dispatch(obj, event)
-  if objects[obj] ~= nil then
-    if type(objects[obj].callback) == 'function' then
-      objects[obj].callback(obj, event)
-    end
+function lvgl_dispatch(ev, arg)
+  if ev.id ~= EV_SYS_LVGL.id then
+    return false
   end
+  local obj = arg.obj
+--  if objects[obj] ~= nil then
+--    if type(objects[obj].callback) == 'function' then
+        objects[obj].callback(obj, arg.lvgl_event)
+--    end
+--  end
+  return true
 end
 
 

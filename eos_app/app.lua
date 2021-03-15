@@ -26,10 +26,11 @@ require "lvgl"
 
 
 -- -------- Variables and callback for button 1 -----
+local btn_1
 local label_1
 local btn_1_cnt = 1
 
-function btn_1_cb (obj, ev)
+local function btn_1_cb (obj, ev)
   if ev == LV_EVENT_PRESSED then
     lv_label_set_text(label_1, "Button " .. tostring(btn_1_cnt))
     btn_1_cnt = btn_1_cnt + 1
@@ -37,10 +38,11 @@ function btn_1_cb (obj, ev)
 end
 
 -- -------- Variables and callback for button 2 -----
+local btn_2
 local label_2
 local btn_2_cnt = 1
 
-function btn_2_cb (obj, ev)
+local function btn_2_cb (obj, ev)
   if ev == LV_EVENT_PRESSED then
     lv_label_set_text(label_2, "Button " .. tostring(btn_2_cnt))
     btn_2_cnt = btn_2_cnt + 1
@@ -70,9 +72,9 @@ function app(ctx)
 
   while(1) do
     local ev, arg = eos.wait_event(ctx)
-    --print("task_demo: event = " .. ev.name .. " arg = " .. tostring(arg) )
-    --show(arg)
-    lvgl_dispatch(arg.obj, arg.lvgl_event)
+    lvgl_dispatch(ev, arg) -- lvgl_dispatch returns true if event was LVGL
+                           -- it can be used in "elseif then" chain
+
   end
 
 end

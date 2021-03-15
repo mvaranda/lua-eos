@@ -168,7 +168,7 @@ local function scheduler()
                 --print("********* add event to task " .. task.name)
                 -- TODO: add exception for timer as task id must also match
                 local arg
-                if ev.ev_id == EV_SYS_TIMER then
+                if ev.ev_id == EV_SYS_TIMER.id then
                   arg = ev.timer_id
                 else
                   arg = ev.arg
