@@ -210,14 +210,27 @@ void Console::setLocalEchoEnabled(bool set)
 {
     m_localEchoEnabled = set;
 }
+#include <QApplication>
+#include <QClipboard>
 
 void Console::keyPressEvent(QKeyEvent *e)
 {
     // Ignore cut/past key sequences.
-    if (e->matches(QKeySequence::Cut) || e->matches(QKeySequence::Paste))
+    if (e->matches(QKeySequence::Paste))
     {
+        LOG("Paste called");
+        QClipboard * clipboard = QApplication::clipboard();
+        QString t = clipboard->text(QClipboard::Clipboard);
+        putData(t);
+        emit getData(t.toLocal8Bit());
+
         return;
     }
+
+    if (e->matches(QKeySequence::Cut) ) {
+        return;
+    }
+
 
 #if 0
     if (e->text().length() > 0)
@@ -242,7 +255,7 @@ void Console::keyPressEvent(QKeyEvent *e)
     case Qt::Key_PageUp:
     case Qt::Key_PageDown:
     case Qt::Key_Shift:
-    case Qt::Key_Backspace:
+    //case Qt::Key_Backspace:
         QPlainTextEdit::keyPressEvent(e);
         return;
     }

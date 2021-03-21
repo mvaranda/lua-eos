@@ -22,6 +22,8 @@ DEFINES += MOS_DESKTOP
 
 DEFINES += projCOVERAGE_TEST=1
 
+mac: DEFINES += MACOS
+
 INCLUDEPATH += ../lvgl \
   ../lvgl_patch \
   ../lvgl/src/lv_core \
@@ -60,7 +62,6 @@ win32-msvc*: LIBS += ../lua_eos/native/win32/pthreadVC2.lib
 win32-g++:  LIBS += ../lua_eos/native/win32/libpthreadGC2.a
 
 SOURCES += \
-    ../examples/native/demo_01.c \
     ../lua/src/lapi.c \
     ../lua/src/lauxlib.c \
     ../lua/src/lbaselib.c \
@@ -94,10 +95,13 @@ SOURCES += \
     ../lua/src/lutf8lib.c \
     ../lua/src/lvm.c \
     ../lua/src/lzio.c \
+    ../lua_eos/native/bidings.c \
     ../lua_eos/native/eos_init.cpp \
     ../lua_eos/native/lua_eos.c \
+    ../lua_eos/native/lvgl_lua.c \
     ../lua_eos/native/mos_desktop.c \
     ../lua_eos/native/mos_desktop_timer.c \
+    ../lua_eos/native/splash.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0002.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0006.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0010.c \
@@ -263,11 +267,14 @@ HEADERS += \
     ../lua/src/lundump.h \
     ../lua/src/lvm.h \
     ../lua/src/lzio.h \
+    ../lua_eos/native/eos_config.h \
     ../lua_eos/native/eos_init.h \
     ../lua_eos/native/eos_lua.h \
     ../lua_eos/native/lua_eos.h \
+    ../lua_eos/native/lvgl_lua.h \
     ../lua_eos/native/mos.h \
     ../lua_eos/native/mos_desktop_timer.h \
+    ../lua_eos/native/splash.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
     ../lvgl/src/lv_conf_kconfig.h \

@@ -18,7 +18,13 @@
 -- http://lua-users.org/wiki/LuaStyleGuide
 -- check optimization: https://github.com/pallene-lang/pallene
 
-function print(m)
+function print(txt)
+  local m
+  if type(txt) == 'string' then
+    m = txt
+  else
+    m = tostring(txt)
+  end
   eos_print(m)
   eos_print("\n")
 end
@@ -30,7 +36,7 @@ end
 
 function show(t)
   for k,v in pairs(t) do
-    print(k,v)
+    print(tostring(k).. ": " .. tostring(v))
     if type(v) == 'table' then
       show(v) -- recursive
     end
@@ -85,11 +91,17 @@ end
 eos = {}
 local tasks = {}
 
+local EOS_PATH = "../lua_eos/?.lua;"
+package.path = EOS_PATH
+
 -- the following id's must match with sys_events_t enumeration
 EV_SYS_START_UP =           {id = 1,    name = "EV_SYS_START_UP",             pri = false}
 EV_SYS_SHUT_DOWN =          {id = 2,    name = "EV_SYS_SHUT_DOWN",            pri = false}
 EV_SYS_TIMER =              {id = 3,    name = "EV_SYS_TIMER",                pri = false}
 EV_SYS_TEXT_FROM_CONSOLE =  {id = 4,    name = "EV_SYS_TEXT_FROM_CONSOLE",    pri = false}
+EV_SYS_SPLASH_DONE =        {id = 5,    name = "EV_SYS_SPLASH_DONE",          pri = false}
+EV_SYS_LVGL =               {id = 6,    name = "EV_SYS_LVGL",                 pri = false}
+
 
 
 local events_list = {
@@ -97,7 +109,9 @@ local events_list = {
   EV_SYS_SHUT_DOWN,
   EV_SYS_TIMER,
   -- timer is a special case... no need registration
-  EV_SYS_TEXT_FROM_CONSOLE
+  EV_SYS_TEXT_FROM_CONSOLE,
+  EV_SYS_SPLASH_DONE,
+  EV_SYS_LVGL
 }
 
 local user_event = 1000
@@ -298,37 +312,103 @@ function lua_error_handler( err )
    print( "ERROR:", err )
 end
 
+LUA_PROMPT = "Lua> "
+LUA_PROMPT_MULTI = "Lua>> "
+
 function luashell( ctx )
-  print ("LUA Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n")
+  shell_ctx = ctx -- global
+  local f,msg, ok
+  local chunk = ""
+  local more = false
+  
+--  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_SPLASH_DONE")
+--  if res == false then
+--    print(msg)
+--  end
+--  
+--  show_splash()
+--  
+--  while(1) do
+--    local ev, arg = eos.wait_event(ctx)
+--    if ev.name == "EV_SYS_SPLASH_DONE" then
+--      break;
+--    end
+--  end
+    
+
+  print_sl ("Lua EOS Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n" .. LUA_PROMPT)
   
   -- subscribe for events
-  res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
+  ok,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")
+  if ok == false then
+    print("subscribe_event_by_name error")
+    print(msg)
+  end
+
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    if more == true then
+      chunk = chunk .. arg
+      f, msg = load(chunk)
+    else
+      f, msg = load(arg)
+    end
+    if f == nil then
+      if string.find(msg, "<eof>") ~= nil then
+        if more == false then -- if first time:
+          chunk = chunk .. arg
+          more = true
+        end
+        print_sl(LUA_PROMPT_MULTI)
+      else
+        print("load: " .. msg)
+        chunk = ""
+        more = false
+      end
+    else
+      --local ok, e = xpcall( f, lua_error_handler )
+      local ok, msg = pcall(f)
+
+      if ok == false then
+        print(msg)
+      end
+      chunk = ""
+      more = false
+      print_sl(LUA_PROMPT)
+    end
+  end
+  print("Exiting Shell thred")
+end
+
+local function launcher(ctx)
+  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_SPLASH_DONE")
   if res == false then
     print(msg)
   end
-  local f
-  local err
+  
+  show_splash()
+  
   while(1) do
     local ev, arg = eos.wait_event(ctx)
-    f = load(arg)
-    local ok, e = xpcall( f, lua_error_handler )
-    if of == false then print(e) end
---    if e ~= nil then print(e) end
---    if pcall(f) then
---      --print("Success")
---    else
---	    print("\nFailure")
---    end
-    --f()
-    print_sl("\n>")
+    if ev.name == "EV_SYS_SPLASH_DONE" then
+      break;
+    end
   end
-
+  eos.create_task(luashell, "luashell")
+  eos.create_task(app, "app")
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    if ev.name == "EV_SYS_SPLASH_DONE" then
+      print("dummy");
+    end
+  end
 end
 
 
-eos.create_task(luashell, "luashell")
-eos.create_task(app, "app")
+--eos.create_task(luashell, "luashell")
+--eos.create_task(app, "app")
 
+eos.create_task(launcher, "launcher")
 eos.scheduler()
 
 

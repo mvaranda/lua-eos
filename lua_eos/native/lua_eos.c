@@ -69,7 +69,7 @@ static mos_mutex_h_t ev_q_mutex = NULL;
 static mos_queue_h_t event_queue;
 //static uint8_t event_queue_buff[ EV_QUEUE_LENGTH * sizeof( ev_queue_item_t ) ];
 
-static void add_event_to_queue( const void * ev_item)
+void add_event_to_queue( const void * ev_item)
 {
 
   if ( mos_queue_put( event_queue, (const void *) ev_item) != MOS_PASS) {
@@ -78,32 +78,55 @@ static void add_event_to_queue( const void * ev_item)
 
 }
 
-void cb_event_push_timer(lua_State *L, ev_queue_item_union_t * item_ptr)
+void cb_event_push_timer(lua_State *L, ev_queue_item_t * item_ptr)
 {
   lua_pushstring(L, "ev_id");                      // Key
   lua_pushinteger(L, EV_SYS_TIMER);   // value
   lua_settable(L, -3);
 
   lua_pushstring(L, "task_id");                      // Key
-  lua_pushinteger(L, item_ptr->timer_item.taskID);   // value
+  lua_pushinteger(L, item_ptr->item.timer_item.taskID);   // value
   lua_settable(L, -3);
 
   lua_pushstring(L, "timer_id");                      // Key
-  lua_pushinteger(L, item_ptr->timer_item.timerID);   // value
+  lua_pushinteger(L, item_ptr->item.timer_item.timerID);   // value
   lua_settable(L, -3);
 }
 
-
-void cb_event_push_text_from_console(lua_State *L, ev_queue_item_union_t * item_ptr)
+static void cb_event_push_text (lua_State *L, ev_queue_item_t * item_ptr)
 {
   lua_pushstring(L, "ev_id");                      // Key
-  lua_pushinteger(L, EV_SYS_TEXT_FROM_CONSOLE);    // value
+  lua_pushinteger(L, item_ptr->event_id);    // value
   lua_settable(L, -3);
 
   lua_pushstring(L, "arg");                        // Key
-  lua_pushstring(L, item_ptr->generic_text.text);   // value
+  lua_pushstring(L, item_ptr->item.generic_text.text);   // value
   lua_settable(L, -3);
-  free(item_ptr->generic_text.text);
+  free(item_ptr->item.generic_text.text);
+}
+
+bool add_text_event(sys_events_t id, char * msg)
+{
+    unsigned long len = strlen(msg);
+    if (len == 0) {
+        LOG_W("add_text_event: len = 0");
+        return false;
+    }
+    //LOG("got msg: %s", msg);
+    char * txt = MOS_MALLOC(len + 1);
+    if ( ! txt) {
+        LOG_E("add_text_event: no memo");
+        return false;
+    }
+    memcpy(txt, msg, len+1);
+
+    ev_queue_item_t ev_item;
+    memset(&ev_item, 0, sizeof(ev_item));
+    ev_item.event_id = id;
+    ev_item.cb_event_push = (void *) cb_event_push_text;
+    ev_item.item.generic_text.text = txt;
+    // LOG("add_text_event: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
+    add_event_to_queue(&ev_item);
 }
 
 #define MAX_WAIT_READ_EVENT_Q 0
@@ -152,7 +175,7 @@ static int luac_eod_read_event_table(lua_State *L)
 
     lua_pushnumber(L, num_items + 1);
     lua_newtable(L);
-    ev_item.cb_event_push(L, &ev_item.item);
+    ((cb_event_push_t)(ev_item.cb_event_push))(L, &ev_item);
     lua_settable(L, -3);
 
     num_items++;
@@ -199,7 +222,8 @@ static int luac_eos_set_timer(lua_State *L)
 
   unsigned int _timerID = (unsigned int) (taskID << 16) | (timerID & 0xffff);
 
-  mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
+  // mos_timer_h_t tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
+  bool tm = mos_timer_create_single_shot( time, timer_callback, _timerID);
 
   if ( ! tm) {
      LOG_E("luac_eos_set_timer: xTimerCreate fail");
@@ -240,6 +264,9 @@ static void register_luacs(lua_State *L)
 
 }
 
+void lua_bindings_registration(lua_State *L); // TODO: use header
+
+
 void luaTask(void * arg)
 {
   LOG("luaInit...");
@@ -264,6 +291,7 @@ void luaTask(void * arg)
 
   luaL_openlibs(L);
   register_luacs(L);
+  lua_bindings_registration(L);
 
   int err;
   if ((err = luaL_loadfile(L, EOS_APP_FILENAME)) != 0) {
@@ -319,24 +347,5 @@ void luaTask(void * arg)
 
 void sendTextToConsoleController(char * msg)
 {
-    int len = strlen(msg);
-    if (len == 0) {
-        LOG_W("sendTextToConsoleController: len = 0");
-        return;
-    }
-    //LOG("got msg: %s", msg);
-    char * txt = MOS_MALLOC(len + 1);
-    if ( ! txt) {
-        LOG_E("sendTextToConsoleController: no memo");
-        return;
-    }
-    memcpy(txt, msg, len+1);
-
-    ev_queue_item_t ev_item;
-    memset(&ev_item, 0, sizeof(ev_item));
-    ev_item.event_id = EV_SYS_TEXT_FROM_CONSOLE;
-    ev_item.cb_event_push = cb_event_push_text_from_console;
-    ev_item.item.generic_text.text = txt;
-    // LOG("timer_callback: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
-    add_event_to_queue(&ev_item);
+  add_text_event( EV_SYS_TEXT_FROM_CONSOLE, msg);
 }

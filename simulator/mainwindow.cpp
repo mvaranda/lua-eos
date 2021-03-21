@@ -25,6 +25,8 @@
 #include "log.h"
 #include "eos_init.h"
 #include "lua_eos.h"
+#include "eos_config.h"
+
 
 #define LUA_EOS_VERSION "0.0"
 
@@ -56,10 +58,12 @@ MainWindow::MainWindow(QWidget *parent)
     //m_term->setFocus();
 #endif
 
+#ifdef HAS_LVGL
     lv_integr_run();
+#endif
 
     timerId = startTimer(LVGL_TICK_TIME);
-    //luaCppInit();
+
 
     connect(&luaInit, &LuaInit::luaToConsole, this, &MainWindow::forwardToConsole);
     luaInit.start();
@@ -77,6 +81,12 @@ void MainWindow::forwardToConsole(char * msg)
     free(msg);
 }
 
+#ifdef MACOS
+  #define BACKSPACE_CHAR 0x7f
+#else
+  #define BACKSPACE_CHAR 0x08
+#endif
+
 void MainWindow::writeDataFromTerm(const QByteArray &data)
 {
     // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
@@ -86,6 +96,17 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
     if (data.size() == 0) return;
 
     int to_transfer = data.size();
+
+    if (to_transfer == 1) {
+        const char * c = data.data();
+        if (*c == BACKSPACE_CHAR) { // note: 0x7f is for Mac
+          msg[msg_len] = 0;
+          if (msg_len > 1)
+              msg_len--;
+          return;
+        }
+    }
+
     int fit = sizeof(msg) - (msg_len + 1);
     if (to_transfer > fit)
         to_transfer = fit;
