@@ -26,8 +26,8 @@
 #include <stdlib.h>
 #include "mos.h"
 
-
-#include <pthread.h>
+#include "FreeRTOS.h"
+//#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,15 +41,34 @@ void * mos_calloc (size_t num, size_t size) {
 }
 void mos_free (void * p) { return free(p); }
 
+// mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, uint32_t iStackSize, uint32_t iPriority )
+// {
+//     pthread_t thread;
+//     int t = pthread_create(&thread, NULL,
+//                               (void *(*) (void *)) thread_func, NULL);
+//     if (t) {
+//         return NULL;
+//     }
+//     return thread;
+// }
+
 mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, uint32_t iStackSize, uint32_t iPriority )
+//mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, int iStackSize, int iPriority )
 {
-    pthread_t thread;
-    int t = pthread_create(&thread, NULL,
-                              (void *(*) (void *)) thread_func, NULL);
-    if (t) {
-        return NULL;
-    }
-    return thread;
+  TaskHandle_t xCreatedTask;
+  portBASE_TYPE xResult;
+  mos_thread_h_t xReturn;
+
+  xResult = xTaskCreate( thread_func, pcName, iStackSize, pvArg, iPriority, &xCreatedTask );
+
+  if( xResult == mos_PASS ) {
+    xReturn = xCreatedTask;
+  }
+  else {
+    xReturn = NULL;
+  }
+
+  return xReturn;
 }
 
 typedef struct queue_st {
@@ -167,6 +186,49 @@ void mos_mutex_destroy(mos_mutex_h_t mutex)
 {
     pthread_mutex_destroy(mutex);
     MOS_FREE(mutex);
+}
+
+static mos_timer_id_t timer_create( int time_milliseconds, timer_func_t callback, void * arg, bool periodic, int tm_type )
+{
+  mos_timer_id_t this_timer = mos_MALLOC(sizeof(struct mos_timer_id_st));
+  if ( ! this_timer ) {
+    LOG_E("mos_timer_create_single_shot: no memo");
+    return NULL;
+  }
+  this_timer->h = xTimerCreate( NULL,                                 //const char *pcTimerName,
+                                pdMS_TO_TICKS(time_milliseconds),     //const TickType_t xTimerPeriod,
+                                periodic,                             //const UBaseType_t uxAutoReload,
+                                (void *) this_timer,                  //void * const pvTimerID,
+                                internal_timer_callback);             //TimerCallbackFunction_t pxCallbackFunction );
+  if ( ! this_timer->h ) {
+    mos_FREE(this_timer);
+    LOG_W("mos_timer_create_single_shot: fail to create native timer");
+    return NULL;
+  }
+  this_timer->type = tm_type;
+  this_timer->user_callback = (void *) callback;
+  this_timer->user_arg = arg;
+  this_timer->pending_destruction = false;
+
+  if (xTimerStart(this_timer->h, portMAX_DELAY) != pdPASS) {
+    xTimerDelete(this_timer->h, portMAX_DELAY);
+    mos_FREE(this_timer);
+    LOG_W("mos_timer_create_single_shot: fail to start native timer");
+    return NULL;
+  }
+  this_timer->magic = TIMER_MAGIC_WORD;
+  return this_timer;
+}
+
+// mos_timer_id_t mos_timer_create_single_shot( int time_milliseconds, timer_func_t callback, void * arg )
+// {
+//   return timer_create( time_milliseconds, callback, arg, false, mos_TIMER_TYPE__SINGLE );
+// }
+
+bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, mos_timer_id_t id )
+{
+  timer_create( time_milliseconds, callback, id, false, mos_TIMER_TYPE__SINGLE );
+  return true;
 }
 
 
