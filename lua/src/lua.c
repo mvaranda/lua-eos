@@ -632,7 +632,7 @@ int main (int *, char **argv) {
   }
 
 #if 1
-  int error;
+  int error = 0;
   luaL_openlibs(L);
   while (*argv != NULL) {
     error = luaL_loadbuffer(L, *argv, strlen(*argv), "line");
