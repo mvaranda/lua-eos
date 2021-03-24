@@ -1,6 +1,3 @@
 [submodule "lvgl"]
 	path = lvgl
 	url = https://github.com/lvgl/lvgl.git
-[submodule "lua_eos/native/FreeRTOS"]
-	path = lua_eos/native/FreeRTOS
-	url = https://github.com/FreeRTOS/FreeRTOS.git
