@@ -2,11 +2,12 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.5)
 
-set(EXTRA_COMPONENT_DIRS "../../components/board"
-                         "../../components/lcd"
-                         "../../components/jpeg"
-)
+# set(EXTRA_COMPONENT_DIRS "../../components/board"
+#                          "../../components/lcd"
+#                          "../../components/jpeg"
+# )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 add_compile_options (-fdiagnostics-color=always)
 project(esp32-s2-hmi)
+

@@ -20,6 +20,9 @@
 #include "esp_spiffs.h"
 #include "lcd.h"
 #include "jpeg.h"
+
+#define CONFIG_LCD_PAD_ESP32_S2_KALUGA_V1_3
+
 #include "board.h"
 
 static const char *TAG = "main";
