@@ -21,6 +21,10 @@
 #include "lcd.h"
 #include "jpeg.h"
 
+#include "esp_vfs_dev.h"
+#include "driver/uart.h"
+#include "linenoise/linenoise.h"
+
 #define CONFIG_LCD_PAD_ESP32_S2_KALUGA_V1_3
 
 #include "board.h"
@@ -31,24 +35,9 @@ static const char *TAG = "main";
 #define IMAGE_WIDTH    320 /*!< width of jpeg file */
 #define IMAGE_HIGHT    240 /*!< height of jpeg file */
 
-/**
- * @brief rgb -> rgb565
- *
- * @param r red   (0~31)
- * @param g green (0~63)
- * @param b red   (0~31)
- *
- * @return data about color565
- */
-uint16_t color565(uint8_t r, uint8_t g, uint8_t b)
-{
-    uint16_t color = ((r  << 11) | (g  << 6) | b);
-    return (color << 8) | (color >> 8);
-}
-
 static     char name[64];
 
-void esp_photo_display2(void)
+static void render_splash_animation(void)
 {
     ESP_LOGI(TAG, "LCD photo test....");
     esp_vfs_spiffs_conf_t conf = {
@@ -66,11 +55,10 @@ void esp_photo_display2(void)
 
     uint8_t *img = NULL;
     uint8_t *buf = malloc(IMAGE_MAX_SIZE);
-    int read_bytes = 0;
     int width = 0, height = 0;
 
     FILE *fd;
-    int i;
+    int i, read_bytes;
   
     for (i=2; i<73; i = i + 4) {
       read_bytes = 0;
@@ -96,97 +84,79 @@ void esp_photo_display2(void)
       lcd_set_index(0, 0, IMAGE_WIDTH - 1, IMAGE_HIGHT - 1);
       lcd_write_data(img, IMAGE_WIDTH * IMAGE_HIGHT * sizeof(uint16_t));
       free(img);
-       //vTaskDelay(5 / portTICK_RATE_MS);
+       //vTaskDelay(5 / portTICK_RATE_MS); // no delay as the processor is lower than the frame-rate.
     }
     free(buf);
 }
 
-void esp_photo_display(void)
+static void initialize_console(void)
 {
-    ESP_LOGI(TAG, "LCD photo test....");
-    esp_vfs_spiffs_conf_t conf = {
-        .base_path = "/spiffs",
-        .partition_label = NULL,
-        .max_files = 5,
-        .format_if_mount_failed = false
+    /* Drain stdout before reconfiguring it */
+    fflush(stdout);
+    fsync(fileno(stdout));
+
+    /* Disable buffering on stdin */
+    setvbuf(stdin, NULL, _IONBF, 0);
+
+    /* Minicom, screen, idf_monitor send CR when ENTER key is pressed */
+    esp_vfs_dev_uart_port_set_rx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM, ESP_LINE_ENDINGS_CR);
+    /* Move the caret to the beginning of the next line on '\n' */
+    esp_vfs_dev_uart_port_set_tx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM, ESP_LINE_ENDINGS_CRLF);
+
+    /* Configure UART. Note that REF_TICK is used so that the baud rate remains
+     * correct while APB frequency is changing in light sleep mode.
+     */
+    const uart_config_t uart_config = {
+            .baud_rate = CONFIG_ESP_CONSOLE_UART_BAUDRATE,
+            .data_bits = UART_DATA_8_BITS,
+            .parity = UART_PARITY_DISABLE,
+            .stop_bits = UART_STOP_BITS_1,
+#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
+        .source_clk = UART_SCLK_REF_TICK,
+#else
+        .source_clk = UART_SCLK_XTAL,
+#endif
     };
+    /* Install UART driver for interrupt-driven reads and writes */
+    ESP_ERROR_CHECK( uart_driver_install(CONFIG_ESP_CONSOLE_UART_NUM,
+            256, 0, 0, NULL, 0) );
+    ESP_ERROR_CHECK( uart_param_config(CONFIG_ESP_CONSOLE_UART_NUM, &uart_config) );
 
-    /*!< Use settings defined above to initialize and mount SPIFFS filesystem. */
-    /*!< Note: esp_vfs_spiffs_register is an all-in-one convenience function. */
-    ESP_ERROR_CHECK(esp_vfs_spiffs_register(&conf));
-    size_t total = 0, used = 0;
-    ESP_ERROR_CHECK(esp_spiffs_info(NULL, &total, &used));
+    /* Tell VFS to use UART driver */
+    esp_vfs_dev_uart_use_driver(CONFIG_ESP_CONSOLE_UART_NUM);
 
-    uint8_t *img = NULL;
-    uint8_t *buf = malloc(IMAGE_MAX_SIZE);
-    int read_bytes = 0;
-    int width = 0, height = 0;
+    /* Initialize the console */
+//     esp_console_config_t console_config = {
+//             .max_cmdline_args = 8,
+//             .max_cmdline_length = 256,
+// #if CONFIG_LOG_COLORS
+//             .hint_color = atoi(LOG_COLOR_CYAN)
+// #endif
+//     };
+//     ESP_ERROR_CHECK( esp_console_init(&console_config) );
 
-    FILE *fd = fopen("/spiffs/image.jpg", "r");
+    /* Configure linenoise line completion library */
+    /* Enable multiline editing. If not set, long commands will scroll within
+     * single line.
+     */
+    linenoiseSetMultiLine(1);
 
-    read_bytes = fread(buf, 1, IMAGE_MAX_SIZE, fd);
-    ESP_LOGI(TAG, "spiffs:read_bytes:%d  fd: %p", read_bytes, fd);
-    fclose(fd);
+    /* Tell linenoise where to get command completions and hints */
+ //   linenoiseSetCompletionCallback(&esp_console_get_completion);
+ //   linenoiseSetHintsCallback((linenoiseHintsCallback*) &esp_console_get_hint);
 
-    img = jpeg_decode(buf, &width, &height);
-    lcd_set_index(0, 0, IMAGE_WIDTH - 1, IMAGE_HIGHT - 1);
-    lcd_write_data(img, IMAGE_WIDTH * IMAGE_HIGHT * sizeof(uint16_t));
-    free(buf);
-    vTaskDelay(2000 / portTICK_RATE_MS);
+    /* Set command history size */
+    linenoiseHistorySetMaxLen(100);
+
+    /* Don't return empty lines */
+    linenoiseAllowEmpty(false);
+
+#if 0 //CONFIG_STORE_HISTORY
+    /* Load command history from filesystem */
+    linenoiseHistoryLoad(HISTORY_PATH);
+#endif
 }
 
-void esp_color_display(void)
-{
-    ESP_LOGI(TAG, "LCD color test....");
-    uint16_t *data_buf = (uint16_t *)heap_caps_calloc(IMAGE_WIDTH * IMAGE_HIGHT, sizeof(uint16_t), MALLOC_CAP_SPIRAM);
-
-    while (1) {
-        uint16_t color = color565(0, 0, 0);
-
-        for (int r = 0,  j = 0; j < IMAGE_HIGHT; j++) {
-            if (j % 8 == 0) {
-                color = color565(r++, 0, 0);
-            }
-
-            for (int i = 0; i < IMAGE_WIDTH; i++) {
-                data_buf[i + IMAGE_WIDTH * j] = color;
-            }
-        }
-
-        lcd_set_index(0, 0, IMAGE_WIDTH - 1, IMAGE_HIGHT - 1);
-        lcd_write_data((uint8_t *)data_buf, IMAGE_WIDTH * IMAGE_HIGHT * sizeof(uint16_t));
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-        for (int g = 0,  j = 0; j < IMAGE_HIGHT; j++) {
-            if (j % 8 == 0) {
-                color = color565(0, g++, 0);
-            }
-
-            for (int i = 0; i < IMAGE_WIDTH; i++) {
-                data_buf[i + IMAGE_WIDTH * j] = color;
-            }
-        }
-
-        lcd_set_index(0, 0, IMAGE_WIDTH - 1, IMAGE_HIGHT - 1);
-        lcd_write_data((uint8_t *)data_buf, IMAGE_WIDTH * IMAGE_HIGHT * sizeof(uint16_t));
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-        for (int b = 0,  j = 0; j < IMAGE_HIGHT; j++) {
-            if (j % 8 == 0) {
-                color = color565(0, 0, b++);
-            }
-
-            for (int i = 0; i < IMAGE_WIDTH; i++) {
-                data_buf[i + IMAGE_WIDTH * j] = color;
-            }
-        }
-
-        lcd_set_index(0, 0, IMAGE_WIDTH - 1, IMAGE_HIGHT - 1);
-        lcd_write_data((uint8_t *)data_buf, IMAGE_WIDTH * IMAGE_HIGHT * sizeof(uint16_t));
-        vTaskDelay(2000 / portTICK_RATE_MS);
-
-    }
-}
 
 void app_main()
 {
@@ -209,10 +179,27 @@ void app_main()
 
     lcd_init(&lcd_config);
 
-    /*< Show a picture */
-    esp_photo_display2();
-    /*< RGB display */
-    //esp_color_display();
+    /*< Show splash animation */
+    render_splash_animation();
+
+
+    initialize_console();
+        /* Main loop */
+    printf("Starting Lua Shell\r\n");
+    while(true) {
+        /* Get a line using linenoise.
+         * The line is returned when ENTER is pressed.
+         */
+        char* line = linenoise("lua> ");
+        if (line == NULL) { /* Break on EOF or error */
+            printf("\r\n");
+            continue;
+        }
+        printf("line: %s\r\n", line);
+        linenoiseFree(line);
+    }
+
+
 
 }
 
