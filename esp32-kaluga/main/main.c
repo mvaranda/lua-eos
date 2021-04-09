@@ -27,7 +27,7 @@
 
 #include "mos.h"
 
-//#define CONFIG_LCD_PAD_ESP32_S2_KALUGA_V1_3
+// #define SHOW_ANIMATED_SPLASH
 
 #include "board.h"
 
@@ -167,6 +167,8 @@ static void initialize_console(void)
 //////////////////////////// MOS Test ///////////////////////
 #ifdef MOS_TEST
 static mos_queue_h_t myQ;
+static uint32_t cnt1 = 0;
+static uint32_t cnt2 = 1000;
 //mos_queue_create ( uint32_t len, uint32_t item_size);
 
 static void myQueuReader(void * params)
@@ -186,11 +188,21 @@ static void myQueuReader(void * params)
 }
 
 static void myTimerCallback( mos_timer_id_t id) {
+  //printf("myTimerCallback: timer id %d\r\n", id);
   if (id == 1) {
+    mos_queue_put (myQ, &cnt1);
+    cnt1++;
+    if (! mos_timer_create_single_shot( 1000, myTimerCallback, 1 )) {
+        LOG_E("fail to to create timer 1");
+    }
 
   }
   else if (id == 2) {
-
+    mos_queue_put (myQ, &cnt2);
+    cnt2++;
+    if (! mos_timer_create_single_shot( 2000, myTimerCallback, 2 )) {
+        LOG_E("fail to to create timer 2");
+    }
   }
   else {
       printf("bad timer ID");
@@ -202,9 +214,17 @@ static void myTestTask(void * params)
 {
     int c = 0;
     printf("Starting myTestTask...\r\n");
+
+    if (! mos_timer_create_single_shot( 1000, myTimerCallback, 1 )) {
+        LOG_E("fail to to create timer 1");
+    }
+    if (! mos_timer_create_single_shot( 2000, myTimerCallback, 2 )) {
+        LOG_E("fail to to create timer 2");
+    }
+
     while (1) {
         printf("myTestTask: c = %d\r\n", c++);
-        mos_thread_sleep(1000);
+        mos_thread_sleep(10000);
     }
 }
 static void mosTest()
