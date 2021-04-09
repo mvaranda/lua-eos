@@ -25,6 +25,8 @@
 #include "driver/uart.h"
 #include "linenoise/linenoise.h"
 
+#include "mos.h"
+
 #define CONFIG_LCD_PAD_ESP32_S2_KALUGA_V1_3
 
 #include "board.h"
@@ -157,6 +159,33 @@ static void initialize_console(void)
 #endif
 }
 
+/////////// MOS Test /////////
+static void myQueuReader(void * params)
+{
+
+}
+
+static void myTimerCallback( mos_timer_id_t id) {
+  if (id == 1) {
+
+  }
+  else if (id == 2) {
+
+  }
+  else {
+      printf("bad timer ID");
+  }
+}
+
+static void myTestTask(void * params)
+{
+    int c = 0;
+    printf("Starting myTestTask...\r\n");
+    while (1) {
+        printf("myTestTask: c = %d\r\n", c++);
+        mos_thread_sleep(1000);
+    }
+}///////// END of MOS Test
 
 void app_main()
 {
@@ -183,6 +212,11 @@ void app_main()
 #ifdef SHOW_SPLASH
     render_splash_animation();
 #endif
+
+////// test ///////
+    mos_thread_h_t task1 = mos_thread_new( "myTestTask", myTestTask, 0, 3000, 6 );
+    mos_thread_h_t task2 = mos_thread_new( "myQueuReader", myQueuReader, 0, 3000, 6 );
+///////////////////
 
 
     initialize_console();

@@ -1,5 +1,9 @@
 set(COMPONENT_SRCS "main.c")
 
+set(COMPONENT_PRIV_INCLUDEDIRS 
+  "../../lua_eos/native"
+  "." )
+
 register_component()
 
 # Create a SPIFFS image from the contents of the 'spiffs_image' directory

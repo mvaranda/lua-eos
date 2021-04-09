@@ -57,6 +57,8 @@ void mos_free (void * p) { return free(p); }
 //     return thread;
 // }
 
+//////////////// Tasks ///////////////
+
 mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, uint32_t iStackSize, uint32_t iPriority )
 //mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, void *pvArg, int iStackSize, int iPriority )
 {
@@ -75,6 +77,13 @@ mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, vo
 
   return xReturn;
 }
+
+void mos_thread_sleep( uint32_t time_milliseconds)
+{
+  vTaskDelay(pdMS_TO_TICKS(time_milliseconds));
+}
+
+//////////////// Queues ///////////////
 
 typedef struct queue_st {
     uint8_t *       buffer;
