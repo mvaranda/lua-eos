@@ -27,6 +27,11 @@
 #include "mos.h"
 
 #include "FreeRTOS.h"
+#include "queue.h"
+#include "semphr.h"
+#include "task.h"
+#include "timers.h"
+
 //#include <pthread.h>
 
 #ifdef __cplusplus
@@ -61,7 +66,7 @@ mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, vo
 
   xResult = xTaskCreate( thread_func, pcName, iStackSize, pvArg, iPriority, &xCreatedTask );
 
-  if( xResult == mos_PASS ) {
+  if( xResult == MOS_PASS ) {
     xReturn = xCreatedTask;
   }
   else {
@@ -188,9 +193,9 @@ void mos_mutex_destroy(mos_mutex_h_t mutex)
     MOS_FREE(mutex);
 }
 
-static mos_timer_id_t timer_create( int time_milliseconds, timer_func_t callback, void * arg, bool periodic, int tm_type )
+static mos_timer_id_t _timer_create( int time_milliseconds, timer_func_t callback, void * arg, bool periodic, int tm_type )
 {
-  mos_timer_id_t this_timer = mos_MALLOC(sizeof(struct mos_timer_id_st));
+  mos_timer_id_t this_timer = MOS_MALLOC(sizeof(struct mos_timer_id_st));
   if ( ! this_timer ) {
     LOG_E("mos_timer_create_single_shot: no memo");
     return NULL;
@@ -222,12 +227,12 @@ static mos_timer_id_t timer_create( int time_milliseconds, timer_func_t callback
 
 // mos_timer_id_t mos_timer_create_single_shot( int time_milliseconds, timer_func_t callback, void * arg )
 // {
-//   return timer_create( time_milliseconds, callback, arg, false, mos_TIMER_TYPE__SINGLE );
+//   return _timer_create( time_milliseconds, callback, arg, false, mos_TIMER_TYPE__SINGLE );
 // }
 
 bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, mos_timer_id_t id )
 {
-  timer_create( time_milliseconds, callback, id, false, mos_TIMER_TYPE__SINGLE );
+  _timer_create( time_milliseconds, callback, id, false, mos_TIMER_TYPE__SINGLE );
   return true;
 }
 

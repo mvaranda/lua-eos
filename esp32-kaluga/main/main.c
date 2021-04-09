@@ -180,7 +180,9 @@ void app_main()
     lcd_init(&lcd_config);
 
     /*< Show splash animation */
+#ifdef SHOW_SPLASH
     render_splash_animation();
+#endif
 
 
     initialize_console();
