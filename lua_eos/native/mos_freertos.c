@@ -84,6 +84,43 @@ void mos_thread_sleep( uint32_t time_milliseconds)
 }
 
 //////////////// Queues ///////////////
+#if 1
+//----------------- queue -------------------
+mos_queue_h_t mos_queue_create ( uint32_t len, uint32_t item_size)
+{
+  return xQueueCreate( len, item_size);
+}
+
+int mos_queue_put (mos_queue_h_t xQueue, const void * pvItemToQueue)
+{
+  return xQueueSend(xQueue, pvItemToQueue, 0);
+}
+
+int mos_queue_put_from_isr (mos_queue_h_t xQueue, const void * pvItemToQueue)
+{
+  return xQueueSendToBackFromISR(xQueue, pvItemToQueue, NULL);
+}
+
+int mos_queue_waiting (mos_queue_h_t xQueue)
+{
+  return (int) uxQueueMessagesWaiting( xQueue );
+}
+
+int mos_queue_get (mos_queue_h_t xQueue, void *pvBuffer, uint32_t timeout_milliseconds)
+{
+  TickType_t xTicksToWait;
+
+  if (timeout_milliseconds == 0)
+    xTicksToWait = 0;
+  else if (timeout_milliseconds == MOS_WAIT_FOREVER) {
+    xTicksToWait = MOS_WAIT_FOREVER;
+  }
+  else {
+    xTicksToWait = pdMS_TO_TICKS(timeout_milliseconds);
+  }
+  return xQueueReceive( xQueue, pvBuffer, xTicksToWait );
+}
+#else
 
 typedef struct queue_st {
     uint8_t *       buffer;
@@ -169,6 +206,7 @@ int mos_queue_waiting (mos_queue_h_t queue_id)
   queue_t * q = (queue_t *) queue_id;
   return q->num_items; // note: assuming 32 bits CPU (atomic read)
 }
+#endif
 
 //----------------- Mutex ------------------
 mos_mutex_h_t mos_mutex_create(void)

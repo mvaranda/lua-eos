@@ -27,9 +27,11 @@
 
 #include "mos.h"
 
-#define CONFIG_LCD_PAD_ESP32_S2_KALUGA_V1_3
+//#define CONFIG_LCD_PAD_ESP32_S2_KALUGA_V1_3
 
 #include "board.h"
+
+#define MOS_TEST
 
 static const char *TAG = "main";
 
@@ -39,7 +41,7 @@ static const char *TAG = "main";
 
 static     char name[64];
 
-static void render_splash_animation(void)
+static void render_splash_animation(bool animation)
 {
     ESP_LOGI(TAG, "LCD photo test....");
     esp_vfs_spiffs_conf_t conf = {
@@ -60,9 +62,11 @@ static void render_splash_animation(void)
     int width = 0, height = 0;
 
     FILE *fd;
-    int i, read_bytes;
+    int i = 2, read_bytes;
+
+    if (animation == false) i = 70; // last frame
   
-    for (i=2; i<73; i = i + 4) {
+    while (i<73) {
       read_bytes = 0;
       width = 0;
       height = 0;
@@ -86,7 +90,8 @@ static void render_splash_animation(void)
       lcd_set_index(0, 0, IMAGE_WIDTH - 1, IMAGE_HIGHT - 1);
       lcd_write_data(img, IMAGE_WIDTH * IMAGE_HIGHT * sizeof(uint16_t));
       free(img);
-       //vTaskDelay(5 / portTICK_RATE_MS); // no delay as the processor is lower than the frame-rate.
+      //vTaskDelay(5 / portTICK_RATE_MS); // no delay as the processor is lower than the frame-rate.
+      i = i + 4;
     }
     free(buf);
 }
@@ -159,9 +164,24 @@ static void initialize_console(void)
 #endif
 }
 
-/////////// MOS Test /////////
+//////////////////////////// MOS Test ///////////////////////
+#ifdef MOS_TEST
+static mos_queue_h_t myQ;
+//mos_queue_create ( uint32_t len, uint32_t item_size);
+
 static void myQueuReader(void * params)
 {
+    uint32_t entry;
+    int ret;
+    while(1) {
+        ret = mos_queue_get(myQ, &entry, MOS_WAIT_FOREVER);
+        if (ret == MOS_TRUE) {
+            printf("myQueuReader: got value %d\r\n", entry);
+        }
+        else {
+            LOG_E("myQueuReader: error\r\n");
+        }
+    }
 
 }
 
@@ -176,6 +196,7 @@ static void myTimerCallback( mos_timer_id_t id) {
       printf("bad timer ID");
   }
 }
+#define RET_IF_NULL(ptr) do { if (ptr == NULL) { LOG_E("%s: NULL pointer at %d\r\n", __func__, __LINE__); return;} } while(0)
 
 static void myTestTask(void * params)
 {
@@ -185,7 +206,22 @@ static void myTestTask(void * params)
         printf("myTestTask: c = %d\r\n", c++);
         mos_thread_sleep(1000);
     }
-}///////// END of MOS Test
+}
+static void mosTest()
+{
+    myQ = mos_queue_create ( 5, sizeof(uint32_t));
+    RET_IF_NULL(myQ);
+
+    mos_thread_h_t task1 = mos_thread_new( "myTestTask", myTestTask, 0, 3000, 6 );
+    RET_IF_NULL(task1);
+    mos_thread_h_t task2 = mos_thread_new( "myQueuReader", myQueuReader, 0, 3000, 6 );
+    RET_IF_NULL(task2);
+}
+
+#else
+static void mosTest(){} // do nothing
+#endif
+/////////////////////////// END of MOS Test /////////////////////
 
 void app_main()
 {
@@ -209,13 +245,14 @@ void app_main()
     lcd_init(&lcd_config);
 
     /*< Show splash animation */
-#ifdef SHOW_SPLASH
-    render_splash_animation();
+#ifdef SHOW_ANIMATED_SPLASH
+    render_splash_animation(true);
+#else
+    render_splash_animation(false);
 #endif
 
 ////// test ///////
-    mos_thread_h_t task1 = mos_thread_new( "myTestTask", myTestTask, 0, 3000, 6 );
-    mos_thread_h_t task2 = mos_thread_new( "myQueuReader", myQueuReader, 0, 3000, 6 );
+    mosTest();
 ///////////////////
 
 

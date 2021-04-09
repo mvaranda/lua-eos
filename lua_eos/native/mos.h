@@ -211,7 +211,7 @@ int mos_queue_put_from_isr (mos_queue_h_t xQueue, const void * pvItemToQueue);
  *        If timeout_milliseconds is zero, then mos_queue_get() will return immediately if the queue is already empty.
  *        timeout_milliseconds = MOS_WAIT_FOREVER will cause the thread to wait indefinitely (without timing out).
  *
- * @return MOS_PASS if an item was. Otherwise, either timeout or error.
+ * @return MOS_TRUE if an item was. Otherwise, either timeout or error.
  * @note called must be sure that it is providing a valid queue ID as there is no distinction between timeout and error.
  */
 int mos_queue_get (mos_queue_h_t queue_id, void *item_buf, uint32_t timeout_milliseconds);
