@@ -22,9 +22,17 @@
 #include <stdbool.h>
 #include "log.h"
 
-#define MOS_PASS    0
-#define MOS_ERROR   -1
-
+#ifdef MOS_DESKTOP
+  #define MOS_PASS    0
+  #define MOS_ERROR   -1
+#else
+  #define MOS_WAIT_FOREVER portMAX_DELAY
+  #define MOS_PASS         pdPASS
+  #define MOS_FAIL         pdFAIL
+  #define MOS_ERROR        pdFAIL
+  #define MOS_TRUE         pdTRUE
+  #define MOS_FALSE        pdFALSE
+#endif
 
 void * mos_malloc (size_t size);
 void * mos_calloc (size_t num, size_t size);

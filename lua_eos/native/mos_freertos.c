@@ -193,9 +193,74 @@ void mos_mutex_destroy(mos_mutex_h_t mutex)
     MOS_FREE(mutex);
 }
 
-static mos_timer_id_t _timer_create( int time_milliseconds, timer_func_t callback, void * arg, bool periodic, int tm_type )
+//------------------- timers ---------------------
+#define TIMER_MAGIC_WORD 0xb45ae83c
+
+typedef enum {
+  MOS_TIMER_TYPE__SINGLE,
+  MOS_TIMER_TYPE__PRESERVED,
+  MOS_TIMER_TYPE__PERIODIC,
+  MOS_TIMER_TYPE__SINGLE_SLOW = 10
+} mos_timer_type_t;
+
+typedef struct mos_timer_int_st {
+  int             magic;  // validation
+  int             type;
+  TimerHandle_t   h;
+  void *          user_callback;
+  void *          user_arg;
+  bool            pending_destruction;
+  int             slow_timer_idx;
+} * mos_timer_int_ptr_t;
+
+static void internal_timer_callback( TimerHandle_t native_timer_h )
 {
-  mos_timer_id_t this_timer = MOS_MALLOC(sizeof(struct mos_timer_id_st));
+  timer_func_t callback;
+
+  //mos_mutex_lock(timer_mutex); Mutex would prevent to have a callback deleting any timer. Lets trust that the pending_destruction can avoid using mutex
+
+  mos_timer_int_ptr_t this_timer = (mos_timer_int_ptr_t) pvTimerGetTimerID(native_timer_h);
+  if (this_timer->magic != TIMER_MAGIC_WORD) {
+    LOG_E("bad timer");
+    return;
+  }
+
+  if (  (this_timer->type == MOS_TIMER_TYPE__SINGLE) ||
+        (this_timer->type == MOS_TIMER_TYPE__SINGLE_SLOW)) {
+    xTimerDelete(this_timer->h, portMAX_DELAY);
+    if (this_timer->pending_destruction == false) {
+      callback = (timer_func_t) this_timer->user_callback;
+      if (callback) {
+        callback((mos_timer_id_t) this_timer->user_arg);
+      }
+    }
+    this_timer->magic = 0; // prevent to have a garbage in the heap that looks like a good timer
+    MOS_FREE(this_timer);
+  }
+  // else if (this_timer->type == MOS_TIMER_TYPE__PERIODIC) {
+  //   if (this_timer->pending_destruction == false) {
+  //     // preserved periodic timer... just call back
+  //     callback = (timer_func_t) this_timer->user_callback;
+  //     if (callback)
+  //       callback(this_timer->user_arg);
+  //   }
+  //   else {
+  //     xTimerDelete(this_timer->h, portMAX_DELAY);
+  //     this_timer->magic = 0; // prevent to have a garbage in the heap that looks like a good timer
+  //     MOS_FREE(this_timer);
+  //   }
+
+  // }
+  else {
+    LOG_E("Timer type not yet implemented");
+  }
+  //mos_mutex_unlock(timer_mutex);
+}
+
+                                    // ( time_milliseconds,     callback,              id,        false,          MOS_TIMER_TYPE__SINGLE )
+static mos_timer_int_ptr_t _timer_create( int time_milliseconds, timer_func_t callback, void * arg, bool periodic, int tm_type )
+{
+  mos_timer_int_ptr_t this_timer = MOS_MALLOC(sizeof(struct mos_timer_int_st));
   if ( ! this_timer ) {
     LOG_E("mos_timer_create_single_shot: no memo");
     return NULL;
@@ -206,7 +271,7 @@ static mos_timer_id_t _timer_create( int time_milliseconds, timer_func_t callbac
                                 (void *) this_timer,                  //void * const pvTimerID,
                                 internal_timer_callback);             //TimerCallbackFunction_t pxCallbackFunction );
   if ( ! this_timer->h ) {
-    mos_FREE(this_timer);
+    MOS_FREE(this_timer);
     LOG_W("mos_timer_create_single_shot: fail to create native timer");
     return NULL;
   }
@@ -217,7 +282,7 @@ static mos_timer_id_t _timer_create( int time_milliseconds, timer_func_t callbac
 
   if (xTimerStart(this_timer->h, portMAX_DELAY) != pdPASS) {
     xTimerDelete(this_timer->h, portMAX_DELAY);
-    mos_FREE(this_timer);
+    MOS_FREE(this_timer);
     LOG_W("mos_timer_create_single_shot: fail to start native timer");
     return NULL;
   }
@@ -232,8 +297,7 @@ static mos_timer_id_t _timer_create( int time_milliseconds, timer_func_t callbac
 
 bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, mos_timer_id_t id )
 {
-  _timer_create( time_milliseconds, callback, id, false, mos_TIMER_TYPE__SINGLE );
-  return true;
+  return (_timer_create( time_milliseconds, callback, (void *) id, false, MOS_TIMER_TYPE__SINGLE ) != NULL);
 }
 
 
