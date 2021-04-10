@@ -31,6 +31,8 @@
 
 #include "board.h"
 
+#include "lua_eos.h"
+
 #define MOS_TEST
 
 static const char *TAG = "main";
@@ -40,6 +42,8 @@ static const char *TAG = "main";
 #define IMAGE_HIGHT    240 /*!< height of jpeg file */
 
 static     char name[64];
+
+static mos_thread_h_t lua_task;
 
 static void render_splash_animation(bool animation)
 {
@@ -187,15 +191,22 @@ static mos_queue_h_t myQ;
 static mos_mutex_h_t mutex;
 static uint32_t cnt1 = 0;
 static uint32_t cnt2 = 0;
+static bool mos_test_end = false;
 //mos_queue_create ( uint32_t len, uint32_t item_size);
 
 static void myQueuReader(void * params)
 {
     uint32_t entry;
     int ret;
+    uint32_t stop_val = 0xffffffff;
     while(1) {
         ret = mos_queue_get(myQ, &entry, MOS_WAIT_FOREVER);
         if (ret == MOS_TRUE) {
+            if (entry == stop_val) {
+                printf("myQueuReader: got stop val\r\n");
+                mos_thread_delete(0);
+                return;
+            }
             printf("myQueuReader: got value %d\r\n", entry);
         }
         else {
@@ -206,10 +217,17 @@ static void myQueuReader(void * params)
 }
 
 static void myTimerCallback( mos_timer_id_t id) {
-  //printf("myTimerCallback: timer id %d\r\n", id);
+  if (mos_test_end) {
+      printf("myTimerCallback: timer id %d, but test MOS is ending\r\n", id);
+      uint32_t stop_val = 0xffffffff;
+      mos_queue_put (myQ, &stop_val);
+      return;
+  }
+
   if (id == 1) {
     mos_queue_put (myQ, &cnt1);
     cnt1++;
+
     if (! mos_timer_create_single_shot( 1000, myTimerCallback, 1 )) {
         LOG_E("fail to to create timer 1");
     }
@@ -245,10 +263,11 @@ static void myTestTask(void * params)
         LOG_E("fail to to create timer 2");
     }
 
-    while (1) {
+    while ( ! mos_test_end) {
         printf("myTestTask: c = %d\r\n", c++);
         mos_thread_sleep(10000);
     }
+    mos_thread_delete(0);
 }
 static void mosTest()
 {
@@ -280,11 +299,15 @@ static void mosTest()
     TEST_ASSERT_RET(task2, "Fail to create task2");
 
     // sleep to check that myTestTask is locked
-    mos_thread_sleep(100);
+    mos_thread_sleep(10);
     TEST_ASSERT_RET(cnt1 == 0, "mutex fail to block myTestTask");
     mos_mutex_unlock(mutex);
-    mos_thread_sleep(100);
+    mos_thread_sleep(10);
     TEST_ASSERT_RET(cnt1 > 0, "mutex fail to unblock myTestTask");
+
+    mos_thread_sleep(7000);
+
+    printf("cnt1 = %d, cnt2 = %d\r\n", cnt1, cnt2);
     
 
 }
@@ -328,6 +351,9 @@ void app_main()
 
 
     initialize_console();
+
+    lua_task = mos_thread_new( "lua_task", luaTask, 0, 6000, 6 );
+
         /* Main loop */
     printf("Starting Lua Shell\r\n");
     while(true) {
@@ -343,7 +369,10 @@ void app_main()
         linenoiseFree(line);
     }
 
+}
 
-
+void toConsole(char * msg)
+{
+    printf(msg);
 }
 

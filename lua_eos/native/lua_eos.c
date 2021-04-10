@@ -127,6 +127,8 @@ bool add_text_event(sys_events_t id, char * msg)
     ev_item.item.generic_text.text = txt;
     // LOG("add_text_event: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
     add_event_to_queue(&ev_item);
+
+    return true;
 }
 
 #define MAX_WAIT_READ_EVENT_Q 0
@@ -237,7 +239,7 @@ extern void toConsole(char * msg);
 
 static int luac_eos_print_str(lua_State *L)
 {
-  static c = 0;
+  static int c = 0;
   char * s;
 
   s = luaL_checkstring(L, 1);

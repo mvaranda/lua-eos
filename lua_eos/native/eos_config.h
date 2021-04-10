@@ -17,8 +17,8 @@
  ***************************************************************
  */
 
-#define HAS_LVGL // has LVGL
-#define HAS_LVGL_SPLASH
+//#define HAS_LVGL // has LVGL
+//#define HAS_LVGL_SPLASH
 
 
 //-----------------------------------------------------------------

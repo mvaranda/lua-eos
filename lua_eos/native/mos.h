@@ -26,6 +26,7 @@
   #define MOS_PASS    0
   #define MOS_ERROR   -1
 #else
+  #include "FreeRTOS.h"
   #define MOS_WAIT_FOREVER portMAX_DELAY
   #define MOS_PASS         pdPASS
   #define MOS_FAIL         pdFAIL

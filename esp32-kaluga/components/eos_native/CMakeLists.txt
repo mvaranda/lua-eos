@@ -6,8 +6,14 @@
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(COMPONENT_PRIV_INCLUDEDIRS 
   "$ENV{IDF_PATH}/components/freertos/include/freertos"
+  "../lua_int/src"
+  "../../../lvgl/src"
   "." )
-set(COMPONENT_SRCS "native/mos_freertos.c" )
+set(COMPONENT_SRCS 
+  "native/mos_freertos.c" 
+  "native/lua_eos.c"
+  "native/bidings.c"
+  )
                     
 register_component()
 

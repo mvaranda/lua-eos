@@ -25,10 +25,12 @@ extern "C" {
 
 void lua_bindings_registration(lua_State *L)
 {
+#ifdef HAS_LVGL
   lvgl_lua_init(L);
-#ifdef  HAS_LVGL_SPLASH
-  lvgl_splash_init(L);
-#endif
+  #ifdef  HAS_LVGL_SPLASH
+    lvgl_splash_init(L);
+  #endif
+#endif // HAS_LVGL
 }
 
 

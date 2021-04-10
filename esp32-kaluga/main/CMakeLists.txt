@@ -2,6 +2,7 @@ set(COMPONENT_SRCS "main.c")
 
 set(COMPONENT_PRIV_INCLUDEDIRS 
   "../../lua_eos/native"
+  "$ENV{IDF_PATH}/components/freertos/include/freertos"
   "." )
 
 register_component()

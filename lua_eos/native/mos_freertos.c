@@ -83,6 +83,11 @@ void mos_thread_sleep( uint32_t time_milliseconds)
   vTaskDelay(pdMS_TO_TICKS(time_milliseconds));
 }
 
+void mos_thread_delete(mos_thread_h_t thread)
+{
+  vTaskDelete(thread);
+}
+
 //////////////// Queues ///////////////
 #if 1
 //----------------- queue -------------------
