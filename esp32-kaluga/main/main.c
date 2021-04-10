@@ -258,6 +258,19 @@ static void mosTest()
     mutex = mos_mutex_create();
     TEST_ASSERT_RET(mutex, "Fail to create mutex");
 
+    // get max memo allocation
+    int m = 0;
+    int s = 1024;
+    void * ptr;
+    while ( (ptr = MOS_MALLOC(s)) != NULL) {
+        m = s;
+        s *= 2;
+        MOS_FREE(ptr);
+    }
+    printf("Max heap allocation = %d\r\n", m); // 1048576 about 1~2 mega.
+    TEST_ASSERT_RET(m >= 1048576, "Heap size lower than expected");
+
+
     // take mutex
     mos_mutex_lock(mutex);
 
