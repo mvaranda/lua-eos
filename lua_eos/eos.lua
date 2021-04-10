@@ -388,12 +388,12 @@ local function launcher(ctx)
   
   if show_splash ~= nil then
     show_splash()
-  end
   
-  while(1) do
-    local ev, arg = eos.wait_event(ctx)
-    if ev.name == "EV_SYS_SPLASH_DONE" then
-      break;
+    while(1) do
+      local ev, arg = eos.wait_event(ctx)
+      if ev.name == "EV_SYS_SPLASH_DONE" then
+        break;
+      end
     end
   end
   eos.create_task(luashell, "luashell")

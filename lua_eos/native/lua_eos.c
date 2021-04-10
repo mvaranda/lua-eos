@@ -187,6 +187,12 @@ static int luac_eod_read_event_table(lua_State *L)
     num_items++;
   }
 
+// TODO: fix the thread priorities and blocking to avoid this taskYIELD 
+#ifndef MOS_DESKTOP
+  mos_thread_sleep(1000);
+#endif
+  LOG("num_items = %d\r\n", num_items);
+
   if (num_items > 0)
     return 1;
 

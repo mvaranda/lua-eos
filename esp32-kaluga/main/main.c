@@ -33,7 +33,7 @@
 
 #include "lua_eos.h"
 
-#define MOS_TEST
+//#define MOS_TEST
 
 static const char *TAG = "main";
 
@@ -311,7 +311,7 @@ static void mosTest()
     // cnt1 = 8, cnt2 = 1004
     TEST_ASSERT_RET(cnt1 == 8, "undexpected cnt1 value, it should be 8");
     TEST_ASSERT_RET(cnt2 == 1004, "undexpected cnt2 value, it should be 1004");
-
+    mos_test_end = true; // end test
 }
 
 #else
@@ -360,7 +360,7 @@ void app_main()
 
     initialize_console();
 
-    lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, 6000, 6 );
+    lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, 6000, 0); // 6 );
 
         /* Main loop */
     printf("Starting Lua Shell\r\n");

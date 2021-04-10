@@ -21,6 +21,9 @@ glog = true
 
 function app( ctx )
   print ("starting task " .. ctx.name)
+  print ("test 1\r\n")
+  print ("test 2\r\n")
+
   
 --  local ev = eos.create_user_event("event_1")
 --  if ev == nil then

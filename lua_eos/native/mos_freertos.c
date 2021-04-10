@@ -80,7 +80,12 @@ mos_thread_h_t mos_thread_new( const char *pcName, thread_func_t thread_func, vo
 
 void mos_thread_sleep( uint32_t time_milliseconds)
 {
-  vTaskDelay(pdMS_TO_TICKS(time_milliseconds));
+  if (time_milliseconds == 0) {
+    taskYIELD();
+  }
+  else {
+    vTaskDelay(pdMS_TO_TICKS(time_milliseconds));
+  }
 }
 
 void mos_thread_delete(mos_thread_h_t thread)
