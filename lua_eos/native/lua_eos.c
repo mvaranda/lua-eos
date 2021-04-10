@@ -39,9 +39,13 @@
 #include "lua_eos.h"
 
 
-
-#define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
-#define EOS_APP_FILENAME "../eos_app/app.lua"
+#ifdef MOS_DESKTOP
+  #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
+  #define EOS_APP_FILENAME "../eos_app/app.lua"
+#else
+  #define START_LUA_EOS_FILENAME "/spiffs/eos.lua"
+  #define EOS_APP_FILENAME "/spiffs/app.lua"
+#endif
 
 #define READ_BUF_SIZE 1024
 

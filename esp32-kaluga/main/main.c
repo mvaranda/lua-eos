@@ -308,7 +308,9 @@ static void mosTest()
     mos_thread_sleep(7000);
 
     printf("cnt1 = %d, cnt2 = %d\r\n", cnt1, cnt2);
-    
+    // cnt1 = 8, cnt2 = 1004
+    TEST_ASSERT_RET(cnt1 == 8, "undexpected cnt1 value, it should be 8");
+    TEST_ASSERT_RET(cnt2 == 1004, "undexpected cnt2 value, it should be 1004");
 
 }
 
@@ -316,6 +318,12 @@ static void mosTest()
 static void mosTest(){} // do nothing
 #endif
 /////////////////////////// END of MOS Test /////////////////////
+
+static void lua_task_wrapper(void * args)
+{
+    luaTask(args);
+    mos_thread_delete(0);
+}
 
 void app_main()
 {
@@ -352,7 +360,7 @@ void app_main()
 
     initialize_console();
 
-    lua_task = mos_thread_new( "lua_task", luaTask, 0, 6000, 6 );
+    lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, 6000, 6 );
 
         /* Main loop */
     printf("Starting Lua Shell\r\n");

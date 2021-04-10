@@ -386,7 +386,9 @@ local function launcher(ctx)
     print(msg)
   end
   
-  show_splash()
+  if show_splash ~= nil then
+    show_splash()
+  end
   
   while(1) do
     local ev, arg = eos.wait_event(ctx)
