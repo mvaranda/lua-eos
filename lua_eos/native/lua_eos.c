@@ -22,16 +22,8 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <memory.h>
-
+#include "eos_config.h"
 #include "mos.h"
-/*
-// FreeRTOS kernel includes.
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
-#include "queue.h"
-#include "semphr.h"
-*/
 
 #include "lauxlib.h"
 #include "lualib.h"
@@ -189,9 +181,9 @@ static int luac_eod_read_event_table(lua_State *L)
 
 // TODO: fix the thread priorities and blocking to avoid this taskYIELD 
 #ifndef MOS_DESKTOP
-  mos_thread_sleep(1000);
+  mos_thread_sleep(0);
 #endif
-  LOG("num_items = %d\r\n", num_items);
+  //LOG("num_items = %d\r\n", num_items);
 
   if (num_items > 0)
     return 1;
@@ -309,7 +301,7 @@ void luaTask(void * arg)
   if ((err = luaL_loadfile(L, EOS_APP_FILENAME)) != 0) {
     switch(err) {
     case LUA_ERRFILE:
-      LOG_E("loadfile: fail to open eos.lua");
+      LOG_E("loadfile: fail to open %s", EOS_APP_FILENAME);
       break;
     case LUA_ERRSYNTAX: LOG_E("loadfile: syntax error during pre-compilation");
       break;
@@ -345,7 +337,6 @@ void luaTask(void * arg)
       }
       return;
   }
-
 
   err = lua_pcall(L, 0, 0, 0);
   if (err) {

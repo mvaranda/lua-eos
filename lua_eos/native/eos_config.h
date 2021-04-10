@@ -17,8 +17,10 @@
  ***************************************************************
  */
 
-//#define HAS_LVGL // has LVGL
-//#define HAS_LVGL_SPLASH
+#ifdef MOS_DESKTOP
+  #define HAS_LVGL // has LVGL
+  #define HAS_LVGL_SPLASH
+#endif
 
 
 //-----------------------------------------------------------------

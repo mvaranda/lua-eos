@@ -43,7 +43,6 @@ function show(t)
   end 
 end
 
-
 --function _eos_delay(t)
 --  local x = 0
 --  local y = 0
