@@ -166,9 +166,27 @@ static void initialize_console(void)
 
 //////////////////////////// MOS Test ///////////////////////
 #ifdef MOS_TEST
+
+#define UNITY_TEST_ASSERT(c,l,m) do { \
+  if (c) break; \
+  printf("Fail line %d: %s\r\n", l, m); \
+} while(0)
+
+#define UNITY_TEST_ASSERT_RET(c,l,m) do { \
+  if (c) break; \
+  printf("Fail line %d: %s\r\n", l, m); \
+  return; \
+} while(0)
+
+#define TEST_ASSERT(condition,m)          UNITY_TEST_ASSERT(    (condition), __LINE__, m)
+#define TEST_ASSERT_FALSE(condition,m)    UNITY_TEST_ASSERT(   !(condition), __LINE__, m)
+#define TEST_ASSERT_NULL(pointer,m)       UNITY_TEST_ASSERT(    (pointer == NULL), __LINE__, m)
+#define TEST_ASSERT_RET(condition,m)      UNITY_TEST_ASSERT_RET((condition), __LINE__, m)
+
 static mos_queue_h_t myQ;
+static mos_mutex_h_t mutex;
 static uint32_t cnt1 = 0;
-static uint32_t cnt2 = 1000;
+static uint32_t cnt2 = 0;
 //mos_queue_create ( uint32_t len, uint32_t item_size);
 
 static void myQueuReader(void * params)
@@ -215,6 +233,11 @@ static void myTestTask(void * params)
     int c = 0;
     printf("Starting myTestTask...\r\n");
 
+    mos_mutex_lock(mutex);
+    cnt1 = 1;
+    cnt2 = 1001;
+    mos_mutex_unlock(mutex);
+
     if (! mos_timer_create_single_shot( 1000, myTimerCallback, 1 )) {
         LOG_E("fail to to create timer 1");
     }
@@ -229,13 +252,28 @@ static void myTestTask(void * params)
 }
 static void mosTest()
 {
+    //TEST_ASSERT((1 != 1),"");
     myQ = mos_queue_create ( 5, sizeof(uint32_t));
-    RET_IF_NULL(myQ);
+    TEST_ASSERT_RET(myQ, "Fail to create queue");
+    mutex = mos_mutex_create();
+    TEST_ASSERT_RET(mutex, "Fail to create mutex");
+
+    // take mutex
+    mos_mutex_lock(mutex);
 
     mos_thread_h_t task1 = mos_thread_new( "myTestTask", myTestTask, 0, 3000, 6 );
-    RET_IF_NULL(task1);
+    TEST_ASSERT_RET(task1, "Fail to create task1");
     mos_thread_h_t task2 = mos_thread_new( "myQueuReader", myQueuReader, 0, 3000, 6 );
-    RET_IF_NULL(task2);
+    TEST_ASSERT_RET(task2, "Fail to create task2");
+
+    // sleep to check that myTestTask is locked
+    mos_thread_sleep(100);
+    TEST_ASSERT_RET(cnt1 == 0, "mutex fail to block myTestTask");
+    mos_mutex_unlock(mutex);
+    mos_thread_sleep(100);
+    TEST_ASSERT_RET(cnt1 > 0, "mutex fail to unblock myTestTask");
+    
+
 }
 
 #else

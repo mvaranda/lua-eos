@@ -209,6 +209,28 @@ int mos_queue_waiting (mos_queue_h_t queue_id)
 #endif
 
 //----------------- Mutex ------------------
+#if 1
+mos_mutex_h_t mos_mutex_create(void)
+{
+  return (mos_mutex_h_t) xSemaphoreCreateMutex();
+}
+
+void mos_mutex_lock(mos_mutex_h_t mutex)
+{
+  xSemaphoreTake((SemaphoreHandle_t) mutex, MOS_WAIT_FOREVER);
+}
+
+void mos_mutex_unlock(mos_mutex_h_t mutex)
+{
+  xSemaphoreGive((SemaphoreHandle_t) mutex);
+}
+
+void mos_mutex_destroy(mos_mutex_h_t mutex)
+{
+  vSemaphoreDelete( (SemaphoreHandle_t) mutex );
+}
+
+#else
 mos_mutex_h_t mos_mutex_create(void)
 {
     pthread_mutex_t * mutex_ptr = (pthread_mutex_t *) MOS_MALLOC(sizeof(pthread_mutex_t));
@@ -239,6 +261,7 @@ void mos_mutex_destroy(mos_mutex_h_t mutex)
     pthread_mutex_destroy(mutex);
     MOS_FREE(mutex);
 }
+#endif
 
 //------------------- timers ---------------------
 #define TIMER_MAGIC_WORD 0xb45ae83c
