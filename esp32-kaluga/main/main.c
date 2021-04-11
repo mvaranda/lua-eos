@@ -334,7 +334,57 @@ static void dump(char * s)
   printf("\r\n\r\n");
 }
 
+#ifdef MACOS
+  #define BACKSPACE_CHAR 0x7f
+#else
+  #define BACKSPACE_CHAR 0x08
+#endif
 static char line_buf[256];
+static int in_fd = -1;
+
+static char * get_line()
+{
+    // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
+    static char msg[1024] = {0};
+    int msg_len;
+    char c;
+
+    msg_len = 0;
+    fflush(stdout);
+
+    while(1) {
+        int nread = read(in_fd, &c, 1);
+        //LOG("char = %c\r\n", c);
+        if (nread <= 0) {
+            LOG_E("stdin read error");
+            return NULL;
+        }
+
+        putchar(c);
+        fflush(stdout);
+
+       if (c == BACKSPACE_CHAR) { // note: 0x7f is for Mac
+          msg[msg_len] = 0;
+          if (msg_len > 1) {
+              msg_len--;
+          }
+          continue;
+       }
+
+        //if (c == '\r') continue; // ignore CR
+        msg[msg_len++] = c;
+        if (c == '\n') {
+            msg[msg_len] = 0;
+            return msg;
+        }
+        if (msg_len > (sizeof(msg) - 1) ) {
+            LOG_W("line buffer overflow... ignoring line.");
+            msg_len = 0;
+        }
+    }
+
+}
+
 void app_main()
 {
     lcd_config_t lcd_config = {
@@ -369,6 +419,11 @@ void app_main()
 
 
     initialize_console();
+    in_fd = fileno(stdin);
+    if (in_fd < 0) {
+        LOG_E("stdin not open");
+        return NULL;
+    }
 
     lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, 6000, 0); // 6 );
 
@@ -376,22 +431,14 @@ void app_main()
     printf("\r\nStarting Lua Shell\r\n\r\n");
     mos_thread_sleep(50); // let the lua print its prompt
     while(true) {
-        /* Get a line using linenoise.
-         * The line is returned when ENTER is pressed.
-         */
-        char* line = linenoise("lua> ");
+        char* line = get_line();
         if (line == NULL) { /* Break on EOF or error */
             printf("\r\n");
             continue;
         }
-        //dump(line);
-        sprintf(line_buf, "%s\n", line);
-        //printf("%s\r\n", line);
-        //sendTextToConsoleController("\r\n");
+
         printf("\r\n");
-        sendTextToConsoleController(line_buf);
-        //sendTextToConsoleController("\n");
-        linenoiseFree(line);
+        sendTextToConsoleController(line); // line_buf);
     }
 
 }
@@ -399,5 +446,6 @@ void app_main()
 void toConsole(char * msg)
 {
     printf(msg);
+    fflush(stdout);
 }
 
