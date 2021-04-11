@@ -20,9 +20,7 @@ global_demo = 0
 glog = false
 
 function app( ctx )
-  print ("starting task " .. ctx.name)
-  print ("test 1\r\n")
-  print ("test 2\r\n")
+--  print ("starting task " .. ctx.name)
 
   
 --  local ev = eos.create_user_event("event_1")

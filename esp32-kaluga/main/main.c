@@ -325,6 +325,16 @@ static void lua_task_wrapper(void * args)
     mos_thread_delete(0);
 }
 
+static void dump(char * s)
+{
+  printf("\r\n\r\nDump: \"%s\"\r\n", s);
+  while(*s) {
+    printf("%02X - ", *s++);
+  }
+  printf("\r\n\r\n");
+}
+
+static char line_buf[256];
 void app_main()
 {
     lcd_config_t lcd_config = {
@@ -374,10 +384,13 @@ void app_main()
             printf("\r\n");
             continue;
         }
+        //dump(line);
+        sprintf(line_buf, "%s\n", line);
         //printf("%s\r\n", line);
         //sendTextToConsoleController("\r\n");
         printf("\r\n");
-        sendTextToConsoleController(line);
+        sendTextToConsoleController(line_buf);
+        //sendTextToConsoleController("\n");
         linenoiseFree(line);
     }
 
