@@ -335,7 +335,7 @@ function luashell( ctx )
 --  end
     
 
-  print_sl ("Lua EOS Shell version 0.01\nCopyrights 2021 Varanda Labs\n\n" .. LUA_PROMPT)
+  print_sl ("Lua EOS Shell version 0.01\r\nCopyrights 2021 Varanda Labs\r\n\r\n" .. LUA_PROMPT)
   
   -- subscribe for events
   ok,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_TEXT_FROM_CONSOLE")

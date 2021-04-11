@@ -17,7 +17,7 @@
 -- */
 
 global_demo = 0
-glog = true
+glog = false
 
 function app( ctx )
   print ("starting task " .. ctx.name)

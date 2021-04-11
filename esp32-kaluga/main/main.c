@@ -363,7 +363,8 @@ void app_main()
     lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, 6000, 0); // 6 );
 
         /* Main loop */
-    printf("Starting Lua Shell\r\n");
+    printf("\r\nStarting Lua Shell\r\n\r\n");
+    mos_thread_sleep(50); // let the lua print its prompt
     while(true) {
         /* Get a line using linenoise.
          * The line is returned when ENTER is pressed.
@@ -373,7 +374,10 @@ void app_main()
             printf("\r\n");
             continue;
         }
-        printf("line: %s\r\n", line);
+        //printf("%s\r\n", line);
+        //sendTextToConsoleController("\r\n");
+        printf("\r\n");
+        sendTextToConsoleController(line);
         linenoiseFree(line);
     }
 
