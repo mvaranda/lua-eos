@@ -127,7 +127,7 @@ bool add_text_event(sys_events_t id, char * msg)
     return true;
 }
 
-#define MAX_WAIT_READ_EVENT_Q 0
+#define MAX_WAIT_READ_EVENT_Q       MOS_WAIT_FOREVER
 
 static int luac_eod_read_test_table(lua_State *L)
 {
@@ -143,21 +143,26 @@ static int luac_eod_read_event_table(lua_State *L)
   int num_items = 0;
   ev_queue_item_t ev_item;
   memset(&ev_item, 0, sizeof(ev_item));
+  bool have_table = false;
 
 
 
 
-  if (mos_queue_waiting( event_queue ) > 0) {
-      lua_newtable(L);
-  }
-  else {
-      lua_pushnil(L);
-      return 1;
-  }
+//  if (mos_queue_waiting( event_queue ) > 0) {
+//      lua_newtable(L);
+//  }
+//  else {
+//      lua_pushnil(L);
+//      return 1;
+//  }
 
   while (mos_queue_get( event_queue, &ev_item, MAX_WAIT_READ_EVENT_Q) == MOS_PASS) {
+    if (have_table == false) {
+        lua_newtable(L);
+        have_table = true;
+    }
     if (ev_item.cb_event_push == NULL) {
-      LOG_E("luac_eod_read_event_table: missing event push callback");
+      LOG_E("luac_eod_read_event_table: missing event push callback, event_id = %d", ev_item.event_id);
       return 0;
     }
 
@@ -167,6 +172,7 @@ static int luac_eod_read_event_table(lua_State *L)
     lua_settable(L, -3);
 
     num_items++;
+    if (mos_queue_waiting(event_queue) == 0) break;
   }
 
 // TODO: fix the thread priorities and blocking to avoid this taskYIELD 
@@ -175,10 +181,11 @@ static int luac_eod_read_event_table(lua_State *L)
 #endif
   //LOG("num_items = %d\r\n", num_items);
 
-  if (num_items > 0)
-    return 1;
-
-  return 0;
+  if (num_items == 0) { // probably never happen
+      LOG_E("luac_eod_read_event_table: unexpected num_items == 0");
+      lua_pushnil(L);
+  }
+  return 1;
 
 }
 

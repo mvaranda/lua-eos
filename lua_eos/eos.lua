@@ -350,7 +350,7 @@ function luashell( ctx )
 
   while(1) do
     local ev, arg = eos.wait_event(ctx)
-    show(ev)
+
     if more == true then
       chunk = chunk .. arg
       f, msg = load(chunk)

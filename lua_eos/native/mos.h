@@ -25,6 +25,7 @@
 #ifdef MOS_DESKTOP
   #define MOS_PASS    0
   #define MOS_ERROR   -1
+  #define MOS_WAIT_FOREVER 0xffffffff
 #else
   #include "FreeRTOS.h"
   #define MOS_WAIT_FOREVER portMAX_DELAY
