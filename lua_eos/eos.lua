@@ -99,7 +99,8 @@ EV_SYS_SHUT_DOWN =          {id = 2,    name = "EV_SYS_SHUT_DOWN",            pr
 EV_SYS_TIMER =              {id = 3,    name = "EV_SYS_TIMER",                pri = false}
 EV_SYS_TEXT_FROM_CONSOLE =  {id = 4,    name = "EV_SYS_TEXT_FROM_CONSOLE",    pri = false}
 EV_SYS_SPLASH_DONE =        {id = 5,    name = "EV_SYS_SPLASH_DONE",          pri = false}
-EV_SYS_LVGL =               {id = 6,    name = "EV_SYS_LVGL",                 pri = false}
+EV_SYS_USER_DEF =           {id = 6,    name = "EV_SYS_USER_DEF",             pri = false}
+EV_SYS_LVGL =               {id = 7,    name = "EV_SYS_LVGL",                 pri = false}
 
 
 
@@ -110,13 +111,15 @@ local events_list = {
   -- timer is a special case... no need registration
   EV_SYS_TEXT_FROM_CONSOLE,
   EV_SYS_SPLASH_DONE,
+  EV_SYS_USER_DEF,
   EV_SYS_LVGL
 }
 
 local user_event = 1000
 local task_id_cnt = 1
 
-local ST_YIELD = 1
+local ST_START = 0
+local ST_RUN = 1
 local ST_WAIT_DELAY = 2
 local ST_WAIT_EVENT = 3
 local ST_ERROR = 4
@@ -147,14 +150,15 @@ local function scheduler()
 --      print("----------")
 --    end
     
+    
     for k,task in pairs(tasks) do
-      
+      -- for each task load its ev_q if got event and if subscribed for it
       if nat_ev ~= nil then
         for kk,ev in pairs(nat_ev) do
           -- check if timer 
           if ev.ev_id == EV_SYS_TIMER.id and ev.task_id == task.task_id and ev.timer_id == 0 then
             if ev.timer_id == 0 then
-              task.state = ST_YIELD
+              task.state = ST_RUN
             end
           else
 --            print("check task registration for event: " .. ev.ev_id)
@@ -180,10 +184,9 @@ local function scheduler()
       end
       
       success = true
-      if task.state == ST_YIELD then
+      if task.state == ST_START then
         success, args = coroutine.resume(task.co, task, "ID", "ARGS")
-      elseif task.state ==  ST_WAIT_DELAY then
-        -- do nothing
+
       elseif task.state ==  ST_WAIT_EVENT then
         if #task.ev_q > 0 then
           local e = table.remove(task.ev_q, 1)
@@ -192,6 +195,8 @@ local function scheduler()
 --          print("--------------------")
           success, args = coroutine.resume(task.co, task, e.event, e.arg)
         end
+      elseif task.state ==  ST_WAIT_DELAY then
+        -- do nothing
       elseif task.state ==  ST_ERROR then
         -- TODO: remove task from the list
       else
@@ -206,8 +211,6 @@ local function scheduler()
       
     end
     
-    --eos_delay(100)
-    
     if fist_time then
       eos.post(EV_SYS_START_UP, "Starting up")
       fist_time = false
@@ -220,6 +223,12 @@ end
 
 function eos.delay(ctx, time)
   eos_set_timer(ctx.task_id, 0, time)
+  ctx.state = ST_WAIT_DELAY
+  local c, e, arg = coroutine.yield()
+end
+
+function eos.yield(ctx)
+  eos_set_timer(ctx.task_id, 0, 0)
   ctx.state = ST_WAIT_DELAY
   local c, e, arg = coroutine.yield()
 end
@@ -282,7 +291,7 @@ function eos.create_task(task_func, name)
   task_id_cnt = task_id_cnt + 1
   e["co"] = coroutine.create(task_func)
   e["name"] = name
-  e["state"] = ST_YIELD
+  e["state"] = ST_START
   e["subscription"] = {}
   e["ev_q"] = {} -- entries have "ev_id" and "table_values"
   table.insert(tasks, e)
@@ -294,13 +303,8 @@ end
 
 function eos.wait_event(ctx)
   ctx.state = ST_WAIT_EVENT
-  local c, e, arg = eos.yield()
-  return e, arg
-end
-
-function eos.yield()
   local c, e, arg = coroutine.yield()
-  return c,e,arg
+  return e,arg
 end
 
 function eos.error(ctx, msg)
@@ -346,6 +350,7 @@ function luashell( ctx )
 
   while(1) do
     local ev, arg = eos.wait_event(ctx)
+    show(ev)
     if more == true then
       chunk = chunk .. arg
       f, msg = load(chunk)
@@ -384,7 +389,7 @@ local function launcher(ctx)
   if res == false then
     print(msg)
   end
-  
+  show_splash=nil
   if show_splash ~= nil then
     show_splash()
   

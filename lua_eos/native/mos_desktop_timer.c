@@ -102,6 +102,7 @@ STATIC list_entry_t * insert( uint64_t expire, timer_func_t callback, mos_timer_
 bool mos_timer_create_single_shot( uint32_t time_milliseconds, timer_func_t callback, mos_timer_id_t id )
 {
   mos_mutex_lock(mutex);
+  if (time_milliseconds == 0) time_milliseconds = 10;
   list_entry_t * entry = insert( tick_counter + MILLISEC_TO_TICK(time_milliseconds),  callback,  id);
   mos_mutex_unlock(mutex);
   if (entry == NULL)

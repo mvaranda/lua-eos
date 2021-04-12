@@ -38,13 +38,13 @@
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
 
 typedef enum {
-  EV_SYS_START_UP = 1,
-  EV_SYS_SHUT_DOWN = 2,
-
-  EV_SYS_TIMER = 3,
+  EV_SYS_START_UP          = 1,
+  EV_SYS_SHUT_DOWN         = 2,
+  EV_SYS_TIMER             = 3,
   EV_SYS_TEXT_FROM_CONSOLE = 4,
-  EV_SYS_SPLASH_DONE = 5,
-  EV_SYS_LVGL = 6,
+  EV_SYS_SPLASH_DONE       = 5,
+  EV_SYS_USER_DEF          = 6,
+  EV_SYS_LVGL              = 7,
 
 } sys_events_t;
 

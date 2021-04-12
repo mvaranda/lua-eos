@@ -17,6 +17,8 @@
 
 global_demo = 0
 glog = false
+g_user_event_1 = nil
+g_user_event_2 = nil
 
 local EOS_PATH = "../lua_eos/?.lua;"
 package.path = EOS_PATH
@@ -34,6 +36,7 @@ local function btn_1_cb (obj, ev)
   if ev == LV_EVENT_PRESSED then
     lv_label_set_text(label_1, "Button " .. tostring(btn_1_cnt))
     btn_1_cnt = btn_1_cnt + 1
+    eos.post(g_user_event_1, "user event sent by btn_1_cb")
   end
 end
 
@@ -46,11 +49,33 @@ local function btn_2_cb (obj, ev)
   if ev == LV_EVENT_PRESSED then
     lv_label_set_text(label_2, "Button " .. tostring(btn_2_cnt))
     btn_2_cnt = btn_2_cnt + 1
+    eos.post(g_user_event_1, "user event sent by btn_2_cb")
+  end
+end
+
+function task_test_user_event_1( ctx )  
+  --local res,msg = eos.subscribe_event_by_name(ctx, "g_user_event_1")
+  local res,msg = eos.subscribe_event(ctx, g_user_event_1)
+  if res == false then
+    print(msg)
+    return
+  end
+  while(1) do
+    local ev, arg = eos.wait_event(ctx)
+    print("task_demo: event = " .. ev.name .. ", msg = " .. arg)
   end
 end
 
 -- -------------- Main App ------------
 function app(ctx)
+  -- creat user event
+  g_user_event_1 = eos.create_user_event("user_event_1")
+  if g_user_event_1 == nil then
+    print("could not create user event")
+  end
+  
+  eos.create_task(task_test_user_event_1, "task_test_user_event_1")
+
   ok, msg = eos.subscribe_event_by_name(ctx, "EV_SYS_LVGL")
   if ok == false then
     print(msg)

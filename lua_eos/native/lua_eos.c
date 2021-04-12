@@ -161,16 +161,6 @@ static int luac_eod_read_event_table(lua_State *L)
       return 0;
     }
 
-
-#if 0 // debug only
-    if (ev_item.event_id == EV_SYS_TIMER) {
-        LOG ("task ID = %d, timer ID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
-    }
-    else if (ev_item.event_id == EV_SYS_TEXT_FROM_CONSOLE) {
-        LOG ("msgFromConsoleToLua \"%s\"", ev_item.item.generic_text.text);
-    }
-#endif
-
     lua_pushnumber(L, num_items + 1);
     lua_newtable(L);
     ((cb_event_push_t)(ev_item.cb_event_push))(L, &ev_item);
