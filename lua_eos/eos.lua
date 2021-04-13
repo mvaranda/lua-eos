@@ -137,7 +137,7 @@ local function scheduler()
   local nat_ev
   
   while(1) do
-    nat_ev = eod_read_event_table()
+    nat_ev = eos_read_event_table()
     
     --if nat_ev ~= nil then
       --print("heap (KB):" .. collectgarbage("count")) 
@@ -160,7 +160,22 @@ local function scheduler()
             if ev.timer_id == 0 then
               task.state = ST_RUN
             end
+          elseif ev.ev_id == EV_SYS_USER_DEF.id then
+            -- ignore... this event is only used to wake up the thread
           else
+            print("ev.ev_id = " .. ev.ev_id)
+--            if ev.ev_id == EV_SYS_USER_DEF.id then
+--              print("show ev.obj:")
+--              print(ev.obj)
+--              print("show ev.obj.user_ev:")
+--              show(ev.obj.user_ev)
+--              print("show ev.obj.user_arg:")
+--              show(ev.obj.user_arg)
+--              print("overriding...")
+--              -- override the ev
+--              --ev = { ev_id = ev.obj.user_ev, arg = ev.obj.user_arg }
+--              print("overrided ev *******")
+--            end
 --            print("check task registration for event: " .. ev.ev_id)
             for kkk, sub in pairs(task.subscription) do
 --              print("check for " .. task.name)
@@ -182,34 +197,51 @@ local function scheduler()
           end  
         end
       end
+    end
+    
+    while(1) do -- loop while event is queued
+      local ntask_remaining_events = 0
       
-      success = true
-      if task.state == ST_START then
-        success, args = coroutine.resume(task.co, task, "ID", "ARGS")
+      for k,task in pairs(tasks) do
+        success = true
+        if task.state == ST_START then
+          success, args = coroutine.resume(task.co, task, "ID", "ARGS")
 
-      elseif task.state ==  ST_WAIT_EVENT then
-        if #task.ev_q > 0 then
-          local e = table.remove(task.ev_q, 1)
---          print("show event from Q:")
---          show(e)
---          print("--------------------")
-          success, args = coroutine.resume(task.co, task, e.event, e.arg)
+        elseif task.state ==  ST_WAIT_EVENT then
+          if #task.ev_q > 0 then
+            local e = table.remove(task.ev_q, 1)
+            if (#task.ev_q > 0) then
+              ntask_remaining_events = ntask_remaining_events + 1
+            end
+  --          print("show event from Q:")
+  --          show(e)
+  --          print("--------------------")
+            success, args = coroutine.resume(task.co, task, e.event, e.arg)
+          end
+        elseif task.state ==  ST_WAIT_DELAY then
+          -- do nothing
+        elseif task.state ==  ST_ERROR then
+          -- TODO: remove task from the list
+        else
+          print("unexpected e.state = " .. task.state)
+          return
         end
-      elseif task.state ==  ST_WAIT_DELAY then
-        -- do nothing
-      elseif task.state ==  ST_ERROR then
-        -- TODO: remove task from the list
-      else
-        print("unexpected e.state = " .. task.state)
-        return
+
+        if success == false then
+          print("Error: " .. args)
+          return
+        end
       end
       
-      if success == false then
-        print("Error: " .. args)
-        return
+      if ntask_remaining_events == 0 then
+        break;
       end
+      
+      print("pending")
       
     end
+    
+    -----------------------------------------------
     
     if fist_time then
       eos.post(EV_SYS_START_UP, "Starting up")
@@ -260,6 +292,10 @@ function eos.post(event, arg)
       end
     end
   end
+--  local obj = { user_ev = event, user_arg = arg}
+--  print("obj")
+--  print(obj)
+  eos_user_event()
 end
 
 function eos.subscribe_event(ctx, event)

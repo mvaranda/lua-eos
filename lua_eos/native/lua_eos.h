@@ -57,6 +57,10 @@ typedef struct ev_queue_item_text_st {
     char *           text;
 } ev_queue_item_text_t;
 
+typedef struct ev_queue_item_obj_st {
+    char *           obj;
+} ev_queue_item_obj_t;
+
 #ifdef HAS_LVGL
 typedef struct ev_queue_item_lvgl_st {
     lv_obj_t *      obj;
@@ -67,6 +71,7 @@ typedef struct ev_queue_item_lvgl_st {
 typedef union ev_queue_item_union_st {
     ev_queue_item_timer_t       timer_item;
     ev_queue_item_text_t        generic_text;
+    ev_queue_item_obj_t         generic_obj;
 
 #ifdef HAS_LVGL
     ev_queue_item_lvgl_t        lvgl_item;

@@ -101,6 +101,20 @@ static void cb_event_push_text (lua_State *L, ev_queue_item_t * item_ptr)
   free(item_ptr->item.generic_text.text);
 }
 
+static void cb_event_push_obj (lua_State *L, ev_queue_item_t * item_ptr)
+{
+  lua_pushstring(L, "ev_id");                      // Key
+  lua_pushinteger(L, item_ptr->event_id);    // value
+  lua_settable(L, -3);
+
+  lua_pushstring(L, "obj");                        // Key
+  lua_pushstring(L, item_ptr->item.generic_obj.obj);   // value
+  lua_settable(L, -3);
+  LOG("cb_event_push_obj item_ptr->event_id) = %d", item_ptr->event_id);
+    LOG("cb_event_push_obj item_ptr->item.generic_obj.obj) = 0x%x", item_ptr->item.generic_obj.obj);
+}
+
+
 bool add_text_event(sys_events_t id, char * msg)
 {
     unsigned long len = strlen(msg);
@@ -108,7 +122,7 @@ bool add_text_event(sys_events_t id, char * msg)
         LOG_W("add_text_event: len = 0");
         return false;
     }
-    //LOG("got msg: %s", msg);
+
     char * txt = MOS_MALLOC(len + 1);
     if ( ! txt) {
         LOG_E("add_text_event: no memo");
@@ -121,7 +135,6 @@ bool add_text_event(sys_events_t id, char * msg)
     ev_item.event_id = id;
     ev_item.cb_event_push = (void *) cb_event_push_text;
     ev_item.item.generic_text.text = txt;
-    // LOG("add_text_event: taskID = %d, timerID = %d", ev_item.item.timer_item.taskID, ev_item.item.timer_item.timerID);
     add_event_to_queue(&ev_item);
 
     return true;
@@ -129,7 +142,20 @@ bool add_text_event(sys_events_t id, char * msg)
 
 #define MAX_WAIT_READ_EVENT_Q       MOS_WAIT_FOREVER
 
-static int luac_eod_read_test_table(lua_State *L)
+static int luac_eos_user_event(lua_State *L)
+{
+  ev_queue_item_t ev_item;
+  memset(&ev_item, 0, sizeof(ev_item));
+  ev_item.event_id = EV_SYS_USER_DEF;
+  ev_item.cb_event_push = (void *) cb_event_push_obj;
+  ev_item.item.generic_obj.obj = 0;
+  add_event_to_queue(&ev_item);
+
+  lua_pushboolean(L,1);
+  return 1;
+}
+
+static int luac_eos_read_test_table(lua_State *L)
 {
     static int cnt = 0;
     if (cnt++ < 5) return 0; // empty table
@@ -138,7 +164,7 @@ static int luac_eod_read_test_table(lua_State *L)
     return 1;
 }
 
-static int luac_eod_read_event_table(lua_State *L)
+static int luac_eos_read_event_table(lua_State *L)
 {
   int num_items = 0;
   ev_queue_item_t ev_item;
@@ -162,7 +188,7 @@ static int luac_eod_read_event_table(lua_State *L)
         have_table = true;
     }
     if (ev_item.cb_event_push == NULL) {
-      LOG_E("luac_eod_read_event_table: missing event push callback, event_id = %d", ev_item.event_id);
+      LOG_E("luac_eos_read_event_table: missing event push callback, event_id = %d", ev_item.event_id);
       return 0;
     }
 
@@ -182,7 +208,7 @@ static int luac_eod_read_event_table(lua_State *L)
   //LOG("num_items = %d\r\n", num_items);
 
   if (num_items == 0) { // probably never happen
-      LOG_E("luac_eod_read_event_table: unexpected num_items == 0");
+      LOG_E("luac_eos_read_event_table: unexpected num_items == 0");
       lua_pushnil(L);
   }
   return 1;
@@ -256,8 +282,12 @@ static void register_luacs(lua_State *L)
   lua_pushcfunction(L, luac_eos_set_timer);
   lua_setglobal(L, "eos_set_timer");
 
-  lua_pushcfunction(L, luac_eod_read_event_table);
-  lua_setglobal(L, "eod_read_event_table");
+
+  lua_pushcfunction(L, luac_eos_user_event);
+  lua_setglobal(L, "eos_user_event");
+
+  lua_pushcfunction(L, luac_eos_read_event_table);
+  lua_setglobal(L, "eos_read_event_table");
 
   lua_pushcfunction(L, luac_eos_print_str);
   lua_setglobal(L, "eos_print");
