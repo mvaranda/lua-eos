@@ -22,6 +22,8 @@
   #define HAS_LVGL_SPLASH
 #endif
 
+#define EV_QUEUE_LENGTH    32
+
 
 //-----------------------------------------------------------------
 #endif // EOS_CONFIG_H

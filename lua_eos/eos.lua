@@ -133,26 +133,13 @@ local ST_ERROR = 4
 local function scheduler()
   local success
   local args
-  local fist_time = true
   local nat_ev
   
   while(1) do
     nat_ev = eos_read_event_table()
     
-    --if nat_ev ~= nil then
-      --print("heap (KB):" .. collectgarbage("count")) 
-      --collectgarbage("collect")
-    --end
-    
---    if nat_ev ~= nil then
---      print("nat_ev:")
---      show(nat_ev)
---      print("----------")
---    end
-    
-    
+    -- for each task load its ev_q if got event and if subscribed for it
     for k,task in pairs(tasks) do
-      -- for each task load its ev_q if got event and if subscribed for it
       if nat_ev ~= nil then
         for kk,ev in pairs(nat_ev) do
           -- check if timer 
@@ -163,20 +150,6 @@ local function scheduler()
           elseif ev.ev_id == EV_SYS_USER_DEF.id then
             -- ignore... this event is only used to wake up the thread
           else
-            print("ev.ev_id = " .. ev.ev_id)
---            if ev.ev_id == EV_SYS_USER_DEF.id then
---              print("show ev.obj:")
---              print(ev.obj)
---              print("show ev.obj.user_ev:")
---              show(ev.obj.user_ev)
---              print("show ev.obj.user_arg:")
---              show(ev.obj.user_arg)
---              print("overriding...")
---              -- override the ev
---              --ev = { ev_id = ev.obj.user_ev, arg = ev.obj.user_arg }
---              print("overrided ev *******")
---            end
---            print("check task registration for event: " .. ev.ev_id)
             for kkk, sub in pairs(task.subscription) do
 --              print("check for " .. task.name)
 --              print("  sub.name = " .. sub.name )
@@ -199,56 +172,40 @@ local function scheduler()
       end
     end
     
-    while(1) do -- loop while event is queued
-      local ntask_remaining_events = 0
-      
-      for k,task in pairs(tasks) do
-        success = true
-        if task.state == ST_START then
-          success, args = coroutine.resume(task.co, task, "ID", "ARGS")
+    -- loop while pendinf event in queued
+    -- process each task
+    for k,task in pairs(tasks) do
+      success = true
+      if task.state == ST_START then
+        success, args = coroutine.resume(task.co, task, "ID", "ARGS")
 
-        elseif task.state ==  ST_WAIT_EVENT then
-          if #task.ev_q > 0 then
-            local e = table.remove(task.ev_q, 1)
-            if (#task.ev_q > 0) then
-              ntask_remaining_events = ntask_remaining_events + 1
-            end
-  --          print("show event from Q:")
-  --          show(e)
-  --          print("--------------------")
-            success, args = coroutine.resume(task.co, task, e.event, e.arg)
-          end
-        elseif task.state ==  ST_WAIT_DELAY then
-          -- do nothing
-        elseif task.state ==  ST_ERROR then
-          -- TODO: remove task from the list
-        else
-          print("unexpected e.state = " .. task.state)
-          return
-        end
+      elseif task.state ==  ST_WAIT_EVENT then
+        while task.state ==  ST_WAIT_EVENT and #task.ev_q > 0 do
+          local e = table.remove(task.ev_q, 1)
 
-        if success == false then
-          print("Error: " .. args)
-          return
+--          print("show event from Q:")
+--          show(e)
+--          print("--------------------")
+          
+          success, args = coroutine.resume(task.co, task, e.event, e.arg)
         end
+      elseif task.state ==  ST_WAIT_DELAY then
+        -- do nothing
+      elseif task.state ==  ST_ERROR then
+        -- TODO: remove task from the list
+      else
+        print("unexpected e.state = " .. task.state)
+        return
       end
-      
-      if ntask_remaining_events == 0 then
-        break;
+
+      if success == false then
+        print("Error: " .. args)
+        return
       end
-      
-      print("pending")
-      
     end
+      
     
     -----------------------------------------------
-    
-    if fist_time then
-      eos.post(EV_SYS_START_UP, "Starting up")
-      fist_time = false
-    end
-    
-    -- read events from native and dispatch them
     
   end
 end
@@ -351,30 +308,15 @@ function lua_error_handler( err )
    print( "ERROR:", err )
 end
 
-LUA_PROMPT = "Lua> "
-LUA_PROMPT_MULTI = "Lua>> "
+LUA_PROMPT = "lua> "
+LUA_PROMPT_MULTI = "lua>> "
 
 function luashell( ctx )
   shell_ctx = ctx -- global
   local f,msg, ok
   local chunk = ""
   local more = false
-  
---  local res,msg = eos.subscribe_event_by_name(ctx, "EV_SYS_SPLASH_DONE")
---  if res == false then
---    print(msg)
---  end
---  
---  show_splash()
---  
---  while(1) do
---    local ev, arg = eos.wait_event(ctx)
---    if ev.name == "EV_SYS_SPLASH_DONE" then
---      break;
---    end
---  end
     
-
   print_sl ("Lua EOS Shell version 0.01\r\nCopyrights 2021 Varanda Labs\r\n\r\n" .. LUA_PROMPT)
   
   -- subscribe for events
@@ -425,7 +367,8 @@ local function launcher(ctx)
   if res == false then
     print(msg)
   end
-  show_splash=nil
+    
+  --show_splash=nil
   if show_splash ~= nil then
     show_splash()
   
@@ -451,6 +394,7 @@ end
 --eos.create_task(app, "app")
 
 eos.create_task(launcher, "launcher")
+eos.post(EV_SYS_START_UP, "Starting up")
 eos.scheduler()
 
 

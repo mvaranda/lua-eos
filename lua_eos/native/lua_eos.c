@@ -43,8 +43,6 @@
 
 
 
-#define EV_QUEUE_LENGTH    16
-
 #if 1
 //#define EV_LOCK() xSemaphoreTake(ev_q_mutex, pdMS_TO_TICKS(10000))
 //#define EV_UNLOCK() xSemaphoreGive(ev_q_mutex)
@@ -170,17 +168,6 @@ static int luac_eos_read_event_table(lua_State *L)
   ev_queue_item_t ev_item;
   memset(&ev_item, 0, sizeof(ev_item));
   bool have_table = false;
-
-
-
-
-//  if (mos_queue_waiting( event_queue ) > 0) {
-//      lua_newtable(L);
-//  }
-//  else {
-//      lua_pushnil(L);
-//      return 1;
-//  }
 
   while (mos_queue_get( event_queue, &ev_item, MAX_WAIT_READ_EVENT_Q) == MOS_PASS) {
     if (have_table == false) {
