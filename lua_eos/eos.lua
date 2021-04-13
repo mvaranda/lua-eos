@@ -176,7 +176,7 @@ local function scheduler()
     -- process each task
     for k,task in pairs(tasks) do
       success = true
-      if task.state == ST_START then
+      if task.state == ST_START or task.state == ST_RUN then
         success, args = coroutine.resume(task.co, task, "ID", "ARGS")
 
       elseif task.state ==  ST_WAIT_EVENT then

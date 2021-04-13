@@ -425,7 +425,7 @@ void app_main()
         return NULL;
     }
 
-    lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, 6000, 0); // 6 );
+    lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, LUA_EOS_STACK_SIZE, LUA_TASK_PRIORITY);
 
         /* Main loop */
     printf("\r\nStarting Lua Shell\r\n\r\n");

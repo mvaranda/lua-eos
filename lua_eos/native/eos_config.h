@@ -18,11 +18,32 @@
  */
 
 #ifdef MOS_DESKTOP
+  #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
+  #define EOS_APP_FILENAME "../eos_app/app.lua"
+#else
+  #define START_LUA_EOS_FILENAME "/spiffs/eos.lua"
+  #define EOS_APP_FILENAME "/spiffs/app.lua"
+#endif
+
+#ifdef MOS_DESKTOP
   #define HAS_LVGL // has LVGL
   #define HAS_LVGL_SPLASH
 #endif
 
 #define EV_QUEUE_LENGTH    32
+
+#ifdef MOS_DESKTOP
+  #define LOWEST_PRIORITY 1 // assume low value has low priority
+#else
+  #define LOWEST_PRIORITY tskIDLE_PRIORITY
+#endif
+
+// Stack sizes
+#define LUA_EOS_STACK_SIZE (4 * 1024) // 4k
+
+// Priorities
+#define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
+
 
 
 //-----------------------------------------------------------------

@@ -31,14 +31,6 @@
 #include "lua_eos.h"
 
 
-#ifdef MOS_DESKTOP
-  #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
-  #define EOS_APP_FILENAME "../eos_app/app.lua"
-#else
-  #define START_LUA_EOS_FILENAME "/spiffs/eos.lua"
-  #define EOS_APP_FILENAME "/spiffs/app.lua"
-#endif
-
 #define READ_BUF_SIZE 1024
 
 
@@ -108,9 +100,7 @@ static void cb_event_push_obj (lua_State *L, ev_queue_item_t * item_ptr)
   lua_pushstring(L, "obj");                        // Key
   lua_pushstring(L, item_ptr->item.generic_obj.obj);   // value
   lua_settable(L, -3);
-  LOG("cb_event_push_obj item_ptr->event_id) = %d", item_ptr->event_id);
-    LOG("cb_event_push_obj item_ptr->item.generic_obj.obj) = 0x%x", item_ptr->item.generic_obj.obj);
-}
+ }
 
 
 bool add_text_event(sys_events_t id, char * msg)
@@ -188,12 +178,6 @@ static int luac_eos_read_event_table(lua_State *L)
     if (mos_queue_waiting(event_queue) == 0) break;
   }
 
-// TODO: fix the thread priorities and blocking to avoid this taskYIELD 
-#ifndef MOS_DESKTOP
-  mos_thread_sleep(0);
-#endif
-  //LOG("num_items = %d\r\n", num_items);
-
   if (num_items == 0) { // probably never happen
       LOG_E("luac_eos_read_event_table: unexpected num_items == 0");
       lua_pushnil(L);
@@ -251,11 +235,9 @@ extern void toConsole(char * msg);
 
 static int luac_eos_print_str(lua_State *L)
 {
-  static int c = 0;
-  char * s;
+  const char * s;
 
   s = luaL_checkstring(L, 1);
-  //if (s) qDebugC(s);
   if (s) {
       toConsole(s);
   }
@@ -293,12 +275,6 @@ void luaTask(void * arg)
     LOG_E("Could not create event_queue");
     return;
   }
-
-//  if ( ! (ev_q_mutex = xSemaphoreCreateMutexStatic( &ev_q_mutex_buffer ) )) {
-//    LOG_E("Could not create ev_q_mutex");
-//    return;
-//  }
-
 
   //int status, result;
   lua_State *L = luaL_newstate();  /* create state */
