@@ -33,27 +33,8 @@
 
 #define READ_BUF_SIZE 1024
 
-
-
-#if 1
-//#define EV_LOCK() xSemaphoreTake(ev_q_mutex, pdMS_TO_TICKS(10000))
-//#define EV_UNLOCK() xSemaphoreGive(ev_q_mutex)
-#define EV_LOCK() mos_mutex_lock(ev_q_mutex)
-#define EV_UNLOCK() mos_mutex_unlock(ev_q_mutex)
-
-#else
-#define EV_LOCK() pdTRUE
-#define EV_UNLOCK() pdTRUE
-#endif
-
-
-static mos_mutex_h_t ev_q_mutex = NULL;
-//static StaticSemaphore_t ev_q_mutex_buffer;
-
 /* The variable used to hold the event queue's data structure. */
-//static StaticQueue_t static_event_queue_ctrl;
 static mos_queue_h_t event_queue;
-//static uint8_t event_queue_buff[ EV_QUEUE_LENGTH * sizeof( ev_queue_item_t ) ];
 
 void add_event_to_queue( const void * ev_item)
 {
@@ -143,15 +124,6 @@ static int luac_eos_user_event(lua_State *L)
   return 1;
 }
 
-static int luac_eos_read_test_table(lua_State *L)
-{
-    static int cnt = 0;
-    if (cnt++ < 5) return 0; // empty table
-    lua_newtable(L);
-
-    return 1;
-}
-
 static int luac_eos_read_event_table(lua_State *L)
 {
   int num_items = 0;
@@ -235,9 +207,9 @@ extern void toConsole(char * msg);
 
 static int luac_eos_print_str(lua_State *L)
 {
-  const char * s;
+  char * s;
 
-  s = luaL_checkstring(L, 1);
+  s = (char *) luaL_checkstring(L, 1);
   if (s) {
       toConsole(s);
   }
