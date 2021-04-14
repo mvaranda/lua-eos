@@ -12,6 +12,7 @@ set(COMPONENT_PRIV_INCLUDEDIRS
 set(COMPONENT_SRCS 
   "native/mos_freertos.c" 
   "native/lua_eos.c"
+  "native/mos_test.c"
   "native/bidings.c"
   "native/lvgl_lua.c"
   )
