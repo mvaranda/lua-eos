@@ -27,7 +27,8 @@
 
 //#ifdef MOS_DESKTOP
   #define HAS_LVGL // has LVGL
-//  #define HAS_LVGL_SPLASH
+  // #define HAS_LVGL_SPLASH
+  #define SHOW_ANIMATED_SPLASH
 //#endif
 
 #define EV_QUEUE_LENGTH    32
