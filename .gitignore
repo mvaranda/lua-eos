@@ -4,3 +4,4 @@ build-lua-eos-sim-Desktop_Qt_5_15_2_MSVC2019_64bit-Debug
 build-lua-eos-sim-Desktop_Qt_5_15_0_clang_64bit-Debug
 build-lua-eos-sim-Desktop_Qt_5_12_2_clang_64bit-Debug
 
+esp32-kaluga/idf_monitor_mv.py
