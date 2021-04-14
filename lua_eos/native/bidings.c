@@ -17,6 +17,7 @@
 #include "lua.h"
 #include "splash.h"
 #include "lvgl_lua.h"
+#include "log.h"
 
 
 #ifdef __cplusplus

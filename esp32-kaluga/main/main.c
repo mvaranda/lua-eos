@@ -35,6 +35,12 @@
 
 //#define MOS_TEST
 
+#ifdef HAS_LVGL
+  #include "lvgl_lua.h"
+  extern void lvgl_task_init();
+#endif
+
+
 static const char *TAG = "main";
 
 #define IMAGE_MAX_SIZE (100 * 1024)/**< The maximum size of a single picture in the boot animation */
@@ -424,6 +430,11 @@ void app_main()
         LOG_E("stdin not open");
         return NULL;
     }
+#ifdef HAS_LVGL
+    lvgl_task_init();
+    //lvgl_lua_init();
+    mos_thread_sleep(250); // let lvgl task start
+#endif
 
     lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, LUA_EOS_STACK_SIZE, LUA_TASK_PRIORITY);
 

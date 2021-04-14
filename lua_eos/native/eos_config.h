@@ -25,10 +25,10 @@
   #define EOS_APP_FILENAME "/spiffs/app.lua"
 #endif
 
-#ifdef MOS_DESKTOP
+//#ifdef MOS_DESKTOP
   #define HAS_LVGL // has LVGL
-  #define HAS_LVGL_SPLASH
-#endif
+//  #define HAS_LVGL_SPLASH
+//#endif
 
 #define EV_QUEUE_LENGTH    32
 
@@ -39,10 +39,12 @@
 #endif
 
 // Stack sizes
-#define LUA_EOS_STACK_SIZE (4 * 1024) // 4k
+#define LUA_EOS_STACK_SIZE (8 * 1024) // 8k
+#define LVGL_TASK_STACK_SIZE (8 * 1024) // 8K
 
 // Priorities
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
+#define	LVGL_TASK_PRIORITY		( LOWEST_PRIORITY + 2 )
 
 
 

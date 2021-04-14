@@ -57,11 +57,11 @@ static int bind_lv_create(lua_State *L)
         lua_pushnil(L);
         return 1;
     }
-
+LOG("bind_lv_create:  func_id = %d", func_id);
     create_func_prototype_t f = create_func_info[func_id].func;
 
     lv_obj_t * obj = f(par, (const lv_obj_t *) copy);
-    LOG("bind_lv_create creted: 0x%x", obj);
+    LOG("bind_lv_create creted: 0x%x", (unsigned int) obj);
     if (! obj) {
         lua_pushnil(L);
     }
