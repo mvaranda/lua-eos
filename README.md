@@ -1,9 +1,11 @@
 # Lua-EOS
-Lua EOS is a embedded multi-task framework where the application layer can be written in Lua Scripts.
+Lua EOS is an embedded multi-task framework where the application layer can be written in Lua Scripts.
 It provides event driven non-preemptive Lua tasks.
 It is the same successful idea been used in many systems where Java VM provides a secure way for end users to
 write applications without compromising the native implementation. Lua is very light weight and suitable for
-embedded systems.
+embedded systems.  
+The solution that Lua EOS delivers: product suppliers can securely provide programming capabilities to their end users without disclosing any native code (libraries). End user scripts run "out-of-the-box" from the file system. For example, supposed a company sells a weather station; The end user could write small scripts to take actions like turn fan on when temperature is above a value, send an email when a sensor is triggered, etc.
+
 
 ## License
 Creative Commons: CC BY-NC-SA 4.0  
