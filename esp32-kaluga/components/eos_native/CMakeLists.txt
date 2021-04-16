@@ -6,7 +6,7 @@
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(COMPONENT_PRIV_INCLUDEDIRS 
   "$ENV{IDF_PATH}/components/freertos/include/freertos"
-  "../lua_int/src"
+  "../../../lua/src"
   "../../../lvgl/src"
   "." )
 set(COMPONENT_SRCS 

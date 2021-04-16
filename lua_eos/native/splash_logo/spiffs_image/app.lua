@@ -25,11 +25,11 @@ glog = false
 
 local btn_1
 local label_1
-local btn_1_cnt = 1
+btn_1_cnt = 1
 
 local btn_2
 local label_2
-local btn_2_cnt = 1
+btn_2_cnt = 1
 
 local function init_ui()
   print("init_ui: in")
@@ -48,17 +48,7 @@ local function init_ui()
 end
 
 function app( ctx )
---  print ("starting task " .. ctx.name)
 
-  
---  local ev = eos.create_user_event("event_1")
---  if ev == nil then
---    print ("error")
---    eos.error(ctx, "error")
---    return
---  end
-  
-  --eos.create_task(task_demo, "task_demo")
   init_ui()
 
   while(1) do
@@ -66,7 +56,7 @@ function app( ctx )
     if glog == true then 
       print("app is alive, global_demo = " .. global_demo)
     end
-    --eos.post(ev, "message from task 1")
+
     eos.delay(ctx, 1000)
     btn_1_cnt = btn_1_cnt + 1
     lv_label_set_text(label_1, "Button " .. btn_1_cnt)
