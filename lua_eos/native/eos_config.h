@@ -16,13 +16,17 @@
  *
  ***************************************************************
  */
+#define EOS_VERSION "0.02"
 
 #ifdef MOS_DESKTOP
-  #define START_LUA_EOS_FILENAME "../lua_eos/eos.lua"
-  #define EOS_APP_FILENAME "../eos_app/app.lua"
-#else
+  #define START_LUA_EOS_FILENAME "../target_files/eos.lua"
+  #define EOS_APP_FILENAME "../target_files/app.lua"
+  #define EOS_PLATFORM "SIMULATOR"
+
+#else // for now assume ESP32
   #define START_LUA_EOS_FILENAME "/spiffs/eos.lua"
   #define EOS_APP_FILENAME "/spiffs/app.lua"
+  #define EOS_PLATFORM "ESP32"
 #endif
 
 //#ifdef MOS_DESKTOP

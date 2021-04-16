@@ -260,6 +260,10 @@ void luaTask(void * arg)
   lua_bindings_registration(L);
 
   int err;
+
+  luaL_loadstring(L, "EOS_PLATFORM = \"" EOS_PLATFORM "\" EOS_VERSION = " EOS_VERSION);
+  lua_pcall(L, 0, 0, 0);
+
   if ((err = luaL_loadfile(L, EOS_APP_FILENAME)) != 0) {
     switch(err) {
     case LUA_ERRFILE:

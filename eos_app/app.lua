@@ -20,7 +20,7 @@ glog = false
 g_user_event_1 = nil
 g_user_event_2 = nil
 
-local EOS_PATH = "../lua_eos/?.lua;"
+local EOS_PATH = "../target_files/?.lua;"
 package.path = EOS_PATH
 
 require "lvgl"
