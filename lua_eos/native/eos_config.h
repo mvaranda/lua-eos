@@ -29,11 +29,15 @@
   #define EOS_PLATFORM "ESP32"
 #endif
 
-//#ifdef MOS_DESKTOP
-  #define HAS_LVGL // has LVGL
-  // #define HAS_LVGL_SPLASH
+
+#define HAS_LVGL // has LVGL
+
+#ifdef HAS_LVGL
   #define SHOW_ANIMATED_SPLASH
-//#endif
+  #ifdef MOS_DESKTOP
+    #define MOS_DESKTOP_SPLASH
+  #endif
+#endif
 
 #define EV_QUEUE_LENGTH    32
 
