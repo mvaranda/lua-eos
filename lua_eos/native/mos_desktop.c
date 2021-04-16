@@ -130,7 +130,7 @@ int mos_queue_get (mos_queue_h_t queue_id, void *item_buf, uint32_t timeout_mill
       }
 
       // block
-      LOG("mos_queue_get: blocking");
+      //LOG("mos_queue_get: blocking");
       int err = pthread_cond_wait(&q->cond, q->mutex) ;
       if (err != 0) {
           LOG_E("mos_queue_get: pthread_cond_wait ret: %d", err);
@@ -154,7 +154,7 @@ int mos_queue_get (mos_queue_h_t queue_id, void *item_buf, uint32_t timeout_mill
 
           }
       }
-      LOG("mos_queue_get: unblocked");
+      //LOG("mos_queue_get: unblocked");
     }
 
     uint8_t * byte_ptr = q->buffer + (q->item_size * q->tail_idx);
