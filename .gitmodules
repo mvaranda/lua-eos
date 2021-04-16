@@ -1,3 +1,6 @@
 [submodule "lvgl"]
 	path = lvgl
 	url = https://github.com/lvgl/lvgl.git
+[submodule "esp32-kaluga/components/lvgl_esp32_drivers"]
+	path = esp32-kaluga/components/lvgl_esp32_drivers
+	url = https://github.com/lvgl/lvgl_esp32_drivers

@@ -241,7 +241,7 @@ void lua_bindings_registration(lua_State *L); // TODO: use header
 
 void luaTask(void * arg)
 {
-  LOG("luaInit...");
+  LOG("luaInit...\r\n");
 
   if ( (event_queue = mos_queue_create ( EV_QUEUE_LENGTH, sizeof( ev_queue_item_t ))) == NULL) {
     LOG_E("Could not create event_queue");

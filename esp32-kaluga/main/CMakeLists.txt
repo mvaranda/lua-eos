@@ -1,4 +1,7 @@
-set(COMPONENT_SRCS "main.c")
+set(COMPONENT_SRCS 
+  "main.c"
+  "lvgl_task.c"
+  )
 
 set(COMPONENT_PRIV_INCLUDEDIRS 
   "../../lua_eos/native"
