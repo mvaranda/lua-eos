@@ -88,6 +88,8 @@ extern "C" {
 #endif
 
 void sendTextToConsoleController(char * msg);
+void switchNativeShellMode(void) ;
+void eos_init(void);
 
 #ifdef __cplusplus
 }

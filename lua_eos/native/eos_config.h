@@ -18,6 +18,8 @@
  */
 #define EOS_VERSION "0.02"
 
+#define MAX_NUM_NATIVE_MENU_ITEMS 8
+
 #ifdef MOS_DESKTOP
   #define START_LUA_EOS_FILENAME "../target_files/eos.lua"
   #define EOS_APP_FILENAME "../target_files/app.lua"
@@ -35,7 +37,7 @@
 #ifdef HAS_LVGL
   #define SHOW_ANIMATED_SPLASH
   #ifdef MOS_DESKTOP
-    #define MOS_DESKTOP_SPLASH
+    //#define MOS_DESKTOP_SPLASH
   #endif
 #endif
 
@@ -55,6 +57,15 @@
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
 #define	LVGL_TASK_PRIORITY		( LOWEST_PRIORITY + 2 )
 
+//---- native access level
+typedef enum {
+    MENU_DEV_ACCESS,
+    MENU_USER_ACCESS,
+} menu_access_t;
+
+#define MENU_ACCESS MENU_DEV_ACCESS
+#define SHELL_MAX_LINE_SIZE 128
+#define SHELL_MAX_NUM_ARGS 8
 
 
 //-----------------------------------------------------------------

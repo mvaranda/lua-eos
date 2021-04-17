@@ -29,6 +29,7 @@
 #include "lualib.h"
 #include "log.h"
 #include "lua_eos.h"
+#include "nat_cmd.h"
 
 
 #define READ_BUF_SIZE 1024
@@ -314,7 +315,45 @@ void luaTask(void * arg)
   LOG_E("lua thread terminated");
 }
 
+typedef enum {
+    SHELL_MODE__LUA,
+    SHELL_MODE__NATIVE
+} shell_mode_t;
+
+static shell_mode_t shell_mode = SHELL_MODE__LUA;
+
+void switchNativeShellMode(void)
+{
+    if (shell_mode == SHELL_MODE__NATIVE) {
+        LOG("Already in native shell mode");
+        return;
+    }
+    shell_mode = SHELL_MODE__NATIVE;
+    nat_cmd_prompt(true);
+}
+
 void sendTextToConsoleController(char * msg)
 {
-  add_text_event( EV_SYS_TEXT_FROM_CONSOLE, msg);
+  if (shell_mode == SHELL_MODE__LUA) {
+    add_text_event( EV_SYS_TEXT_FROM_CONSOLE, msg);
+  }
+  else {
+    nat_cmd_exec( msg);
+  }
+}
+
+static bool switchLuaShellMode(const char * line, int num_args, const char ** args)
+{
+    shell_mode = SHELL_MODE__LUA;
+    toConsole("\r\n");
+    add_text_event( EV_SYS_TEXT_FROM_CONSOLE, "\r\n");
+    return false;
+}
+
+
+void eos_init(void)
+{
+  nat_cmd_init();
+  nat_cmd_register("lua", "switch to lua shell", &switchLuaShellMode, MENU_DEV_ACCESS);
+
 }

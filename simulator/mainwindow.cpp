@@ -30,6 +30,8 @@
 
 #define LUA_EOS_VERSION "0.0"
 
+//extern "C" void nat_cmd_init(void);
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , display_image(LV_HOR_RES_MAX,LV_VER_RES_MAX, QImage::Format_RGB16)
@@ -66,6 +68,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     connect(&luaInit, &LuaInit::luaToConsole, this, &MainWindow::forwardToConsole);
+
+    //nat_cmd_init();
+    eos_init();
+
     luaInit.start();
 
 }
@@ -87,9 +93,12 @@ void MainWindow::forwardToConsole(char * msg)
   #define BACKSPACE_CHAR 0x08
 #endif
 
+#define SWITCH_SHELL_MODE_CHAR '+'
+#define SWITCH_SHELL_MODE_COUNT 3
+
 void MainWindow::writeDataFromTerm(const QByteArray &data)
 {
-    // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
+    //LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
     static char msg[1024] = {0};
     static int msg_len = 0;
 
@@ -118,6 +127,25 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
     }
     memcpy(&msg[msg_len], data.data(), to_transfer);
     msg_len += to_transfer;
+
+    // scan for native console switch pattern (3 scape characters):
+    int esc_n = 0;
+    char * ptr = msg;
+    while(*ptr) {
+        if (*ptr == SWITCH_SHELL_MODE_CHAR) {
+            esc_n++;
+            if (esc_n >= SWITCH_SHELL_MODE_COUNT) {
+                msg_len = 0;
+                memset(msg, 0, sizeof(msg));
+                switchNativeShellMode();
+            }
+        }
+        else {
+            esc_n = 0;
+        }
+        ptr++;
+    }
+
 
     // if last char is either CR or LF we send to console controller
     if (msg[msg_len - 1] != '\r') {

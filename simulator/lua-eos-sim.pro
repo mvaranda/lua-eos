@@ -22,6 +22,9 @@ DEFINES += MOS_DESKTOP
 
 DEFINES += projCOVERAGE_TEST=1
 
+DEFINES += LV_USE_LOG=0
+DEFINES += LV_LOG_LEVEL=LV_LOG_LEVEL_WARN
+
 mac: DEFINES += MACOS
 
 INCLUDEPATH += ../lvgl \
@@ -97,6 +100,7 @@ SOURCES += \
     ../lua_eos/native/lvgl_lua.c \
     ../lua_eos/native/mos_desktop.c \
     ../lua_eos/native/mos_desktop_timer.c \
+    ../lua_eos/native/nat_cmd.c \
     ../lua_eos/native/splash.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0002.c \
     ../lua_eos/native/splash_logo/c_arrays/logo_0006.c \
@@ -268,6 +272,7 @@ HEADERS += \
     ../lua_eos/native/lvgl_lua.h \
     ../lua_eos/native/mos.h \
     ../lua_eos/native/mos_desktop_timer.h \
+    ../lua_eos/native/nat_cmd.h \
     ../lua_eos/native/splash.h \
     ../lvgl/src/lv_api_map.h \
     ../lvgl/src/lv_conf_internal.h \
