@@ -53,6 +53,9 @@
 #define LUA_EOS_STACK_SIZE (8 * 1024) // 8k
 #define LVGL_TASK_STACK_SIZE (8 * 1024) // 8K
 
+// lua heap size
+#define EOS_LUA_HEAP_SIZE (500 * 1024) // 500K
+
 // Priorities
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
 #define	LVGL_TASK_PRIORITY		( LOWEST_PRIORITY + 2 )

@@ -34,6 +34,12 @@
 
 #define READ_BUF_SIZE 1024
 
+#ifdef USE_DOUG_LEA_MALLOC
+  #include "malloc.h"
+  mspace gDlmspace;
+  static struct mallinfo dlinfo;
+#endif
+
 /* The variable used to hold the event queue's data structure. */
 static mos_queue_h_t event_queue;
 
@@ -350,10 +356,33 @@ static bool switchLuaShellMode(const char * line, int num_args, const char ** ar
     return false;
 }
 
+static bool show_lua_heap(const char * line, int num_args, const char ** args)
+{
+    char buf[256];
+    dlinfo = mspace_mallinfo(gDlmspace);
+    sprintf(buf,
+    "lua native heap statistics:\r\n"
+    "  Allocated: %d\r\n"  /* total allocated space */
+    "  Free:      %d\r\n\r\n",
+    dlinfo.uordblks, /* total allocated space */
+    dlinfo.fordblks); /* total free space */
+    toConsole(buf);
 
+    return true;
+}
 void eos_init(void)
 {
   nat_cmd_init();
   nat_cmd_register("lua", "switch to lua shell", &switchLuaShellMode, MENU_DEV_ACCESS);
+#ifdef USE_DOUG_LEA_MALLOC
+  void * base = malloc(EOS_LUA_HEAP_SIZE + 10);
+  if (! base) {
+    LOG_E("Fail to allocate lua heap\n");
+  }
+  gDlmspace = create_mspace_with_base(base, EOS_LUA_HEAP_SIZE, 0);
+  nat_cmd_register("lheap", "show lua heap statistics", &show_lua_heap, MENU_DEV_ACCESS);
+
+#endif
+
 
 }

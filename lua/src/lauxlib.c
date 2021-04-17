@@ -984,7 +984,20 @@ LUALIB_API const char *luaL_gsub (lua_State *L, const char *s,
   return lua_tostring(L, -1);
 }
 
+#ifdef USE_DOUG_LEA_MALLOC
+#include "malloc.h"
+extern mspace gDlmspace;
+static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
+  (void)ud; (void)osize;  /* not used */
+  if (nsize == 0) {
+    mspace_free (gDlmspace, ptr);
+    return NULL;
+  }
+  else
+    return mspace_realloc(gDlmspace, ptr, nsize);
+}
 
+#else
 static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
   (void)ud; (void)osize;  /* not used */
   if (nsize == 0) {
@@ -994,6 +1007,7 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
   else
     return realloc(ptr, nsize);
 }
+#endif
 
 
 static int panic (lua_State *L) {

@@ -25,6 +25,9 @@ DEFINES += projCOVERAGE_TEST=1
 DEFINES += LV_USE_LOG=0
 DEFINES += LV_LOG_LEVEL=LV_LOG_LEVEL_WARN
 
+# lua heap
+DEFINES += USE_DL_PREFIX MSPACES=1 USE_DOUG_LEA_MALLOC ONLY_MSPACES=0 NO_MALLINFO=0
+
 mac: DEFINES += MACOS
 
 INCLUDEPATH += ../lvgl \
@@ -38,6 +41,7 @@ INCLUDEPATH += ../lvgl \
   ../lvgl/src/lv_widgets \
   ../lua_eos/native \
   ../lua/src/ \
+  ../utils \
   ../lua_eos/native
 
 INCLUDEPATH += $${FREERTOS_DIR}/Source/include
