@@ -174,7 +174,7 @@ static void initialize_console(void)
  //   linenoiseSetHintsCallback((linenoiseHintsCallback*) &esp_console_get_hint);
 
     /* Set command history size */
-    linenoiseHistorySetMaxLen(100);
+    linenoiseHistorySetMaxLen(10);
 
     /* Don't return empty lines */
     linenoiseAllowEmpty(false);
@@ -184,8 +184,6 @@ static void initialize_console(void)
     linenoiseHistoryLoad(HISTORY_PATH);
 #endif
 }
-
-/////////////////////////// END of MOS Test /////////////////////
 
 static void lua_task_wrapper(void * args)
 {
@@ -207,13 +205,13 @@ static void dump(char * s)
 #else
   #define BACKSPACE_CHAR 0x08
 #endif
-static char line_buf[256];
+//static char line_buf[SHELL_MAX_LINE_SIZE];
 static int in_fd = -1;
 
 static char * get_line()
 {
     // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
-    static char msg[1024] = {0};
+    static char msg[SHELL_MAX_LINE_SIZE] = {0};
     int msg_len;
     char c;
 
@@ -230,6 +228,24 @@ static char * get_line()
 
         putchar(c);
         fflush(stdout);
+
+        // scan for native console switch pattern (3 scape characters):
+        int esc_n = 0;
+        char * ptr = msg;
+        while(*ptr) {
+            if (*ptr == SWITCH_SHELL_MODE_CHAR) {
+                esc_n++;
+                if (esc_n >= SWITCH_SHELL_MODE_COUNT) {
+                    msg_len = 0;
+                    memset(msg, 0, sizeof(msg));
+                    switchNativeShellMode();
+                }
+            }
+            else {
+                esc_n = 0;
+            }
+            ptr++;
+        }
 
        if (c == BACKSPACE_CHAR) { // note: 0x7f is for Mac
           msg[msg_len] = 0;
@@ -286,7 +302,7 @@ void app_main()
     mosTest();
 ///////////////////
 
-
+    eos_init();
     initialize_console();
     in_fd = fileno(stdin);
     if (in_fd < 0) {
@@ -321,5 +337,11 @@ void toConsole(char * msg)
 {
     printf(msg);
     fflush(stdout);
+}
+
+// fake POSIX's long sysconf(_SC_PAGESIZE) called by Doug Lea malloc.
+long sysconf(int v)
+{
+    return 128;
 }
 

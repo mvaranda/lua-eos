@@ -67,8 +67,18 @@ typedef enum {
 } menu_access_t;
 
 #define MENU_ACCESS MENU_DEV_ACCESS
-#define SHELL_MAX_LINE_SIZE 128
+#define SHELL_MAX_LINE_SIZE 256
 #define SHELL_MAX_NUM_ARGS 8
+
+#ifdef MACOS
+  #define BACKSPACE_CHAR 0x7f
+#else
+  #define BACKSPACE_CHAR 0x08
+#endif
+
+#define SWITCH_SHELL_MODE_CHAR '+'
+#define SWITCH_SHELL_MODE_COUNT 3
+
 
 
 //-----------------------------------------------------------------

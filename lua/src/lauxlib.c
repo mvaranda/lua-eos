@@ -985,7 +985,7 @@ LUALIB_API const char *luaL_gsub (lua_State *L, const char *s,
 }
 
 #ifdef USE_DOUG_LEA_MALLOC
-#include "malloc.h"
+#include "utils/malloc.h"
 extern mspace gDlmspace;
 static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
   (void)ud; (void)osize;  /* not used */

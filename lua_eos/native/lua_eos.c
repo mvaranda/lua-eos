@@ -35,7 +35,7 @@
 #define READ_BUF_SIZE 1024
 
 #ifdef USE_DOUG_LEA_MALLOC
-  #include "malloc.h"
+  #include "utils/malloc.h"
   mspace gDlmspace;
   static struct mallinfo dlinfo;
 #endif
