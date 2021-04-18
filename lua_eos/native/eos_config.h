@@ -21,15 +21,26 @@
 #define MAX_NUM_NATIVE_MENU_ITEMS 8
 
 #ifdef MOS_DESKTOP
-  #define START_LUA_EOS_FILENAME "../target_files/eos.lua"
-  #define EOS_APP_FILENAME "../target_files/app.lua"
+  #define ROOT_PATH "../target_files/"
   #define EOS_PLATFORM "SIMULATOR"
-
 #else // for now assume ESP32
-  #define START_LUA_EOS_FILENAME "/spiffs/eos.lua"
-  #define EOS_APP_FILENAME "/spiffs/app.lua"
+  #define ROOT_PATH "/spiffs/"
   #define EOS_PLATFORM "ESP32"
 #endif
+
+#define START_LUA_EOS_FILENAME (ROOT_PATH "eos.lua")
+#define EOS_APP_FILENAME (ROOT_PATH "app.lua")
+
+// #ifdef MOS_DESKTOP
+//   #define START_LUA_EOS_FILENAME "../target_files/eos.lua"
+//   #define EOS_APP_FILENAME "../target_files/app.lua"
+//   #define EOS_PLATFORM "SIMULATOR"
+
+// #else // for now assume ESP32
+//   #define START_LUA_EOS_FILENAME "/spiffs/eos.lua"
+//   #define EOS_APP_FILENAME "/spiffs/app.lua"
+//   #define EOS_PLATFORM "ESP32"
+// #endif
 
 
 #define HAS_LVGL // has LVGL

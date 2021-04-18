@@ -43,6 +43,7 @@
 #include "board.h"
 
 #include "lua_eos.h"
+#include "esp32_cmds.h"
 
 //#define MOS_TEST
 
@@ -303,6 +304,7 @@ void app_main()
 ///////////////////
 
     eos_init();
+    esp32_cmds_init();
     initialize_console();
     in_fd = fileno(stdin);
     if (in_fd < 0) {

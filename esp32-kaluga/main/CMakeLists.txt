@@ -1,6 +1,7 @@
 set(COMPONENT_SRCS 
   "main.c"
   "lvgl_task.c"
+  "esp32_cmds.c"
   )
 
 set(COMPONENT_PRIV_INCLUDEDIRS 
