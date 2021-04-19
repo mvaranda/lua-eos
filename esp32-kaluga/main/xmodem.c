@@ -136,6 +136,7 @@ int xmodemReceive(unsigned char *dest, int destsz)
 		return -2; /* sync error */
 
 	start_recv:
+	    memset(xbuff, 0, sizeof(xbuff));
 		if (trychar == 'C') crc = 1;
 		trychar = 0;
 		p = xbuff;
@@ -150,7 +151,8 @@ int xmodemReceive(unsigned char *dest, int destsz)
 			check(crc, &xbuff[3], bufsz)) {
 			if (xbuff[1] == packetno)	{
 #ifdef LUA_EOS
-				fwrite(xbuff, 1, bufsz, fh);
+				fwrite(&xbuff[3], 1, bufsz, fh);
+				len += bufsz;
 #else
 				register int count = destsz - len;
 				if (count > bufsz) count = bufsz;

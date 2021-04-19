@@ -21,6 +21,10 @@
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
 #include "main_defs.h"
+#include "crc16.h"
+
+extern int xmodemReceive(FILE * fh);
+
 
 static bool match(const char *pattern, const char *candidate, int p, int c)
 {
@@ -154,8 +158,6 @@ static bool cmd_mv(const char *line, int num_args, const char **args)
   return true;
 }
 
-extern int xmodemReceive(FILE * fh);
-
 static bool cmd_xload(const char *line, int num_args, const char **args)
 {
   if (num_args < 2) {
@@ -186,6 +188,37 @@ static bool cmd_xload(const char *line, int num_args, const char **args)
   return true;
 }
 
+// file 28b5 crc logo_0070.jpg
+static bool cmd_crc(const char *line, int num_args, const char **args)
+{
+  if (num_args < 2) {
+    toConsole("missing filename\r\n");
+    return true;
+  }
+  int nread;
+  unsigned short crc = 0;
+  char fn[128];
+  fn[sizeof(fn) - 1] = 0;
+  snprintf(fn, sizeof(fn) - 1, "%s%s", ROOT_PATH, args[1]);
+
+  FILE * fh = fopen(fn, "rb");
+  if ( ! fh) {
+    toConsole("Fail\r\n");
+    return true;
+  }
+
+  while ((nread = fread(fn, 1, sizeof(fn), fh)) > 0) {
+    crc = crc16_ccitt_chunk(crc, fn, nread);
+  }
+  fclose(fh);
+
+  sprintf(fn, "CRC16 = 0x%X\r\n", crc);
+  toConsole(fn);
+
+  return true;
+}
+
+
 //void nat_cmd_register(const char *name, const char *help, menu_func_t func, menu_access_t access);
 
 void esp32_cmds_init(void)
@@ -195,4 +228,5 @@ void esp32_cmds_init(void)
   nat_cmd_register("rm", "remove a file", cmd_rm, MENU_ACCESS);
   nat_cmd_register("mv", "rename a file", cmd_mv, MENU_ACCESS);
   nat_cmd_register("xload", "receive a file via xmodem protocol", cmd_xload, MENU_ACCESS);
+  nat_cmd_register("crc", "show crc16 for a file", cmd_crc, MENU_ACCESS);
 }
