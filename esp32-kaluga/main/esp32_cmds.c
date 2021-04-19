@@ -73,7 +73,7 @@ static bool cmd_ls(const char *line, int num_args, const char **args)
     toConsole("\r\n");
   }
   size_t total_bytes = 0, used_bytes = 0;
-  printf("size of size_t = %d", sizeof(size_t));
+
   if ( esp_spiffs_info(USER_PARTITION_LABLE, &total_bytes, &used_bytes) == ESP_OK) {
     snprintf(buf, sizeof(buf) - 1, "\r\n    Total size: %d, Free: %d\r\n\r\n", total_bytes, total_bytes - used_bytes);
   }

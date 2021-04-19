@@ -155,25 +155,11 @@ static void initialize_console(void)
     /* Tell VFS to use UART driver */
     esp_vfs_dev_uart_use_driver(CONFIG_ESP_CONSOLE_UART_NUM);
 
-    /* Initialize the console */
-//     esp_console_config_t console_config = {
-//             .max_cmdline_args = 8,
-//             .max_cmdline_length = 256,
-// #if CONFIG_LOG_COLORS
-//             .hint_color = atoi(LOG_COLOR_CYAN)
-// #endif
-//     };
-//     ESP_ERROR_CHECK( esp_console_init(&console_config) );
-
     /* Configure linenoise line completion library */
     /* Enable multiline editing. If not set, long commands will scroll within
      * single line.
      */
     linenoiseSetMultiLine(1);
-
-    /* Tell linenoise where to get command completions and hints */
- //   linenoiseSetCompletionCallback(&esp_console_get_completion);
- //   linenoiseSetHintsCallback((linenoiseHintsCallback*) &esp_console_get_hint);
 
     /* Set command history size */
     linenoiseHistorySetMaxLen(10);
@@ -209,24 +195,62 @@ static void dump(char * s)
 #endif
 //static char line_buf[SHELL_MAX_LINE_SIZE];
 static int in_fd = -1;
+static mos_queue_h_t console_input_q;
+
+static void console_input_task(void * args)
+{
+  char c;
+  int nread;
+
+  while(1) {
+    nread = read(in_fd, &c, 1);
+
+    if (nread <= 0) {
+      LOG_E("stdin read error");
+      continue;
+    }
+    mos_queue_put (console_input_q, (const void *) &c);
+  }
+}
+
+int get_console_byte(uint32_t timeout)
+{
+  char c;
+  int r = mos_queue_get (console_input_q, &c, timeout);
+  if (r == MOS_TRUE) {
+    return c;
+  }
+  return -1;
+}
 
 char * get_line(bool echo)
 {
     // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
     static char msg[SHELL_MAX_LINE_SIZE] = {0};
     int msg_len;
+    int c_int;
     char c;
 
     msg_len = 0;
     fflush(stdout);
 
     while(1) {
+#if 1
+    c_int = get_console_byte(MOS_WAIT_FOREVER);
+    if (c_int < 0) {
+        LOG_E("unexpected console input timeout");
+        continue;
+    }
+    c = c_int & 0x000000ff;
+    
+#else
         int nread = read(in_fd, &c, 1);
         //LOG("char = %c\r\n", c);
         if (nread <= 0) {
             LOG_E("stdin read error");
             return NULL;
         }
+#endif
         if (echo) {
           putchar(c);
           fflush(stdout);
@@ -313,6 +337,9 @@ void app_main()
         LOG_E("stdin not open");
         return NULL;
     }
+    console_input_q = mos_queue_create ( SHELL_MAX_LINE_SIZE, 1);
+    mos_thread_new( "console_input", console_input_task, 0, CONSOLE_INPUT_STACK_SIZE, CONSOLE_INPUT_TASK_PRIORITY);
+
 #ifdef HAS_LVGL
     lvgl_task_init();
     //lvgl_lua_init();

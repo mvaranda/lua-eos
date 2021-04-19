@@ -63,13 +63,16 @@
 // Stack sizes
 #define LUA_EOS_STACK_SIZE (8 * 1024) // 8k
 #define LVGL_TASK_STACK_SIZE (8 * 1024) // 8K
+#define CONSOLE_INPUT_STACK_SIZE (1024) // 0.5 K 
 
 // lua heap size
 #define EOS_LUA_HEAP_SIZE (500 * 1024) // 500K
 
 // Priorities
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
-#define	LVGL_TASK_PRIORITY		( LOWEST_PRIORITY + 2 )
+#define	CONSOLE_INPUT_TASK_PRIORITY ( LOWEST_PRIORITY + 2 )
+#define	LVGL_TASK_PRIORITY		( LOWEST_PRIORITY + 3 )
+
 
 //---- native access level
 typedef enum {
