@@ -154,7 +154,37 @@ static bool cmd_mv(const char *line, int num_args, const char **args)
   return true;
 }
 
+extern int xmodemReceive(FILE * fh);
 
+static bool cmd_xload(const char *line, int num_args, const char **args)
+{
+  if (num_args < 2) {
+    toConsole("missing filename\r\n");
+    return true;
+  }
+
+  char fn[128];
+  fn[sizeof(fn) - 1] = 0;
+  snprintf(fn, sizeof(fn) - 1, "%s%s", ROOT_PATH, args[1]);
+
+  FILE * fh = fopen(fn, "wb");
+  if ( ! fh) {
+    toConsole("Fail\r\n");
+    return true;
+  }
+
+  int ret = xmodemReceive(fh);
+  fclose(fh);
+
+  if (ret > 0) {
+    toConsole("OK\r\n");
+  }
+  else {
+    sprintf(fn, "xload error %d\r\n", ret);
+  }
+
+  return true;
+}
 
 //void nat_cmd_register(const char *name, const char *help, menu_func_t func, menu_access_t access);
 
@@ -164,4 +194,5 @@ void esp32_cmds_init(void)
   nat_cmd_register("cat", "show text file content", cmd_cat, MENU_ACCESS);
   nat_cmd_register("rm", "remove a file", cmd_rm, MENU_ACCESS);
   nat_cmd_register("mv", "rename a file", cmd_mv, MENU_ACCESS);
+  nat_cmd_register("xload", "receive a file via xmodem protocol", cmd_xload, MENU_ACCESS);
 }

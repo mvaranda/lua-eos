@@ -18,7 +18,7 @@
  */
 #define EOS_VERSION "0.02"
 
-#define MAX_NUM_NATIVE_MENU_ITEMS 8
+#define MAX_NUM_NATIVE_MENU_ITEMS 32
 
 #ifdef MOS_DESKTOP
   #define ROOT_PATH "../target_files/"

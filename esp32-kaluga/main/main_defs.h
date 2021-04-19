@@ -16,13 +16,16 @@
  *
  ***************************************************************
  */
+#include <stdint.h>
+#include <stdbool.h>
 
 #define USER_PARTITION_LABLE NULL // from doc: 
                                   // Optional, label of SPIFFS partition to use. If set to NULL, first partition with subtype=spiffs will be used. 
 
 char * get_line(bool echo);
 void toConsole(char * msg);
-
+int get_console_byte(uint32_t timeout);
+void byteToConsole(int c);
 //-----------------------------------------
 #endif
 
