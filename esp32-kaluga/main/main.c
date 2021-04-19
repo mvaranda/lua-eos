@@ -44,6 +44,7 @@
 
 #include "lua_eos.h"
 #include "esp32_cmds.h"
+#include "main_defs.h"
 
 //#define MOS_TEST
 
@@ -68,7 +69,7 @@ static void render_splash_animation(bool animation)
     ESP_LOGI(TAG, "LCD photo test....");
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/spiffs",
-        .partition_label = NULL,
+        .partition_label = USER_PARTITION_LABLE,
         .max_files = 5,
         .format_if_mount_failed = false
     };
@@ -77,7 +78,7 @@ static void render_splash_animation(bool animation)
     /*!< Note: esp_vfs_spiffs_register is an all-in-one convenience function. */
     ESP_ERROR_CHECK(esp_vfs_spiffs_register(&conf));
     size_t total = 0, used = 0;
-    ESP_ERROR_CHECK(esp_spiffs_info(NULL, &total, &used));
+    ESP_ERROR_CHECK(esp_spiffs_info(USER_PARTITION_LABLE, &total, &used));
 
     uint8_t *img = NULL;
     uint8_t *buf = malloc(IMAGE_MAX_SIZE);
@@ -209,7 +210,7 @@ static void dump(char * s)
 //static char line_buf[SHELL_MAX_LINE_SIZE];
 static int in_fd = -1;
 
-static char * get_line()
+char * get_line(bool echo)
 {
     // LOG("writeDataFromTerm: '%s', len=%u", data.toStdString().c_str(), data.length());
     static char msg[SHELL_MAX_LINE_SIZE] = {0};
@@ -226,9 +227,10 @@ static char * get_line()
             LOG_E("stdin read error");
             return NULL;
         }
-
-        putchar(c);
-        fflush(stdout);
+        if (echo) {
+          putchar(c);
+          fflush(stdout);
+        }
 
         // scan for native console switch pattern (3 scape characters):
         int esc_n = 0;
@@ -323,7 +325,7 @@ void app_main()
     printf("\r\nStarting Lua Shell\r\n\r\n");
     mos_thread_sleep(50); // let the lua print its prompt
     while(true) {
-        char* line = get_line();
+        char* line = get_line(true);
         if (line == NULL) { /* Break on EOF or error */
             printf("\r\n");
             continue;

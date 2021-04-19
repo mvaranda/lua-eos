@@ -20,8 +20,7 @@
 #include "esp_system.h"
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
-
-extern void toConsole(char *msg); // TODO: move to a header file
+#include "main_defs.h"
 
 static bool match(const char *pattern, const char *candidate, int p, int c)
 {
@@ -46,6 +45,9 @@ static bool match(const char *pattern, const char *candidate, int p, int c)
 static bool cmd_ls(const char *line, int num_args, const char **args)
 {
   DIR *dir = opendir(ROOT_PATH);
+  char buf[128];
+  struct stat info;
+  buf[sizeof(buf) - 1] = 0; // make sure with have a NULL terminator in case snprintf exceeds the size limit.
 
   bool found = false;
   while (true) {
@@ -58,11 +60,27 @@ static bool cmd_ls(const char *line, int num_args, const char **args)
       if (!match(args[1], de->d_name, 0, 0))
         continue;
     }
-    toConsole("    ");
+
+    //toConsole("    ");
+    //toConsole(de->d_name);
+    strcpy(buf, ROOT_PATH);
+    strcat(buf, de->d_name);
+    stat(buf, &info);
+
+    snprintf(buf, sizeof(buf) - 1, "  %9d    ", (unsigned int) info.st_size);
+    toConsole(buf);
     toConsole(de->d_name);
     toConsole("\r\n");
   }
-  toConsole("\r\n");
+  size_t total_bytes = 0, used_bytes = 0;
+  printf("size of size_t = %d", sizeof(size_t));
+  if ( esp_spiffs_info(USER_PARTITION_LABLE, &total_bytes, &used_bytes) == ESP_OK) {
+    snprintf(buf, sizeof(buf) - 1, "\r\n    Total size: %d, Free: %d\r\n\r\n", total_bytes, total_bytes - used_bytes);
+  }
+  else {
+    strcpy(buf,"\r\n    Could not get FS statistics\r\n\r\n");
+  }
+  toConsole(buf);
   closedir(dir);
 
   return true;

@@ -30,6 +30,7 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "nat_cmd.h"
+#include "main_defs.h"
 
 
 #define READ_BUF_SIZE 1024
@@ -209,8 +210,6 @@ static int luac_eos_set_timer(lua_State *L)
 
   return 0;
 }
-
-extern void toConsole(char * msg);
 
 static int luac_eos_print_str(lua_State *L)
 {

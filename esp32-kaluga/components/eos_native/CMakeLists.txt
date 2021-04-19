@@ -10,6 +10,7 @@ set(COMPONENT_PRIV_INCLUDEDIRS
   "../../../lua/src"
   "../../../lvgl/src"
   "../../../lua_eos/native"
+  "../../main"
   "." )
 set(COMPONENT_SRCS 
   "../../../lua_eos/native/mos_freertos.c" 
