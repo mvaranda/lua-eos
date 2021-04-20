@@ -44,7 +44,6 @@
   #include "main_defs.h"
   #include "mos.h"
   #define _inbyte get_console_byte
-  //#define _outbyte byteToConsole
   #define _outbyte(b) toConsoleByte(b)
 #endif
 

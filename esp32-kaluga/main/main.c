@@ -232,14 +232,6 @@ int get_console_byte(uint32_t timeout)
   return -1;
 }
 
-void byteToConsole(int c)
-{
-  // for now NULL is not sent... use case so far is for xmodem control bytes which does not send zeros.
-  char cc[2] = {0,0};
-  cc[0] = c & 0x000000ff;
-  toConsole(cc);
-}
-
 void toConsoleByte(char byte)
 {
   toConsoleBin(&byte, 1);
