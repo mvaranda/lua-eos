@@ -188,7 +188,7 @@ static bool cmd_xload(const char *line, int num_args, const char **args)
   return true;
 }
 
-// file 28b5 crc logo_0070.jpg
+// file 28b5 crc logo_0070.jpg   here: CRC16 = 0x1B4C
 static bool cmd_crc(const char *line, int num_args, const char **args)
 {
   if (num_args < 2) {
@@ -218,6 +218,104 @@ static bool cmd_crc(const char *line, int num_args, const char **args)
   return true;
 }
 
+#define TEMP_EXTENSION ".$$$"
+
+static bool cmd_truncate(const char *line, int num_args, const char **args)
+{
+  if (num_args < 3) {
+    toConsole("missing parameters. required: filename and new_size\r\n");
+    return true;
+  }
+  int nread;
+  unsigned short crc = 0;
+  char fn[64];
+  fn[sizeof(fn) - 1] = 0;
+  snprintf(fn, sizeof(fn) - 1, "%s%s", ROOT_PATH, args[1]);
+
+  FILE * fh = fopen(fn, "rb");
+  if ( ! fh) {
+    toConsole("open to read Fail\r\n");
+    return true;
+  }
+  fseek(fh, 0 , SEEK_END);
+  int len_ori = ftell(fh);
+  fseek(fh, 0 , SEEK_SET);
+
+  if (len_ori <= 0) {
+    toConsole("Bad length\r\n");
+    fclose(fh);
+    return true;
+  }
+  int len_dst = atoi(args[2]);
+  if (len_dst <= 0) {
+    toConsole("Bad new size\r\n");
+    fclose(fh);
+    return true;
+  }
+
+  if (len_dst == len_ori) {
+    toConsole("sizes already match\r\n");
+    fclose(fh);
+    return true;  
+  }
+  
+  if (len_dst < len_ori) {
+    char fn_out[64];
+    fn[sizeof(fn_out) - 1] = 0;
+    snprintf(fn_out, sizeof(fn_out) - 1, "%s%s%s", ROOT_PATH, args[1], TEMP_EXTENSION);
+
+
+    FILE * fout = fopen(fn_out, "wb");
+    if ( ! fout) {
+      toConsole("Open to write fail\r\n");
+      fclose(fh);
+      return true;
+    }
+
+    char buf[128];
+    while ( len_dst > 0) {
+      int to_write = sizeof(buf);
+      if (len_dst < to_write)
+        to_write = len_dst;
+
+      if (fread(buf, 1, to_write, fh) != to_write) {
+        toConsole("read fail\r\n");
+        fclose(fh);
+        fclose(fout);
+        return true;
+      }
+      if (fwrite(buf, 1, to_write, fout) != to_write) {
+        toConsole("write fail\r\n");
+        fclose(fh);
+        fclose(fout);
+        return true;
+      }
+      toConsole("read/write OK\r\n");
+      len_dst -= to_write;
+    }
+    fclose(fh);
+    fclose(fout);
+
+    // delete original
+    unlink(fn);
+    if (rename(fn_out, fn)) {
+      toConsole("rename fail\r\n");
+    }
+
+  }
+
+
+  // while ((nread = fread(fn, 1, sizeof(fn), fh)) > 0) {
+  //   crc = crc16_ccitt_chunk(crc, fn, nread);
+  // }
+  // fclose(fh);
+
+  // sprintf(fn, "CRC16 = 0x%X\r\n", crc);
+  // toConsole(fn);
+
+  return true;
+}
+
 
 //void nat_cmd_register(const char *name, const char *help, menu_func_t func, menu_access_t access);
 
@@ -229,4 +327,5 @@ void esp32_cmds_init(void)
   nat_cmd_register("mv", "rename a file", cmd_mv, MENU_ACCESS);
   nat_cmd_register("xload", "receive a file via xmodem protocol", cmd_xload, MENU_ACCESS);
   nat_cmd_register("crc", "show crc16 for a file", cmd_crc, MENU_ACCESS);
+  nat_cmd_register("truncate", "resize file", cmd_truncate, MENU_ACCESS);
 }

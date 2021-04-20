@@ -136,7 +136,6 @@ int xmodemReceive(unsigned char *dest, int destsz)
 		return -2; /* sync error */
 
 	start_recv:
-	    memset(xbuff, 0, sizeof(xbuff));
 		if (trychar == 'C') crc = 1;
 		trychar = 0;
 		p = xbuff;
