@@ -23,7 +23,7 @@
 #include "main_defs.h"
 #include "crc16.h"
 
-extern int xmodemReceive(FILE * fh);
+extern int xmodemReceive(FILE * fh, FILE * log_h);
 
 
 static bool match(const char *pattern, const char *candidate, int p, int c)
@@ -175,14 +175,22 @@ static bool cmd_xload(const char *line, int num_args, const char **args)
     return true;
   }
 
-  int ret = xmodemReceive(fh);
+#if 1
+  FILE * log_h = fopen(ROOT_PATH "log.txt", "w");
+  if ( ! log_h) toConsole("fail to open log\r\n");
+  int ret = xmodemReceive(fh, log_h);
+  fclose(log_h);
+#else
+  int ret = xmodemReceive(fh, NULL);
+#endif
   fclose(fh);
 
   if (ret > 0) {
     toConsole("OK\r\n");
   }
   else {
-    sprintf(fn, "xload error %d\r\n", ret);
+    sprintf(fn, "\r\nxload error %d\r\n", ret);
+    toConsole(fn);
   }
 
   return true;
@@ -290,7 +298,6 @@ static bool cmd_truncate(const char *line, int num_args, const char **args)
         fclose(fout);
         return true;
       }
-      toConsole("read/write OK\r\n");
       len_dst -= to_write;
     }
     fclose(fh);

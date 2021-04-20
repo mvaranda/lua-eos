@@ -26,6 +26,8 @@ char * get_line(bool echo);
 void toConsole(char * msg);
 int get_console_byte(uint32_t timeout);
 void byteToConsole(int c);
+void toConsoleBin(char * msg, int len);
+void toConsoleByte(char byte);
 //-----------------------------------------
 #endif
 

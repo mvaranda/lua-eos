@@ -47,6 +47,7 @@
 #include "main_defs.h"
 
 //#define MOS_TEST
+#define USE_UART_FOR_CONSOLE
 
 #ifdef HAS_LVGL
   #include "lvgl_lua.h"
@@ -95,9 +96,7 @@ static void render_splash_animation(bool animation)
       height = 0;
   
       sprintf(name,"/spiffs/logo_%04d.jpg", i);
-      // ESP_LOGI(TAG, "open file: \"%s\"", name);
       fd = fopen(name, "r");
-      //fd = fopen("/spiffs/image.jpg", "r");
       
       if (! fd) {
         ESP_LOGI(TAG, "Fail to open file \"%s\"", name);
@@ -141,6 +140,7 @@ static void initialize_console(void)
             .data_bits = UART_DATA_8_BITS,
             .parity = UART_PARITY_DISABLE,
             .stop_bits = UART_STOP_BITS_1,
+            .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
 #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2
         .source_clk = UART_SCLK_REF_TICK,
 #else
@@ -152,8 +152,10 @@ static void initialize_console(void)
             256, 0, 0, NULL, 0) );
     ESP_ERROR_CHECK( uart_param_config(CONFIG_ESP_CONSOLE_UART_NUM, &uart_config) );
 
+#ifndef USE_UART_FOR_CONSOLE
     /* Tell VFS to use UART driver */
     esp_vfs_dev_uart_use_driver(CONFIG_ESP_CONSOLE_UART_NUM);
+#endif
 
     /* Configure linenoise line completion library */
     /* Enable multiline editing. If not set, long commands will scroll within
@@ -199,12 +201,19 @@ static mos_queue_h_t console_input_q;
 
 static void console_input_task(void * args)
 {
-  char c;
-  int nread;
+  char c, dummy;
+  int nread = 0;
+
+#ifndef USE_UART_FOR_CONSOLE
+  freopen(NULL, "rb", stdin);
+#endif
 
   while(1) {
+#ifdef USE_UART_FOR_CONSOLE
+    nread = uart_read_bytes(CONFIG_ESP_CONSOLE_UART_NUM, (void*) &c, 1, MOS_WAIT_FOREVER);
+#else
     nread = read(in_fd, &c, 1);
-
+#endif
     if (nread <= 0) {
       LOG_E("stdin read error");
       continue;
@@ -229,6 +238,11 @@ void byteToConsole(int c)
   char cc[2] = {0,0};
   cc[0] = c & 0x000000ff;
   toConsole(cc);
+}
+
+void toConsoleByte(char byte)
+{
+  toConsoleBin(&byte, 1);
 }
 
 char * get_line(bool echo)
@@ -292,7 +306,7 @@ char * get_line(bool echo)
 
         //if (c == '\r') continue; // ignore CR
         msg[msg_len++] = c;
-        if (c == '\n') {
+        if (c == '\n' || c == '\r') {
             msg[msg_len] = 0;
             return msg;
         }
@@ -372,10 +386,18 @@ void app_main()
 
 }
 
+void toConsoleBin(char * msg, int len)
+{
+    /*uart_tx_chars*/ uart_write_bytes (CONFIG_ESP_CONSOLE_UART_NUM, (const char*) msg, len);
+}
 void toConsole(char * msg)
 {
+#ifdef USE_UART_FOR_CONSOLE
+    /*uart_tx_chars*/ uart_write_bytes (CONFIG_ESP_CONSOLE_UART_NUM, (const char*) msg, strlen(msg));
+#else
     printf(msg);
     fflush(stdout);
+#endif
 }
 
 // fake POSIX's long sysconf(_SC_PAGESIZE) called by Doug Lea malloc.

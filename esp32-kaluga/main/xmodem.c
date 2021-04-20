@@ -44,7 +44,8 @@
   #include "main_defs.h"
   #include "mos.h"
   #define _inbyte get_console_byte
-  #define _outbyte byteToConsole
+  //#define _outbyte byteToConsole
+  #define _outbyte(b) toConsoleByte(b)
 #endif
 
 #define SOH  0x01
@@ -58,6 +59,8 @@
 #define DLY_1S 1000
 #define MAXRETRANS 25
 #define TRANSMIT_XMODEM_1K
+
+#define XLOG(msg) do { if (log_h) {fprintf(log_h, "%s\r\n", msg); } } while(0)
 
 static int check(int crc, const unsigned char *buf, int sz)
 {
@@ -88,7 +91,7 @@ static void flushinput(void)
 
 #ifdef LUA_EOS
 typedef char * (*getline_func_t)(bool echo);
-int xmodemReceive(FILE * fh)
+int xmodemReceive(FILE * fh, FILE * log_h)
 #else
 int xmodemReceive(unsigned char *dest, int destsz)
 #endif
@@ -120,6 +123,7 @@ int xmodemReceive(unsigned char *dest, int destsz)
 					if ((c = _inbyte(DLY_1S)) == CAN) {
 						flushinput();
 						_outbyte(ACK);
+						XLOG("canceled by remote");
 						return -1; /* canceled by remote */
 					}
 					break;
@@ -128,11 +132,12 @@ int xmodemReceive(unsigned char *dest, int destsz)
 				}
 			}
 		}
-		if (trychar == 'C') { trychar = NAK; continue; }
+		if (trychar == 'C') { trychar = NAK; XLOG("trychar == 'C', NAK it"); continue; }
 		flushinput();
 		_outbyte(CAN);
 		_outbyte(CAN);
 		_outbyte(CAN);
+		XLOG("Sync error");
 		return -2; /* sync error */
 
 	start_recv:
@@ -141,10 +146,10 @@ int xmodemReceive(unsigned char *dest, int destsz)
 		p = xbuff;
 		*p++ = c;
 		for (i = 0;  i < (bufsz+(crc?1:0)+3); ++i) {
-			if ((c = _inbyte(DLY_1S)) < 0) goto reject;
+			if ((c = _inbyte(DLY_1S)) < 0) { XLOG("char timeout"); fprintf(log_h, "i = %d\r\n", i); goto reject;}
 			*p++ = c;
 		}
-
+		fprintf(log_h, "packetno = %d, xbuff[1] = %d, ~xbuff[2] = %d\r\n", packetno, xbuff[1], ~xbuff[2]);
 		if (xbuff[1] == (unsigned char)(~xbuff[2]) && 
 			(xbuff[1] == packetno || xbuff[1] == (unsigned char)packetno-1) &&
 			check(crc, &xbuff[3], bufsz)) {
@@ -168,12 +173,20 @@ int xmodemReceive(unsigned char *dest, int destsz)
 				_outbyte(CAN);
 				_outbyte(CAN);
 				_outbyte(CAN);
+				XLOG("too many retry error");
 				return -3; /* too many retry error */
 			}
 			_outbyte(ACK);
 			continue;
 		}
 	reject:
+
+		if (xbuff[1] != (unsigned char)(~xbuff[2]) ) XLOG("reject 1");
+		if (xbuff[1] != packetno )                   XLOG("reject 2");
+		if (xbuff[1] != (unsigned char)packetno-1)   XLOG("reject 3");
+		if ( ! check(crc, &xbuff[3], bufsz))         XLOG("reject 4");
+		if (xbuff[1] != packetno)                    XLOG("reject 5");
+
 		flushinput();
 		_outbyte(NAK);
 	}
