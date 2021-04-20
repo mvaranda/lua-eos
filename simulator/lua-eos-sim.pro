@@ -41,7 +41,7 @@ INCLUDEPATH += ../lvgl \
   ../lvgl/src/lv_widgets \
   ../lua_eos/native \
   ../lua/src/ \
-  ../utils \
+  ../. \
   ../lua_eos/native
 
 INCLUDEPATH += $${FREERTOS_DIR}/Source/include
