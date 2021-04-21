@@ -314,6 +314,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
  *===============*/
 
 /*1: Enable the log module*/
+#undef LV_USE_LOG
 #define LV_USE_LOG      1
 #if LV_USE_LOG
 /* How important log should be added:
@@ -323,6 +324,7 @@ typedef void * lv_indev_drv_user_data_t;            /*Type of user data in the i
  * LV_LOG_LEVEL_ERROR       Only critical issue, when the system may fail
  * LV_LOG_LEVEL_NONE        Do not log anything
  */
+#  undef LV_LOG_LEVEL
 #  define LV_LOG_LEVEL    LV_LOG_LEVEL_TRACE  //LV_LOG_LEVEL_WARN
 
 /* 1: Print the log with 'printf';

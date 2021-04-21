@@ -30,7 +30,10 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "nat_cmd.h"
-#include "main_defs.h"
+
+#ifndef MOS_DESKTOP
+  #include "main_defs.h"
+#endif
 
 
 #define READ_BUF_SIZE 1024
