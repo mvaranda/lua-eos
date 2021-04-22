@@ -311,19 +311,14 @@ static bool cmd_truncate(const char *line, int num_args, const char **args)
 
   }
 
-
-  // while ((nread = fread(fn, 1, sizeof(fn), fh)) > 0) {
-  //   crc = crc16_ccitt_chunk(crc, fn, nread);
-  // }
-  // fclose(fh);
-
-  // sprintf(fn, "CRC16 = 0x%X\r\n", crc);
-  // toConsole(fn);
-
   return true;
 }
 
-
+static bool cmd_reset(const char *line, int num_args, const char **args)
+{
+  esp_restart();
+  return true;
+}
 //void nat_cmd_register(const char *name, const char *help, menu_func_t func, menu_access_t access);
 
 void esp32_cmds_init(void)
@@ -335,4 +330,5 @@ void esp32_cmds_init(void)
   nat_cmd_register("xload", "receive a file via xmodem protocol", cmd_xload, MENU_ACCESS);
   nat_cmd_register("crc", "show crc16 for a file", cmd_crc, MENU_ACCESS);
   nat_cmd_register("truncate", "resize file", cmd_truncate, MENU_ACCESS);
+  nat_cmd_register("reset", "reset board", cmd_reset, MENU_ACCESS);
 }
