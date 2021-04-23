@@ -95,6 +95,10 @@ def parse_function(line):
 #print(f[1])
 #{'name': 'myfuncB', 'num_params': 2, 'params': [{'type': 'char', 'varname': 'buf'}]}
 
+  l_r = line.split("(")
+  func_name = l_r[[len(l_r[0]) - 1]]
+  print("function name: " + func_name)
+
 
 
 def parse_obj_functions(filename):
