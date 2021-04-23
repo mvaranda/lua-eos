@@ -15,24 +15,51 @@
  ###############################################################
  #
 
-import sys
-import json
+import sys, os
 
 VERSION = "0.01"
-DEFAULT_FILENAME = "lv_objts.json"
 
 object_functions = {}
 
-# out = read_removing_comments('/Users/mvaranda/lua-eos/lvgl/src/lv_core/lv_obj.h')
+root_dirs = {
+  "../lvgl/src"
+  }
+
+exclude_dirs = {
+  "../lvgl/src/lv_gpu"
+}
+
+def create_file_list():
+  files = []
+  for rootDir in root_dirs:
+    #print("rootDir = " + rootDir)
+    for dirName, subdirList, fileList in os.walk(rootDir):
+      if dirName.endswith('/') == False:
+        dirName = dirName + '/'
+      exclude = False
+      #print("dirName = " + dirName)
+      for e in exclude_dirs:
+        if dirName.startswith(e) == True:
+          exclude = True
+          break
+      if exclude == True:
+        continue
+      for fname in fileList:
+        fullname = dirName + fname
+        
+        if fname.startswith('lv_') and fname.endswith('.h'):
+          fullname = dirName + fname
+          files.append(fullname)
+  return files
+
+# out = read_removing_comments('../lvgl/src/lv_core/lv_obj.h')
 def read_removing_comments(filename):
   out = ""
   f = open(filename)
   comment_state = False
   while True:
     l = f.readline()
-    print('readline')
     if len(l) == 0:
-      print('line empty')
       f.close()
       break
     if comment_state == False:
@@ -57,55 +84,58 @@ def read_removing_comments(filename):
 
 # r = parse_obj_function(DEFAULT_FILENAME)
 
-def parse_obj_function(filename):
-  print("parsing object_functions...")
-  f = open(filename)
-  j = json.load(f)
-  
-  for obj in j['objects']:
-    print("  obj: " + str(obj))
-    for member in obj['members']:
-      print(member)
-      #print("  member: " + str(member))
-  return j
+def parse_function(line):
+  print("function: " + line)
+
+#a = {"name" : "myfunc", "num_params": 5, "params" : [ {"type" : "char", "varname" : "buf"} ] }
+#print(a)
+#{'name': 'myfunc', 'num_params': 5, 'params': [{'type': 'char', 'varname': 'buf'}]}
+#b = {"name" : "myfuncB", "num_params": 2, "params" : [ {"type" : "char", "varname" : "buf"} ] }
+#f = [a,b]
+#print(f[1])
+#{'name': 'myfuncB', 'num_params': 2, 'params': [{'type': 'char', 'varname': 'buf'}]}
+
+
+
+def parse_obj_functions(filename):
+  content = read_removing_comments(filename)
+  lines = content.split('\n')
+  l = ""
+  is_macro = False
+  for line in lines:
+    if l == "":
+      if line.find("(") < 0:
+        continue
+      if line.find("typedef") >= 0:
+        continue
+      if line.find("#") >= 0:
+        continue        
+    l = l + line
+    
+    #if found_function == True: # pending ";"
+    if l.find(";") >= 0:
+      parse_function(l)
+      l = ""
   
 
+def mk():
+  files = create_file_list()
+  if len(files) == 0:
+    print("no header file found")
+    return
+  
+  #files = [ '../lvgl/src/lv_core/lv_obj.h' ]
+  for file in files:
+    parse_obj_functions(file)
+  
 if __name__ == "__main__":
   print("lv_mkbindings version %s\n" % VERSION)
-  if len(sys.argv) <= 1:
-    input_file = DEFAULT_FILENAME
-  else:
-    input_file = sys.argv[1]
-  print("input file \"" + filename + "\"")
+  mk()
   
-  parse_obj_function(input_file)
+#  if len(sys.argv) <= 1:
+#    input_file = DEFAULT_FILENAME
+#  else:
+#    input_file = sys.argv[1]
+#  print("input file \"" + filename + "\"")
+
   
-    
-for obj in j['objects'].items():
-  for m in obj.items():
-    print(m)
-
-
-
-
-def iterate_multidimensional(my_dict, level):
-    for k,v in my_dict.items():
-        for i in range(level * 2):
-            print(" ", end = "")      if(isinstance(v,dict)):
-        print(k+":")
-            level = level + 1
-            iterate_multidimensional(v, level)
-            continue
-        print(k+" : "+str(v))
-        
-def iterate_multidimensional(my_dict, level):
-    for k,v in my_dict.items():
-        for i in range(level * 2):
-            print(" ", end = "")
-        if(isinstance(v,dict)):
-            print(k+":")
-            level = level + 1
-            iterate_multidimensional(v, level)
-            continue
-        print(k+" : "+str(v))
-
