@@ -84,8 +84,11 @@ def read_removing_comments(filename):
 
 # r = parse_obj_function(DEFAULT_FILENAME)
 
+# return err_txt, func_dic
 def parse_function(line):
   print("function: " + line)
+  ret = None
+  dic = {}
 
 #a = {"name" : "myfunc", "num_params": 5, "params" : [ {"type" : "char", "varname" : "buf"} ] }
 #print(a)
@@ -94,16 +97,21 @@ def parse_function(line):
 #f = [a,b]
 #print(f[1])
 #{'name': 'myfuncB', 'num_params': 2, 'params': [{'type': 'char', 'varname': 'buf'}]}
-
-  l_r = line.split("(")
-  func_name = l_r[[len(l_r[0]) - 1]]
-  print("function name: " + func_name)
-
+  try:
+    l_r = line.split("(")
+    l = l_r[0].split()
+    func_name = l[len(l) - 1]
+    print("function name: " + func_name)
+    dic["name"] = func_name
+  except:
+    return "\n\nFail to parse: " + line + "\n\n", None
+  return None, dic
 
 
 def parse_obj_functions(filename):
   content = read_removing_comments(filename)
   lines = content.split('\n')
+  funcs = []
   l = ""
   is_macro = False
   for line in lines:
@@ -118,8 +126,14 @@ def parse_obj_functions(filename):
     
     #if found_function == True: # pending ";"
     if l.find(";") >= 0:
-      parse_function(l)
-      l = ""
+      [err, f_dic] = parse_function(l)
+      if err == None:
+        funcs.append(f_dic)
+      else:
+        print(err)
+
+
+        l = ""
   
 
 def mk():
