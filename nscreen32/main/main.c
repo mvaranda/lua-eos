@@ -16,6 +16,11 @@
 #include "bmpfile.h"
 #include "decode_image.h"
 #include "pngle.h"
+#include "lvgl_helpers.h"
+#include "mos.h"
+
+
+#define HAS_LVGL // TODO: move
 
 #if CONFIG_INTERFACE_I2S
 #define INTERFACE INTERFACE_I2S
@@ -1247,6 +1252,49 @@ static void SPIFFS_Directory(char * path) {
 	closedir(dir);
 }
 
+#ifdef HAS_LVGL
+  #include "lvgl_lua.h"
+  extern void lvgl_task_init();
+#endif
+
+void mv_test()
+{
+#if 1
+  int c = 0;
+  char buf[32];
+  mos_thread_sleep(500);
+   lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
+    lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
+    lv_obj_set_size(btn, 120, 50);                          /*Set its size*/
+    //lv_obj_set_event_cb(btn, btn_event_cb);                 /*Assign a callback to the button*/
+
+    lv_obj_t * label = lv_label_create(btn, NULL);          /*Add a label to the button*/
+    lv_label_set_text(label, "Button");                     /*Set the labels text*/
+
+  while(1) {
+    mos_thread_sleep(1000);
+	LOG("mv_test %d\r\n", c++);
+	sprintf(buf, "Button %d", c);
+	lv_label_set_text(label, buf);
+  }
+#else
+	char file[32];
+	TFT_t *dev;
+	lvgl_driver_init();
+	dev = lvgl_driver_get_dev();
+
+  while(1) {
+
+		strcpy(file, "/spiffs/esp32.bmp");
+		BMPTest(dev, file, CONFIG_WIDTH, CONFIG_HEIGHT);
+		WAIT;
+
+		strcpy(file, "/spiffs/esp32.jpeg");
+		JPEGTest(dev, file, CONFIG_WIDTH, CONFIG_HEIGHT);
+		WAIT;
+  }
+#endif
+}
 
 void app_main()
 {
@@ -1283,6 +1331,10 @@ void app_main()
 
 	SPIFFS_Directory("/spiffs/");
 
-	xTaskCreate(TFT, "TFT", 1024*6, NULL, 2, NULL);
+	lvgl_task_init();
+
+	xTaskCreate(mv_test, "TFT", 1024*6, NULL, 2, NULL);
+
+
 
 }
