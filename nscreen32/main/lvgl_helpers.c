@@ -91,21 +91,27 @@ void lvgl_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t *
 
     uint16_t x = area->x1;
     uint16_t y = area->y1;
-    uint16_t size = (area->x2 - area->x1) * (area->y2 - area->y1);
+    uint16_t size = (area->y2 - area->y1);
     uint16_t * colors = (uint16_t *) color_map;
 
-    LOG("\r\n"
-        "  x1 = %d\r\n"
-        "  x2 = %d\r\n"
-        "  y1 = %d\r\n"
-        "  y2 = %d\r\n"
-        "  size = %d\r\n",
-        area->x1, area->x2, area->y1, area->y2, size        );
-#if 1
+    // LOG("\r\n"
+    //     "  x1 = %d\r\n"
+    //     "  x2 = %d\r\n"
+    //     "  y1 = %d\r\n"
+    //     "  y2 = %d\r\n"
+    //     "  size = %d\r\n",
+    //     area->x1, area->x2, area->y1, area->y2, size        );
+#if 0
     my_disp_flush(drv, area, color_map);
 #else
     //ili9486_lcdDrawMultiPixels(&dev, x, y, size,  colors);
-    lcdDrawMultiPixels(&dev, x, y, size,  colors);
+    int h = 0;
+    int cols = (area->x2 - area->x1) + 1;
+    for( h = area->y1; h <= area->y2; h++) {
+        lcdDrawMultiPixels(&dev, x, h, cols,  colors);
+        colors += cols;
+    }
+    //lcdDrawMultiPixels(&dev, x, y, size,  colors);
 #endif
 
     lv_disp_flush_ready(drv);

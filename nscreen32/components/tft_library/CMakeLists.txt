@@ -20,3 +20,5 @@ set(component_srcs "fontx.c"
 
 idf_component_register(SRCS "${component_srcs}"
                        INCLUDE_DIRS ".")
+
+#add_definitions(-DLOG_LOCAL_LEVEL=ESP_LOG_DEBUG)

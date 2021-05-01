@@ -1,6 +1,8 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+//#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
 #include "lcd_com.h"
@@ -13,6 +15,7 @@
 
 void ili9341_lcdInit(TFT_t * dev, int width, int height, int offsetx, int offsety)
 {
+//	esp_log_level_set(TAG, ESP_LOG_DEBUG);
 	lcdInitDevice(dev, width, height, offsetx, offsety);
 
 #if CONFIG_ILI9340
@@ -96,8 +99,14 @@ void ili9341_lcdDrawPixel(TFT_t * dev, uint16_t x, uint16_t y, uint16_t color){
 // size:Number of colors
 // colors:colors
 void ili9341_lcdDrawMultiPixels(TFT_t * dev, uint16_t x, uint16_t y, uint16_t size, uint16_t * colors) {
-	if (x+size > dev->_width) return;
-	if (y >= dev->_height) return;
+	if (x+size > dev->_width) {
+		printf("ili9341_lcdDrawMultiPixels: x = %d, size = %d, dev->_width = %d\r\n", x, size , dev->_width);
+		return;
+	}
+	if (y >= dev->_height) {
+		printf("ili9341_lcdDrawMultiPixels: y = %d, dev->_height = %d\r\n", y , dev->_height);
+		return;
+	}
 
 	ESP_LOGD(TAG,"offset(x)=%d offset(y)=%d",dev->_offsetx,dev->_offsety);
 	uint16_t _x1 = x + dev->_offsetx;
