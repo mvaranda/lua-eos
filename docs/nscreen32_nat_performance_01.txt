@@ -1,0 +1,111 @@
+
+
+
+Nscreen32 performance test
+==========================
+
+Code:
+https://github.com/nopnop2002/esp-idf-parallel-tft
+
+I2S:
+====
+
+I (632) LCD_COM: LCD_RESET_PIN=32
+I (842) ILI9486: Your TFT is ST7796.Same as ILI9486
+I (842) ILI9486: Screen width:320
+I (842) ILI9486: Screen height:480
+I (1212) AddressTest: elapsed time[ms]:70
+I (5282) AddressTest: elapsed time[ms]:70
+I (10962) FillTest: elapsed time[ms]:1680
+I (15042) ColorBarTest: elapsed time[ms]:80
+I (19252) ArrowTest: elapsed time[ms]:210
+I (27202) LineTest: elapsed time[ms]:3950
+I (34782) CircleTest: elapsed time[ms]:3580
+I (42462) RoundRectTest: elapsed time[ms]:3680
+I (56732) RectAngleTest: elapsed time[ms]:10270
+I (72452) TriangleTest: elapsed time[ms]:11720
+I (76792) DirectionTest: elapsed time[ms]:340
+I (81582) HorizontalTest: elapsed time[ms]:790
+I (86362) VerticalTest: elapsed time[ms]:780
+I (90612) FillRectTest: elapsed time[ms]:250
+I (95002) ColorTest: elapsed time[ms]:390
+I (100902) BMPTest: elapsed time[ms]:1900
+I (105132) JPEGTest: imageWidth=240 imageHeight=240
+I (107532) JPEGTest: elapsed time[ms]:2630
+I (114552) PNGTest: elapsed time[ms]:3020
+
+
+GPIO Parallel:
+==============
+
+
+I (542) LCD_COM: interface=GPIO
+I (542) LCD_COM: LCD_CS_PIN=33
+I (542) LCD_COM: LCD_RS_PIN=15
+I (542) LCD_COM: LCD_RD_PIN=2
+I (542) LCD_COM: INTERFACE is GPIO
+I (552) LCD_COM: LCD_RESET_PIN=32
+I (752) ILI9486: Your TFT is ST7796.Same as ILI9486
+I (752) ILI9486: Screen width:320
+I (752) ILI9486: Screen height:480
+I (2182) AddressTest: elapsed time[ms]:1130
+I (7272) AddressTest: elapsed time[ms]:1090
+I (16082) FillTest: elapsed time[ms]:4810
+I (21212) ColorBarTest: elapsed time[ms]:1130
+I (26402) ArrowTest: elapsed time[ms]:1190
+I (33232) LineTest: elapsed time[ms]:2830
+I (39912) CircleTest: elapsed time[ms]:2680
+I (46622) RoundRectTest: elapsed time[ms]:2710
+I (54422) RectAngleTest: elapsed time[ms]:3800
+I (62542) TriangleTest: elapsed time[ms]:4120
+I (67792) DirectionTest: elapsed time[ms]:1250
+I (73332) HorizontalTest: elapsed time[ms]:1540
+I (78872) VerticalTest: elapsed time[ms]:1540
+I (84852) FillRectTest: elapsed time[ms]:1980
+I (91132) ColorTest: elapsed time[ms]:2280
+I (98142) BMPTest: elapsed time[ms]:3010
+I (103432) JPEGTest: imageWidth=240 imageHeight=240
+I (105832) JPEGTest: elapsed time[ms]:3690
+I (113912) PNGTest: elapsed time[ms]:4080
+I (124552) AddressTest: elapsed time[ms]:1130
+I (129642) AddressTest: elapsed time[ms]:1090
+
+
+
+Register Parallel:
+==================
+
+I (542) LCD_COM: LCD_CS_PIN=33
+I (542) LCD_COM: LCD_RS_PIN=15
+I (542) LCD_COM: LCD_RD_PIN=2
+I (542) LCD_COM: INTERFACE is REGISTER I/O
+I (552) LCD_COM: LCD_RESET_PIN=32
+I (752) ILI9486: Your TFT is ST7796.Same as ILI9486
+I (752) ILI9486: Screen width:320
+I (752) ILI9486: Screen height:480
+I (1452) AddressTest: elapsed time[ms]:400
+I (5892) AddressTest: elapsed time[ms]:440
+I (12622) FillTest: elapsed time[ms]:2730
+I (17062) ColorBarTest: elapsed time[ms]:440
+I (21502) ArrowTest: elapsed time[ms]:440
+I (26702) LineTest: elapsed time[ms]:1200
+I (31862) CircleTest: elapsed time[ms]:1160
+I (37012) RoundRectTest: elapsed time[ms]:1150
+I (42622) RectAngleTest: elapsed time[ms]:1610
+I (48572) TriangleTest: elapsed time[ms]:1950
+I (53042) DirectionTest: elapsed time[ms]:470
+I (57652) HorizontalTest: elapsed time[ms]:610
+I (62262) VerticalTest: elapsed time[ms]:610
+I (67052) FillRectTest: elapsed time[ms]:790
+I (71972) ColorTest: elapsed time[ms]:920
+I (77982) BMPTest: elapsed time[ms]:2010
+I (82582) JPEGTest: imageWidth=240 imageHeight=240
+I (84982) JPEGTest: elapsed time[ms]:3000
+I (92372) PNGTest: elapsed time[ms]:3390
+I (101422) AddressTest: elapsed time[ms]:400
+I (105862) AddressTest: elapsed time[ms]:440
+
+
+
+
+
