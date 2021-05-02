@@ -1,12 +1,16 @@
 /*
  *  GT911 TP driver for arduino/esp8266/esp32
- * auther: simon@yeacreate.com
+ * original auther: simon@yeacreate.com
+ * port to C and using espressit driver: Marcelo Varanda
+ * 
  * I2C TP:
  * SCL:D22[GPIO22]
  * SDA:D21[GPIO21]
  * INT:D5
  * RST:D23
  */
+#include <stdio.h>
+//#include "esp_attr.h"
 
 #include "gt911.h"
 #include "mos.h"
@@ -48,6 +52,17 @@
 #define FW_INFO_SIZE 11
 #endif
 
+#define highByte(w) ((w >> 8) & 0x000000ff)
+#define lowByte(w) (w & 0x000000ff)
+
+#define HIGH 1
+#define LOW  0
+#define INPUT 0
+#define OUTPUT 1
+
+#define ESP_SLAVE_ADDR GOODIX_I2C_ADDR
+#define I2C_TIMEOUT_MS 1000
+#define ACK_EN 1
 
 static  uint8_t gt911FW[GOODIX_I2C_CONFIG_SIZE] = {
         0x41, //0x8047 config_version
@@ -85,50 +100,41 @@ static  uint8_t gt911FW[GOODIX_I2C_CONFIG_SIZE] = {
 };
     /* ==================================structs================================= */
 #ifdef _TP_DEBUG_
-    typedef struct config_info
-    {
-        uint8_t config_version : 8;
-        uint16_t x_max_output : 16;
-        uint16_t y_max_output : 16;
-        uint8_t touch_number : 3;
-    } cinfo;
+typedef struct config_info
+{
+    uint8_t config_version : 8;
+    uint16_t x_max_output : 16;
+    uint16_t y_max_output : 16;
+    uint8_t touch_number : 3;
+} cinfo;
 
-    typedef struct firmware_info
-    {
-        // 0x8140
-        char product_id[5];        //0x8140-0x8143
-        uint16_t firmware_version; //0x8144-0x8145
-        uint16_t x_resolution;     //0x8146-0x8147
-        uint16_t y_resolution;     //0x8148-0x8149
-        uint8_t vendor_id;         //0x814A
-    } finfo;
+typedef struct firmware_info
+{
+    // 0x8140
+    char product_id[5];        //0x8140-0x8143
+    uint16_t firmware_version; //0x8144-0x8145
+    uint16_t x_resolution;     //0x8146-0x8147
+    uint16_t y_resolution;     //0x8148-0x8149
+    uint8_t vendor_id;         //0x814A
+} finfo;
 #endif
 
-    typedef struct touch_info
-    {
-        uint16_t x : 16;   //0x8150-0x8151
-        uint16_t y : 16;   //0x8152-0x8153
-        bool touch : 1; //0x814E(bit:7)
-    } tpxy;
-    /* =============================end structs================================== */
-    /* ==============================variables=================================== */
-    uint64_t act_time = 0;
-    /* ============================end variables================================= */
+
+/* =============================end structs================================== */
+
+
+/* ==============================variables=================================== */
+uint64_t act_time = 0;
+static bool IRQ = false;
+static  touch_info_t get_xy;
+/* ============================end variables================================= */
+
+void  read_firmware_info();
 
 static uint64_t millis(void)
 {
   return esp_timer_get_time() / 1000;
 }
-
-#define highByte(w) ((w >> 8) & 0x000000ff)
-#define lowByte(w) (w & 0x000000ff)
-
-static  tpxy get_xy;
-
-#define HIGH 1
-#define LOW  0
-#define INPUT 0
-#define OUTPUT 1
 
 static void digitalWrite(uint32_t pin, int v)
 {
@@ -171,48 +177,6 @@ static int i2c_config(uint8_t sda, uint8_t scl, uint32_t speed)
   return 0;
 }
 
-static int wire_beginTransmission(uint8_t addr)
-{
-
-  return 0;
-}
-
-
-static int wire_endTransmission(bool stop)
-{
-
-  return 0;
-}
-
-static int wire_write(uint8_t b)
-{
-
-  return 0;
-}
-
-static int wire_requestFrom(uint8_t addr, int size)
-{
-
-  return 0;
-}
-
-static int wire_available(void)
-{
-
-  return 0;
-}
-  
-static int wire_read(void)
-{
-
-  return 0;
-}
-
-void ICACHE_FLASH_ATTR read_firmware_info();
-
-#define ESP_SLAVE_ADDR GOODIX_I2C_ADDR
-#define I2C_TIMEOUT_MS 1000
-#define ACK_EN 1
 
 static esp_err_t __attribute__((unused)) i2c_master_write_slave(
   uint16_t reg_addr, 
@@ -247,16 +211,6 @@ static esp_err_t __attribute__((unused)) i2c_master_read_slave(
     if (size == 0) {
         return ESP_OK;
     }
-    //uint8_t reg_addr_high = highByte(reg_addr);
-    //uint8_t reg_addr_low = lowByte(reg_addr);
-    // LOG("i2c_master_read_slave reg = 0x%x, len = %d, h = 0x%x, l = 0x%x\r\n",
-    //  reg_addr,
-    //  size,
-    //  reg_addr_high,
-    //  reg_addr_low);
-
-    // set address
-    //i2c_master_write_slave(reg_addr, NULL, 0);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -275,54 +229,12 @@ static esp_err_t __attribute__((unused)) i2c_master_read_slave(
     i2c_master_stop(cmd);
     esp_err_t ret = i2c_master_cmd_begin(I2C_NUM, cmd, I2C_TIMEOUT_MS / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
-    // if (ret) {
-    //   LOG_E("*** *** i2c_master_read_slave: error 0x%x\r\n", ret);
-    // }
-    // else  {
-    //   LOG("*** *** i2c_master_read_slave: OK\r\n");
-    // }
+
     return ret;
 }
 /* =============================icache functions========================= */
-#define readi2c i2c_master_read_slave 
 
-// void ICACHE_FLASH_ATTR readi2c(uint16_t addr, uint8_t *inputbuff, size_t size)
-// {
-//   uint8_t pos = 0;
-
-//   wire_beginTransmission(GOODIX_I2C_ADDR);
-//   wire_write(highByte(addr));
-//   wire_write(lowByte(addr));
-// #ifdef _TP_DEBUG_
-//   LOG("[INFO][TP] I2C writen 0x%02x to 0x%02x \n", highByte(addr), GOODIX_I2C_ADDR);
-//   LOG("[INFO][TP] I2C writen 0x%02x to 0x%02x \n", lowByte(addr), GOODIX_I2C_ADDR);
-
-//   uint8_t res;
-//   res = wire_endTransmission(true);
-//   if (res != 0)
-//   {
-//     LOG("[ERR][TP] I2C tranmission error\n");
-//   }
-// #else
-//   wire_endTransmission(true);
-// #endif
-
-//   wire_requestFrom(GOODIX_I2C_ADDR, size);
-
-//   while (wire_available()) // slave may send less than requested
-//   {
-//     inputbuff[pos] = wire_read(); // receive a byte as character
-//     pos++;
-
-// #ifdef _TP_DEBUG_
-//     LOG("[INFO][TP][DATA] Reg:0x%04x Data[%d] is 0x%02x \n", addr, pos - 1, inputbuff[pos - 1]);
-// #endif
-//   }
-
-//   wire_endTransmission(false); //send nack end
-// } //end readi2c()
-
-void ICACHE_FLASH_ATTR touch_setup()
+void  touch_setup()
 {
 #ifdef _TP_DEBUG_
   LOG("[INFO][TP] GT911 TP driver for arduino/esp8266/esp32 !");
@@ -362,19 +274,6 @@ void ICACHE_FLASH_ATTR touch_setup()
 #ifdef _TP_DEBUG_
   LOG("[INFO][TP] TP initial finished !\r\n");
   LOG("[INFO][TP] Check ACK on addr request on 0x%x", GOODIX_I2C_ADDR);
-  
-  // wire_beginTransmission(GOODIX_I2C_ADDR);
-  // int error = wire_endTransmission(true);
-  // if (error == 0)
-  // {
-  //   LOG(": SUCCESS\r\n");
-  // }
-  // else
-  // {
-  //   LOG(": ERROR #%d\r\n", error);
-  // }
-  // read_firmware_info();
-
 #endif
   mos_thread_sleep(100);
 
@@ -392,7 +291,7 @@ void ICACHE_FLASH_ATTR touch_setup()
 #endif
 } //end setup()
 
-void ICACHE_FLASH_ATTR update_config()
+void  update_config()
 {
   //get chksum
   for (uint8_t c = 0; c < (GOODIX_I2C_CONFIG_SIZE - 3); c++)
@@ -410,12 +309,12 @@ void ICACHE_FLASH_ATTR update_config()
 } //end update_config()
 
 #ifdef _TP_DEBUG_
-void ICACHE_FLASH_ATTR read_firmware_info()
+void  read_firmware_info()
 {
   finfo fwinfos;
   uint8_t buff[FW_INFO_SIZE];
   memset(buff,0,sizeof(buff));
-  readi2c(GOODIX_I2C_FW_ADDR, buff, FW_INFO_SIZE);
+  i2c_master_read_slave(GOODIX_I2C_FW_ADDR, buff, FW_INFO_SIZE);
   fwinfos.product_id[0] = buff[0];
   fwinfos.product_id[1] = buff[1];
   fwinfos.product_id[2] = buff[2];
@@ -435,17 +334,17 @@ void ICACHE_FLASH_ATTR read_firmware_info()
 } //end read_firmware_info()
 #endif
 
-void ICACHE_FLASH_ATTR read_coordinate()
+void  read_coordinate()
 {
 
   uint8_t buff[GOODIX_I2C_READXY_SIZE];
-  readi2c(GOODIX_I2C_READXY_ADDR, buff, GOODIX_I2C_READXY_SIZE);
+  i2c_master_read_slave(GOODIX_I2C_READXY_ADDR, buff, GOODIX_I2C_READXY_SIZE);
 
   get_xy.x = buff[2] + (buff[3] << 8);
   get_xy.y = buff[4] + (buff[5] << 8);
   get_xy.touch = buff[0] >> 6;
 
-#ifdef _TP_DEBUG_
+#if 0 //def _TP_DEBUG_
   LOG("[INFO][TP][TOUCH] X is %d \n", get_xy.x);
   LOG("[INFO][TP][TOUCH] Y is %d \n", get_xy.y);
   LOG("[INFO][TP][TOUCH] Touch status is %d \n", get_xy.touch);
@@ -456,24 +355,14 @@ void ICACHE_FLASH_ATTR read_coordinate()
     i2c_master_write_slave(GOODIX_I2C_READXY_ADDR, &v, 1);
   }
 
-//   if (get_xy.touch == 1)
-//   {
-//     wire_beginTransmission(GOODIX_I2C_ADDR);
-//     wire_write(highByte(GOODIX_I2C_READXY_ADDR));
-//     wire_write(lowByte(GOODIX_I2C_READXY_ADDR));
-//     wire_write(0x00);
-
-// #ifdef _TP_DEBUG_
-//     LOG("[INFO][TP][RBS] Reseted buffer status \n");
-// #endif
-//     wire_endTransmission(true); //sent end
-//   }
-
 } //end read_coordinate()
 
-bool ICACHE_FLASH_ATTR get_touch(uint16_t pressthou)
+void  get_touch(touch_info_t * info)
 {
-
+#if 1
+  read_coordinate();
+  *info = get_xy;
+#else
   if (act_time > millis() && millis() < 5000)
     act_time = millis(); //prevent millis reset
   if (millis() > act_time)
@@ -484,11 +373,12 @@ bool ICACHE_FLASH_ATTR get_touch(uint16_t pressthou)
       IRQ = false;
       read_coordinate();
       if (get_xy.touch == false)
-        return false;
-      return true;
+        return NULL;
+      return &get_xy;
     }
   }
-  return false;
+  return NULL;
+#endif
 } //end get_touch()
 
 /* =========================end icache functions======================== */
@@ -502,14 +392,3 @@ void IRAM_ATTR irq_handle()
 
 /* ===========================end iram functions=========================== */
 
-// void loop()
-// {
-
-//   if (get_touch(50))
-//   {
-//     LOG("[INFO][TP] X is %d \n", get_xy.x);
-//     LOG("[INFO][TP] Y is %d \n", get_xy.y);
-//     LOG("[INFO][TP] Touch status is %d \n", get_xy.touch);
-//     LOG("[INFO][UPTIME] %ld \n", millis());
-//   }
-// }

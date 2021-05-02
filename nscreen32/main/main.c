@@ -1263,6 +1263,7 @@ void mv_test()
 #if 1
   int c = 0;
   char buf[32];
+  touch_info_t touch_info;
   mos_thread_sleep(500);
    lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
     lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
@@ -1273,11 +1274,14 @@ void mv_test()
     lv_label_set_text(label, "Button");                     /*Set the labels text*/
 
   while(1) {
-    mos_thread_sleep(1000);
+    mos_thread_sleep(500);
 	LOG("mv_test %d\r\n", c++);
 	sprintf(buf, "Button %d", c);
 	lv_label_set_text(label, buf);
-	read_coordinate();
+	get_touch(&touch_info);
+	if (touch_info.touch) {
+		LOG(" touch: x = %d, y = %d\r\n", touch_info.x, touch_info.y);
+	}
   }
 #else
 	char file[32];
