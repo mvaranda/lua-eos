@@ -200,9 +200,7 @@ static esp_err_t __attribute__((unused)) i2c_master_write_slave(
     if (ret) {
       LOG_E("*** i2c_master_write_slave: error 0x%x\r\n", ret);
     }
-    else {
-      LOG("*** i2c_master_write_slave: OK\r\n");
-    }
+
     return ret;
 }
 
@@ -372,28 +370,30 @@ void  read_coordinate()
 
 } //end read_coordinate()
 
+
+#define RELEASE_TIMEOUT 100
 void  get_touch(touch_info_t * info)
 {
-#if 1
+	static uint16_t last_x = 0;
+	static uint16_t last_y = 0;
+  static uint64_t time = 0;
+
   read_coordinate();
-  *info = get_xy;
-#else
-  if (act_time > millis() && millis() < 5000)
-    act_time = millis(); //prevent millis reset
-  if (millis() > act_time)
-  {
-    act_time = millis() + pressthou;
-    if (IRQ == true)
-    {
-      IRQ = false;
-      read_coordinate();
-      if (get_xy.touch == false)
-        return NULL;
-      return &get_xy;
+  if (get_xy.touch) {
+    last_x = get_xy.x;
+    last_y = get_xy.y;
+    time = millis();
+    info->touch = get_xy.touch;
+  }
+  else {
+    if (time != 0 && (millis() - time) > RELEASE_TIMEOUT) {
+      info->touch = get_xy.touch;
     }
   }
-  return NULL;
-#endif
+
+  info->x = last_x;
+  info->y = last_y; 
+
 } //end get_touch()
 
 /* =========================end icache functions======================== */

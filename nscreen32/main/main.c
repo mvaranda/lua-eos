@@ -1263,7 +1263,7 @@ void mv_test()
 #if 1
   int c = 0;
   char buf[32];
-  touch_info_t touch_info;
+
   mos_thread_sleep(500);
    lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
     lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
@@ -1274,14 +1274,11 @@ void mv_test()
     lv_label_set_text(label, "Button");                     /*Set the labels text*/
 
   while(1) {
-    mos_thread_sleep(500);
+    mos_thread_sleep(1000);
 	LOG("mv_test %d\r\n", c++);
 	sprintf(buf, "Button %d", c);
-	lv_label_set_text(label, buf);
-	get_touch(&touch_info);
-	if (touch_info.touch) {
-		LOG(" touch: x = %d, y = %d\r\n", touch_info.x, touch_info.y);
-	}
+	//lv_label_set_text(label, buf);
+
   }
 #else
 	char file[32];
@@ -1300,6 +1297,53 @@ void mv_test()
 		WAIT;
   }
 #endif
+}
+
+static bool cb_touch_input_read(lv_indev_drv_t * drv, lv_indev_data_t*data)
+{
+//#define LOG_TOUCH
+#ifdef LOG_TOUCH
+	static bool last_state = false; // false->release, true->touch
+#endif
+
+	touch_info_t touch_info;
+
+	get_touch(&touch_info);
+	if (touch_info.touch) {
+		data->state = LV_INDEV_STATE_PR;
+#ifdef LOG_TOUCH
+		if (last_state == false) {
+			last_state = true;
+			LOG("Touch ( %d, %d)\r\n", touch_info.x, touch_info.y);
+		}
+#endif
+	}
+	else {
+		data->state = LV_INDEV_STATE_REL;
+#ifdef LOG_TOUCH
+		if (last_state == true) {
+			last_state = false;
+			LOG("Release\r\n");
+		}
+#endif
+	}
+
+    data->point.x = touch_info.x;
+    data->point.y = touch_info.y;
+
+    return false; /*No buffering now so no more data read*/
+}
+
+static void register_touchscreen(void)
+{
+	touch_setup(); // init the driver
+
+	lv_indev_drv_t indev_drv;
+	lv_indev_drv_init(&indev_drv);
+	indev_drv.type =  LV_INDEV_TYPE_POINTER; 
+	indev_drv.read_cb = cb_touch_input_read;              /*See below.*/
+	/*Register the driver in LVGL and save the created input device object*/
+	lv_indev_t * my_indev = lv_indev_drv_register(&indev_drv);
 }
 
 void app_main()
@@ -1339,7 +1383,7 @@ void app_main()
 
 	lvgl_task_init();
 
-	touch_setup();
+	register_touchscreen();
 
 	xTaskCreate(mv_test, "TFT", 1024*6, NULL, 2, NULL);
 
