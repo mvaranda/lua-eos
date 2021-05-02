@@ -60,6 +60,7 @@
 #define INPUT 0
 #define OUTPUT 1
 
+#define ROTATE_SCREEN
 #define ESP_SLAVE_ADDR GOODIX_I2C_ADDR
 #define I2C_TIMEOUT_MS 1000
 #define ACK_EN 1
@@ -124,6 +125,8 @@ typedef struct firmware_info
 
 
 /* ==============================variables=================================== */
+static uint16_t screen_width = 0;
+static uint16_t screen_height = 0;
 uint64_t act_time = 0;
 static bool IRQ = false;
 static  touch_info_t get_xy;
@@ -280,8 +283,10 @@ void  touch_setup()
   update_config();
 
   mos_thread_sleep(50);
-#ifdef _TP_DEBUG_
+
   read_firmware_info();
+
+#ifdef _TP_DEBUG_
   LOG("[INFO][GT911][UPTIME] %lld \n", millis());
 #endif
 
@@ -308,7 +313,7 @@ void  update_config()
 
 } //end update_config()
 
-#ifdef _TP_DEBUG_
+
 void  read_firmware_info()
 {
   finfo fwinfos;
@@ -326,13 +331,18 @@ void  read_firmware_info()
   fwinfos.y_resolution = buff[8] + (buff[9] << 8);
   fwinfos.vendor_id = buff[10];
 
+  screen_width = fwinfos.x_resolution;
+  screen_height = fwinfos.y_resolution;
+
+#ifdef _TP_DEBUG_
   LOG("[INFO][TP][FW] The Product ID is: %s\r\n", fwinfos.product_id);
   LOG("[INFO][TP][FW] The Firmware version is: %d \r\n", fwinfos.firmware_version);
   LOG("[INFO][TP][FW] The X coordinate resolution is: %d \r\n", fwinfos.x_resolution);
   LOG("[INFO][TP][FW] The Y coordinate resolution is: %d \r\n", fwinfos.y_resolution);
   LOG("[INFO][TP][FW] The Vendor ID is: %d \r\n", fwinfos.vendor_id);
-} //end read_firmware_info()
 #endif
+} //end read_firmware_info()
+
 
 void  read_coordinate()
 {
@@ -343,6 +353,11 @@ void  read_coordinate()
   get_xy.x = buff[2] + (buff[3] << 8);
   get_xy.y = buff[4] + (buff[5] << 8);
   get_xy.touch = buff[0] >> 6;
+
+#ifdef ROTATE_SCREEN
+  get_xy.x = screen_width - get_xy.x;
+  get_xy.y = screen_height - get_xy.y;
+#endif
 
 #if 0 //def _TP_DEBUG_
   LOG("[INFO][TP][TOUCH] X is %d \n", get_xy.x);
