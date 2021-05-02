@@ -18,6 +18,7 @@
 #include "pngle.h"
 #include "lvgl_helpers.h"
 #include "mos.h"
+#include "gt911.h"
 
 
 #define HAS_LVGL // TODO: move
@@ -1276,6 +1277,7 @@ void mv_test()
 	LOG("mv_test %d\r\n", c++);
 	sprintf(buf, "Button %d", c);
 	lv_label_set_text(label, buf);
+	read_coordinate();
   }
 #else
 	char file[32];
@@ -1332,6 +1334,8 @@ void app_main()
 	SPIFFS_Directory("/spiffs/");
 
 	lvgl_task_init();
+
+	touch_setup();
 
 	xTaskCreate(mv_test, "TFT", 1024*6, NULL, 2, NULL);
 

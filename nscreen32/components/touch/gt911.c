@@ -12,13 +12,14 @@
 #include "mos.h"
 #include "driver/gpio.h"
 #include "driver/i2c.h"
+#include "memory.h"
 
 #define I2C_SPEED 400000
 #define TP_SCL 22
 #define TP_SDA 21
 #define TP_INT 5
 #define TP_RST 23
-#define I2C_NUM I2C_NUM_0
+#define I2C_NUM I2C_NUM_1
 
 #define _TP_DEBUG_
 
@@ -33,6 +34,7 @@
 // 8bit Device write address:0x29
 // so, 0xBB/0x29 >> 1 is 0x5D/0x14(7bit)
 #define GOODIX_I2C_ADDR 0x5D
+
 
 #define GOODIX_I2C_CONFIG_START_ADDR 0X8047
 #define GOODIX_I2C_CONFIG_SIZE 186
@@ -94,7 +96,7 @@ static  uint8_t gt911FW[GOODIX_I2C_CONFIG_SIZE] = {
     typedef struct firmware_info
     {
         // 0x8140
-        char product_id[4];        //0x8140-0x8143
+        char product_id[5];        //0x8140-0x8143
         uint16_t firmware_version; //0x8144-0x8145
         uint16_t x_resolution;     //0x8146-0x8147
         uint16_t y_resolution;     //0x8148-0x8149
@@ -128,13 +130,15 @@ static  tpxy get_xy;
 #define INPUT 0
 #define OUTPUT 1
 
-static void digitalWrite(int pin, int v)
+static void digitalWrite(uint32_t pin, int v)
 {
-  gpio_set_level(1<<pin, v);
+  printf("digitalWrite for %d, v = %d\r\n", pin, v);
+  gpio_set_level(pin, v);
 }
 
-static void pinMode(int pin, int mode)
+static void pinMode(uint64_t pin, int mode)
 {
+  printf("pinMode for %lld, mode = %d\r\n", pin, mode);
   gpio_config_t io_conf;
   io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
   io_conf.mode = GPIO_MODE_OUTPUT;
@@ -144,9 +148,9 @@ static void pinMode(int pin, int mode)
   gpio_config(&io_conf);
 
   if (mode == OUTPUT)
-	  gpio_set_direction(1 << pin, GPIO_MODE_OUTPUT);
+	  gpio_set_direction(pin, GPIO_MODE_OUTPUT);
   else
-    gpio_set_direction(1 << pin, GPIO_MODE_INPUT);
+    gpio_set_direction(pin, GPIO_MODE_INPUT);
 }
 
 static int i2c_config(uint8_t sda, uint8_t scl, uint32_t speed)
@@ -162,7 +166,7 @@ static int i2c_config(uint8_t sda, uint8_t scl, uint32_t speed)
 	printf("- i2c controller configured\r\n");
 
 	// install the driver
-	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
+	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM, I2C_MODE_MASTER, 0, 0, 0));
 
   return 0;
 }
@@ -207,9 +211,8 @@ static int wire_read(void)
 void ICACHE_FLASH_ATTR read_firmware_info();
 
 #define ESP_SLAVE_ADDR GOODIX_I2C_ADDR
-#define I2C_TIMEOUT_MS 100
+#define I2C_TIMEOUT_MS 1000
 #define ACK_EN 1
-#define NACK_VAL 0
 
 static esp_err_t __attribute__((unused)) i2c_master_write_slave(
   uint16_t reg_addr, 
@@ -221,10 +224,18 @@ static esp_err_t __attribute__((unused)) i2c_master_write_slave(
     i2c_master_write_byte(cmd, (ESP_SLAVE_ADDR << 1) | I2C_MASTER_WRITE, ACK_EN); //WRITE_BIT, ACK_CHECK_EN);
     i2c_master_write_byte(cmd, highByte(reg_addr), ACK_EN);
     i2c_master_write_byte(cmd, lowByte(reg_addr), ACK_EN);
-    i2c_master_write(cmd, data_wr, size, ACK_EN);
+    if (size > 0) {
+      i2c_master_write(cmd, data_wr, size, ACK_EN);
+    }
     i2c_master_stop(cmd);
     esp_err_t ret = i2c_master_cmd_begin(I2C_NUM, cmd, I2C_TIMEOUT_MS / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
+    if (ret) {
+      LOG_E("*** i2c_master_write_slave: error 0x%x\r\n", ret);
+    }
+    else {
+      LOG("*** i2c_master_write_slave: OK\r\n");
+    }
     return ret;
 }
 
@@ -236,18 +247,40 @@ static esp_err_t __attribute__((unused)) i2c_master_read_slave(
     if (size == 0) {
         return ESP_OK;
     }
+    //uint8_t reg_addr_high = highByte(reg_addr);
+    //uint8_t reg_addr_low = lowByte(reg_addr);
+    // LOG("i2c_master_read_slave reg = 0x%x, len = %d, h = 0x%x, l = 0x%x\r\n",
+    //  reg_addr,
+    //  size,
+    //  reg_addr_high,
+    //  reg_addr_low);
+
+    // set address
+    //i2c_master_write_slave(reg_addr, NULL, 0);
+
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (ESP_SLAVE_ADDR << 1) | I2C_MASTER_READ, ACK_EN); //READ_BIT, ACK_CHECK_EN);
+    i2c_master_write_byte(cmd, (ESP_SLAVE_ADDR << 1) | I2C_MASTER_WRITE, ACK_EN); //WRITE_BIT, ACK_CHECK_EN);
     i2c_master_write_byte(cmd, highByte(reg_addr), ACK_EN);
     i2c_master_write_byte(cmd, lowByte(reg_addr), ACK_EN);
+
+    // Send repeated start
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ESP_SLAVE_ADDR << 1) | I2C_MASTER_READ, ACK_EN); //READ_BIT, ACK_CHECK_EN);
+ 
     if (size > 1) {
-        i2c_master_read(cmd, data_rd, size - 1, ACK_EN);
+        i2c_master_read(cmd, data_rd, size - 1, I2C_MASTER_ACK);
     }
-    i2c_master_read_byte(cmd, data_rd + size - 1, NACK_VAL);
+    i2c_master_read_byte(cmd, data_rd + size - 1, I2C_MASTER_LAST_NACK); //I2C_MASTER_NACK);
     i2c_master_stop(cmd);
     esp_err_t ret = i2c_master_cmd_begin(I2C_NUM, cmd, I2C_TIMEOUT_MS / portTICK_RATE_MS);
     i2c_cmd_link_delete(cmd);
+    // if (ret) {
+    //   LOG_E("*** *** i2c_master_read_slave: error 0x%x\r\n", ret);
+    // }
+    // else  {
+    //   LOG("*** *** i2c_master_read_slave: OK\r\n");
+    // }
     return ret;
 }
 /* =============================icache functions========================= */
@@ -346,6 +379,8 @@ void ICACHE_FLASH_ATTR touch_setup()
   mos_thread_sleep(100);
 
   update_config();
+
+  mos_thread_sleep(50);
 #ifdef _TP_DEBUG_
   read_firmware_info();
   LOG("[INFO][GT911][UPTIME] %lld \n", millis());
@@ -370,47 +405,7 @@ void ICACHE_FLASH_ATTR update_config()
 #endif
   //end get chksum
 
-  //send configs
-  for (uint8_t w = 0; w < GOODIX_I2C_CONFIG_SIZE; w++)
-  {
-//     wire_beginTransmission(GOODIX_I2C_ADDR);
-//     wire_write(highByte(GOODIX_I2C_CONFIG_START_ADDR + w));
-//     wire_write(lowByte(GOODIX_I2C_CONFIG_START_ADDR + w));
-//     wire_write(gt911FW[w]);
-// #ifdef _TP_DEBUG_
-//     LOG("[INFO][TP][UPDATE_CONFIG] Witren configs[%d] 0x%02x \n", w, gt911FW[w]);
-// #endif
-//     wire_endTransmission(true); //sent end
-  }
-
-#if 0 //def _TP_DEBUG_
-  uint8_t config_buff1[I2C_BUFFER_LENGTH];
-  uint8_t config_buff2[GOODIX_I2C_CONFIG_SIZE - I2C_BUFFER_LENGTH];
-
-  readi2c(GOODIX_I2C_CONFIG_START_ADDR, config_buff1, I2C_BUFFER_LENGTH);                                              //the 1st 128 configs
-  readi2c(GOODIX_I2C_CONFIG_START_ADDR + I2C_BUFFER_LENGTH, config_buff2, GOODIX_I2C_CONFIG_SIZE - I2C_BUFFER_LENGTH); //the resets configs
-
-  for (int i = 0; i < I2C_BUFFER_LENGTH; i++)
-  {
-    LOG("[INFO][TP][DATA] The new config is 0x%02x \n", config_buff1[i]);
-  }
-
-  for (int j = 0; j < (GOODIX_I2C_CONFIG_SIZE - I2C_BUFFER_LENGTH); j++)
-  {
-    LOG("[INFO][TP][DATA] The new config is 0x%02x \n", config_buff2[j]);
-  }
-
-  cinfo configs;
-  configs.config_version = config_buff1[0];
-  configs.x_max_output = (config_buff1[2] << 8) + config_buff1[1];
-  configs.y_max_output = (config_buff1[4] << 8) + config_buff1[3];
-  configs.touch_number = config_buff1[5];
-
-  LOG("[INFO][TP][CONFIGS] The Config Version is: %d \n", configs.config_version);
-  LOG("[INFO][TP][CONFIGS] The X Output Max is: %d \n", configs.x_max_output);
-  LOG("[INFO][TP][CONFIGS] The Y Output Max is: %d \n", configs.y_max_output);
-  LOG("[INFO][TP][CONFIGS] Total Touch Number is: %d \n", configs.touch_number);
-#endif
+  i2c_master_write_slave(GOODIX_I2C_CONFIG_START_ADDR, gt911FW, GOODIX_I2C_CONFIG_SIZE);
 
 } //end update_config()
 
@@ -419,11 +414,13 @@ void ICACHE_FLASH_ATTR read_firmware_info()
 {
   finfo fwinfos;
   uint8_t buff[FW_INFO_SIZE];
+  memset(buff,0,sizeof(buff));
   readi2c(GOODIX_I2C_FW_ADDR, buff, FW_INFO_SIZE);
   fwinfos.product_id[0] = buff[0];
   fwinfos.product_id[1] = buff[1];
   fwinfos.product_id[2] = buff[2];
   fwinfos.product_id[3] = buff[3];
+  fwinfos.product_id[4] = 0;
 
   fwinfos.firmware_version = buff[4] + (buff[5] << 8);
   fwinfos.x_resolution = buff[6] + (buff[7] << 8);
@@ -454,18 +451,23 @@ void ICACHE_FLASH_ATTR read_coordinate()
   LOG("[INFO][TP][TOUCH] Touch status is %d \n", get_xy.touch);
 #endif
 
-  if (get_xy.touch == 1)
-  {
-    wire_beginTransmission(GOODIX_I2C_ADDR);
-    wire_write(highByte(GOODIX_I2C_READXY_ADDR));
-    wire_write(lowByte(GOODIX_I2C_READXY_ADDR));
-    wire_write(0x00);
-
-#ifdef _TP_DEBUG_
-    LOG("[INFO][TP][RBS] Reseted buffer status \n");
-#endif
-    wire_endTransmission(true); //sent end
+  if (get_xy.touch == 1) {
+    uint8_t v = 0;
+    i2c_master_write_slave(GOODIX_I2C_READXY_ADDR, &v, 1);
   }
+
+//   if (get_xy.touch == 1)
+//   {
+//     wire_beginTransmission(GOODIX_I2C_ADDR);
+//     wire_write(highByte(GOODIX_I2C_READXY_ADDR));
+//     wire_write(lowByte(GOODIX_I2C_READXY_ADDR));
+//     wire_write(0x00);
+
+// #ifdef _TP_DEBUG_
+//     LOG("[INFO][TP][RBS] Reseted buffer status \n");
+// #endif
+//     wire_endTransmission(true); //sent end
+//   }
 
 } //end read_coordinate()
 

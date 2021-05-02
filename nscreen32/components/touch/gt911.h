@@ -39,7 +39,7 @@
 //     ~tp_service();
 
     /* =============================icache functions============================= */
-    void ICACHE_FLASH_ATTR setup();
+    void ICACHE_FLASH_ATTR touch_setup();
     bool ICACHE_FLASH_ATTR get_touch(uint16_t pressthou);
 
     /* ============================end icache functions========================== */
