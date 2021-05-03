@@ -66,7 +66,7 @@
 #define CONSOLE_INPUT_STACK_SIZE (1024) // 0.5 K 
 
 // lua heap size
-#define EOS_LUA_HEAP_SIZE (500 * 1024) // 500K
+#define EOS_LUA_HEAP_SIZE (20 * 1024) // (500 * 1024) // 500K
 
 // Priorities
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )

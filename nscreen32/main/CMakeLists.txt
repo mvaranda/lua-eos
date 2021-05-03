@@ -19,6 +19,8 @@ set(COMPONENT_PRIV_INCLUDEDIRS
   "$ENV{IDF_PATH}/components/freertos/include/freertos"
   "." )
 
+  
+
 #idf_component_register(SRCS ${srcs} INCLUDE_DIRS ".")
 register_component()
 
@@ -26,6 +28,9 @@ register_component()
 # that fits the partition named 'storage'. FLASH_IN_PROJECT indicates that
 # the generated image should be flashed when the entire project is flashed to
 # the target with 'idf.py -p PORT flash
-spiffs_create_partition_image(storage ../font FLASH_IN_PROJECT)
+#spiffs_create_partition_image(storage ../font FLASH_IN_PROJECT)
+
+spiffs_create_partition_image(storage ../../target_files FLASH_IN_PROJECT)
+
 
 add_definitions(-DBOARD_NSCREEN32)
