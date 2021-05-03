@@ -325,6 +325,7 @@ static void initialize_console(void)
 static void lua_task_wrapper(void * args)
 {
     luaTask(args);
+	LOG_E("Lua thread terminated\r\n");
     mos_thread_delete(0);
 }
 
@@ -1652,9 +1653,14 @@ static void register_touchscreen(void)
 	lv_indev_t * my_indev = lv_indev_drv_register(&indev_drv);
 }
 
+//#include "esp_common.h"
+#define print_nat_heap() printf("Native heap free (line %d): %d\r\n", __LINE__, esp_get_free_heap_size())
+
+
 void app_main()
 {
 #if 1
+    print_nat_heap();
 	mount_fs();
     eos_init();
     esp32_cmds_init();
@@ -1670,11 +1676,13 @@ void app_main()
 #ifdef HAS_LVGL
     lvgl_task_init();
 	register_touchscreen();
-    mos_thread_sleep(250); // let lvgl task start
+    mos_thread_sleep(500); // let lvgl task start
+#else
+#error "HAS_LVGL must be defined"
 #endif
-
+print_nat_heap();
     lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, LUA_EOS_STACK_SIZE, LUA_TASK_PRIORITY);
-
+print_nat_heap();
         /* Main loop */
     printf("\r\nStarting Lua Shell\r\n\r\n");
     mos_thread_sleep(50); // let the lua print its prompt

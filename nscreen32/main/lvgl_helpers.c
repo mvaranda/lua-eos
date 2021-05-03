@@ -87,7 +87,7 @@ static void my_disp_flush(lv_disp_drv_t * disp, const lv_area_t * area, lv_color
 void lvgl_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map)
 {
 
-    LOG("lvgl_driver_flush\r\n");
+    //LOG("lvgl_driver_flush\r\n");
 
     uint16_t x = area->x1;
     uint16_t y = area->y1;
