@@ -89,7 +89,7 @@ function task_test_user_event_1( ctx )
 end
 
 -- -------------- Main App for simulator ------------
-function app_sim(ctx)
+function app_default(ctx)
   -- creat user event
   g_user_event_1 = eos.create_user_event("user_event_1")
   if g_user_event_1 == nil then
@@ -138,8 +138,8 @@ function app_kalunga( ctx )
 end
 
 function app(ctx)
-  if EOS_PLATFORM == "SIMULATOR" then
-    app_sim(ctx)
+  if EOS_PLATFORM == "SIMULATOR" or EOS_PLATFORM == "NSCREEN32" then
+    app_default(ctx)
   else
     app_kalunga(ctx)
   end

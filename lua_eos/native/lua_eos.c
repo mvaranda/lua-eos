@@ -379,12 +379,30 @@ void eos_init(void)
 #ifdef USE_DOUG_LEA_MALLOC
   void * base = malloc(EOS_LUA_HEAP_SIZE + 10);
   if (! base) {
-    LOG_E("Fail to allocate lua heap\n");
+    while(1)
+    {
+	   LOG_E("Fail to allocate lua heap\n");
+	   mos_thread_sleep(1000);
+    }
   }
   gDlmspace = create_mspace_with_base(base, EOS_LUA_HEAP_SIZE, 0);
   nat_cmd_register("lheap", "show lua heap statistics", &show_lua_heap, MENU_DEV_ACCESS);
 
 #endif
+  
+//  void * ptr;
+//  int hsize_ok=0, hsize = 1024;
+//  while ( (ptr = mspace_malloc(gDlmspace, hsize))) {
+//      printf("dl OK for %d\r\n", hsize);
+//      hsize_ok = hsize;
+//      hsize *= 2;
+//  }
+//  while(1)
+//  {
+//      printf("dl max hsize = %d\r\n", hsize_ok);
+//      mos_thread_sleep(1000);
+//  }
+
 
 
 }

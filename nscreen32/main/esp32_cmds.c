@@ -14,7 +14,8 @@
  *
  ***************************************************************
  */
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "eos_config.h"
 #include "nat_cmd.h"
 #include "esp_system.h"
@@ -319,10 +320,61 @@ static bool cmd_reset(const char *line, int num_args, const char **args)
   esp_restart();
   return true;
 }
+
+static bool cmd_heap(const char *line, int num_args, const char **args)
+{
+  char buf[64];
+  sprintf(buf, "\r\nNat heap free = %d\r\n", esp_get_free_heap_size());
+  toConsole(buf);
+  return true;
+}
+
+#define MAX_NUM_TASKS 12
+static   TaskStatus_t tasks[12];
+#define UNKNOWN "unknown"
+
+static bool cmd_tasks(const char *line, int num_args, const char **args)
+{
+  //TaskStatus_t tasks[6];
+  memset(tasks, 0, sizeof(tasks));
+  char buf[64];
+  buf[sizeof(buf) - 1] = 0;
+  char * name = UNKNOWN;
+
+  UBaseType_t ntasks = uxTaskGetNumberOfTasks();
+  if (ntasks > MAX_NUM_TASKS) {
+    toConsole("Error: must increate MAX_NUM_TASKS\r\n");
+    return true;
+  }
+
+  snprintf(buf, sizeof(buf) - 1, "num tasks = %d\r\n", ntasks);
+  toConsole(buf);
+  toConsole("\r\n\t\tTask\t\tfree\r\n");
+
+// requires to check menuconfig: "Enable FreeRTOS to collect run time stats"
+  uxTaskGetSystemState(
+                       tasks, // TaskStatus_t * const pxTaskStatusArray,
+                       ntasks,
+                       NULL); //unsigned long * const pulTotalRunTime );
+  for (int i = 0; i < ntasks; i++) {
+    if (tasks[i].pcTaskName) {
+        name = tasks[i].pcTaskName;
+    }
+    else {
+      name = UNKNOWN;
+    }
+    snprintf(buf, sizeof(buf) - 1, "%d\t\t%s\t\t%d\r\n", i, name, tasks[i].usStackHighWaterMark);
+    toConsole(buf);
+  }
+  return true;
+}
+
 //void nat_cmd_register(const char *name, const char *help, menu_func_t func, menu_access_t access);
 
 void esp32_cmds_init(void)
 {
+  nat_cmd_register("tasks", "show native tasks", cmd_tasks, MENU_ACCESS);
+  nat_cmd_register("heap", "native heap", cmd_heap, MENU_ACCESS);
   nat_cmd_register("ls", "list directory", cmd_ls, MENU_ACCESS);
   nat_cmd_register("cat", "show text file content", cmd_cat, MENU_ACCESS);
   nat_cmd_register("rm", "remove a file", cmd_rm, MENU_ACCESS);

@@ -25,7 +25,10 @@
   #define EOS_PLATFORM "SIMULATOR"
 #else // for now assume ESP32
   #define ROOT_PATH "/spiffs/"
-  #define EOS_PLATFORM "ESP32"
+//  #ifndef BOARD_DEF
+//    #error "BOARD_DEF must be defined"
+//  #endif
+  #define EOS_PLATFORM BOARD_DEF //"ESP32"
 #endif
 
 #define START_LUA_EOS_FILENAME (ROOT_PATH "eos.lua")

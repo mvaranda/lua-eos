@@ -1660,7 +1660,6 @@ static void register_touchscreen(void)
 void app_main()
 {
 #if 1
-    print_nat_heap();
 	mount_fs();
     eos_init();
     esp32_cmds_init();
@@ -1680,9 +1679,9 @@ void app_main()
 #else
 #error "HAS_LVGL must be defined"
 #endif
-print_nat_heap();
+
     lua_task = mos_thread_new( "lua_task", lua_task_wrapper, 0, LUA_EOS_STACK_SIZE, LUA_TASK_PRIORITY);
-print_nat_heap();
+
         /* Main loop */
     printf("\r\nStarting Lua Shell\r\n\r\n");
     mos_thread_sleep(50); // let the lua print its prompt
