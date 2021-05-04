@@ -103,8 +103,26 @@ def parse_function(line):
     func_name = l[len(l) - 1]
     print("function name: " + func_name)
     dic["name"] = func_name
+    dic["ret"] = " ".join(l[0:len(l) - 1])
+    
+    #params
+    p = l_r[1].replace(';','')
+    p = p.replace(')','')
+    p = p.split(',')
+    dic["num_params"] = len(p)
+    params = []
+    for pp in p:
+      p_dic = {}
+      pp_s = pp.split()
+      p_dic["type"] = " ".join(pp_s[0:len(pp_s) - 1])
+      p_dic["name"] = pp_s[len(pp_s) - 1]
+      params.append(p_dic)
+    dic["params"] = params
+      
+
   except:
     return "\n\nFail to parse: " + line + "\n\n", None
+  print(dic)
   return None, dic
 
 
@@ -113,9 +131,12 @@ def parse_obj_functions(filename):
   lines = content.split('\n')
   funcs = []
   l = ""
+  l_num = 1
   is_macro = False
   for line in lines:
     if l == "":
+      print("line " + str(l_num) + ":")
+      l_num = l_num + 1
       if line.find("(") < 0:
         continue
       if line.find("typedef") >= 0:
@@ -131,9 +152,7 @@ def parse_obj_functions(filename):
         funcs.append(f_dic)
       else:
         print(err)
-
-
-        l = ""
+      l = ""
   
 
 def mk():
@@ -142,7 +161,7 @@ def mk():
     print("no header file found")
     return
   
-  #files = [ '../lvgl/src/lv_core/lv_obj.h' ]
+  files = [ '../lvgl/src/lv_core/lv_obj.h' ]
   for file in files:
     parse_obj_functions(file)
   

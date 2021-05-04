@@ -20,6 +20,10 @@
  *====================*/
 
 /* Maximal horizontal and vertical resolution to support by the library.*/
+// Simulator    320x240
+// Kalunga      320x240
+// Nscreen32    320x480
+
 #define LV_HOR_RES_MAX          (320)
 #ifdef NSCREEN32
   #define LV_VER_RES_MAX          (480)
