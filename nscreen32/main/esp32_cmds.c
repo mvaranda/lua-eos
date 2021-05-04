@@ -330,12 +330,12 @@ static bool cmd_heap(const char *line, int num_args, const char **args)
 }
 
 #define MAX_NUM_TASKS 12
-static   TaskStatus_t tasks[12];
+//static   TaskStatus_t tasks[MAX_NUM_TASKS];
 #define UNKNOWN "unknown"
 
 static bool cmd_tasks(const char *line, int num_args, const char **args)
 {
-  //TaskStatus_t tasks[6];
+  TaskStatus_t tasks[MAX_NUM_TASKS];
   memset(tasks, 0, sizeof(tasks));
   char buf[64];
   buf[sizeof(buf) - 1] = 0;
@@ -349,7 +349,7 @@ static bool cmd_tasks(const char *line, int num_args, const char **args)
 
   snprintf(buf, sizeof(buf) - 1, "num tasks = %d\r\n", ntasks);
   toConsole(buf);
-  toConsole("\r\n\t\tTask\t\tfree\r\n");
+  toConsole("\r\n\tPri\tTask\t\tfree\r\n");
 
 // requires to check menuconfig: "Enable FreeRTOS to collect run time stats"
   uxTaskGetSystemState(
@@ -363,7 +363,7 @@ static bool cmd_tasks(const char *line, int num_args, const char **args)
     else {
       name = UNKNOWN;
     }
-    snprintf(buf, sizeof(buf) - 1, "%d\t\t%s\t\t%d\r\n", i, name, tasks[i].usStackHighWaterMark);
+    snprintf(buf, sizeof(buf) - 1, "%d\t%d\t%s\t\t%d\r\n", i, tasks[i].uxBasePriority, name, tasks[i].usStackHighWaterMark);
     toConsole(buf);
   }
   return true;
