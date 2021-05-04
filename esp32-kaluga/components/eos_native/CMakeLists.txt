@@ -26,6 +26,7 @@ register_component()
 
 add_definitions(
   -DBOARD_DEF="KALUNGA"
+  -DKALUNGA
   -DUSE_DL_PREFIX 
   -DMSPACES=1 
   -DUSE_DOUG_LEA_MALLOC 

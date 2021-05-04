@@ -23,12 +23,9 @@
 #ifdef MOS_DESKTOP
   #define ROOT_PATH "../target_files/"
   #define EOS_PLATFORM "SIMULATOR"
-#else // for now assume ESP32
+#else // cmake defines plat in BOARD_DEF
   #define ROOT_PATH "/spiffs/"
-//  #ifndef BOARD_DEF
-//    #error "BOARD_DEF must be defined"
-//  #endif
-  #define EOS_PLATFORM BOARD_DEF //"ESP32"
+  #define EOS_PLATFORM BOARD_DEF
 #endif
 
 #define START_LUA_EOS_FILENAME (ROOT_PATH "eos.lua")
@@ -69,7 +66,11 @@
 #define CONSOLE_INPUT_STACK_SIZE (1024) // 0.5 K 
 
 // lua heap size
-#define EOS_LUA_HEAP_SIZE (100 * 1024) // (500 * 1024) // 500K
+#ifndef KALUNGA
+  #define EOS_LUA_HEAP_SIZE (2 * 1024 * 1024) // 2MBytes
+#else
+  #define EOS_LUA_HEAP_SIZE (500 * 1024) // 500K
+#endif
 
 // Priorities
 #define	LUA_TASK_PRIORITY		( LOWEST_PRIORITY + 1 )
