@@ -24,6 +24,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "mos.h"
 
 
@@ -209,6 +210,11 @@ void mos_mutex_destroy(mos_mutex_h_t mutex)
 {
     pthread_mutex_destroy(mutex);
     MOS_FREE(mutex);
+}
+
+void mos_thread_sleep( uint32_t time_milliseconds)
+{
+  usleep(time_milliseconds * 1000);
 }
 
 
