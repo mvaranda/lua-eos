@@ -33,6 +33,8 @@
 
 #ifndef MOS_DESKTOP
   #include "main_defs.h"
+#else
+  void toConsole(char * msg);
 #endif
 
 
