@@ -25,11 +25,7 @@
 // Nscreen32    320x480
 
 #define LV_HOR_RES_MAX          (320)
-#ifdef NSCREEN32
-  #define LV_VER_RES_MAX          (480)
-#else
-  #define LV_VER_RES_MAX          (240)
-#endif
+#define LV_VER_RES_MAX          (240)
 
 /* Color depth:
  * - 1:  1 byte per pixel
