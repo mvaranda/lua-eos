@@ -39,7 +39,7 @@ C_HEADER2 = """
 */
 
 """
-L_HEADER = """
+LUA_BODY = """
 -- ***************************************************************
 -- *
 -- *                 This code is part of LUA_EOS
@@ -56,23 +56,34 @@ L_HEADER = """
 -- *
 -- ***************************************************************
 
+-- Enumerations
+
+-- Load module
+  $BASENAME$__init_module()
+
+"""
+
+MODULE_INIT = """
+int bind_$BASENAME$__init_module(lua_State *L)
+{
+  $BASENAME$__init();
+
+  return 0;
+}
 """
 
 FUNC_DEF = """
-static int $FUNC_NAME$(lua_State *L)
+static int bind_$FUNC_NAME$(lua_State *L)
+{
 """
 
-PAR_OBJ = """
-  void * $PAR_N$ = lua_touserdata(L,$PAR_N$);
-"""
+PAR_OBJ = "  void * $PAR_NAME$ = lua_touserdata(L,$PAR_N$);"
 
-PAR_INT = """
-  int $PAR_N$ = lua_tointeger(L,$PAR_N$);
-"""
+PAR_INT = "  int $PAR_NAME$ = lua_tointeger(L,$PAR_N$);"
+  
+PAR_BOOL = "  int $PAR_NAME$ = lua_toboolean(L,$PAR_N$);"
 
-PAR_STRING = """
-  const char * $PAR_N$ = lua_tostring(L,$PAR_N$);
-"""
+PAR_STRING = "  const char * $PAR_NAME$ = lua_tostring(L,$PAR_N$);"
 
 RET_VOID = """
   return 0;
@@ -92,20 +103,46 @@ RET_OBJ = """
 
 RET_INT = """
   lua_pushinteger(L, ret)
-  return 1
+  return 1;
 }
 """
 
-RET_INT = """
-  lua_pushstrinf(L, ret)
-  return 1
+RET_BOOL = """
+  lua_pushboolean(L, ret)
+  return 1;
 }
 """
+
+RET_STRING = """
+  lua_pushstrinf(L, ret)
+  return 1;
+}
+"""
+
+BIND_LIST_DEF_FUNC = "int bind_$BASENAME$__init_module(lua_State *L)"
 
 BIND_LIST_DEF = """
-void $BASENAME$_init(lua_State *L)
+int bind_$BASENAME$__init_module(lua_State *L)
 {
 """
+  
+BIND_LIST_ENTRY = """
+    lua_pushcfunction(L, bind_$FUNC_NAME$);
+    lua_setglobal(L, "$FUNC_NAME$");
+"""
+  
+
+  
+INIT_ALL = """
+void bind_init_lvgl_modules(lua_State *L)
+{
+"""
+  
+INIT_ALL_ENTRY = """
+    lua_pushcfunction(L, bind_$BASENAME$__init_module);
+    lua_setglobal(L, "$BASENAME$__init_module");
+"""
+
 import sys, os
 
 VERSION = "0.01"
@@ -245,8 +282,58 @@ def parse_obj_functions(filename):
   return funcs
 
 def append_function(bind_array, c_file, ch_file, f):
-  c_file.write("// " + f[1] + ENDL)
-  ch_file.write("// " + f[1] + ENDL)
+  # {'name': 'lv_obj_init_draw_line_dsc', 'ret': 'void', 'num_params': 3, 'params': [{'type': 'lv_obj_t *', 'name': 'obj'}, {'type': 'uint8_t', 'name': 'part'}, {'type': 'lv_draw_line_dsc_t *', 'name': 'draw_dsc'}]}
+
+  c_file.write("// ***********************************************" + ENDL) 
+  c_file.write("// * " + f[1] + ENDL)
+  c_file.write("// ***********************************************" + ENDL)
+  c_file.write(FUNC_DEF.replace("$FUNC_NAME$", f[0]["name"]))
+  #ch_file.write("// " + f[1] + ENDL)
+  p_n = 1
+  
+  #print(f[0])
+  # create parameters
+  fcall_params = "("
+  for p in f[0]["params"]:
+    if p["type"] == "char *":
+      l = PAR_STRING.replace("$PAR_NAME$", p["name"])
+    elif p["type"] == "bool":
+      l = PAR_STRING.replace("$PAR_BOOL$", p["name"])  
+    # if type has * then assume user defined obj
+    elif p["type"].find('*') >= 0:
+      l = PAR_OBJ.replace("$PAR_NAME$", p["name"])
+    else:
+      l = PAR_INT.replace("$PAR_NAME$", p["name"])  
+    l = l.replace("$PAR_N$", str(p_n))
+    c_file.write(l + ENDL)
+    fcall_params = fcall_params + p["name"] + ", "
+    p_n = p_n +1
+  c_file.write(ENDL)
+  fcall_params = fcall_params[0:len(fcall_params) - 2]
+  fcall_params = fcall_params + ");"
+  
+  # create the function call
+  if f[0]["ret"] == "void":
+    c_file.write("  " + f[0]["name"] + fcall_params + ENDL)
+  else:
+    c_file.write("  " + f[0]["ret"] + " ret = " + f[0]["name"] + fcall_params + ENDL)
+  
+  # create return
+  if f[0]["ret"] == "void":
+    c_file.write(RET_VOID)
+  elif f[0]["ret"].find("bool") >= 0:
+    c_file.write(RET_BOOL)
+  elif f[0]["ret"].find("char *") >= 0:
+    c_file.write(RET_STRING)
+  elif f[0]["ret"].find("*") >= 0:
+    c_file.write(RET_OBJ)
+  else:
+    c_file.write(RET_INT)
+  c_file.write(ENDL + ENDL)
+  
+  bind_array = bind_array + BIND_LIST_ENTRY.replace("$FUNC_NAME$", f[0]["name"])
+  return bind_array
+  
   
 
 def mk():
@@ -256,6 +343,8 @@ def mk():
     return
   
   files = [ '../lvgl/src/lv_core/lv_obj.h' ]
+  includes = ""
+  init_all = INIT_ALL
   for file in files:
     print("processing file: " + file)
     base_name = file.split('/')
@@ -267,13 +356,33 @@ def mk():
     c_file = open("bind_" + base_name + ".c", 'w')
     c_file.write(C_HEADER2)
     ch_file = open("bind_" + base_name + ".h", 'w')
+    includes = includes + "#include " + "bind_" + base_name + ".h" + ENDL
     ch_file.write(C_HEADER1.replace("$BASENAME$", base_name))
     ch_file.write(C_HEADER2)
+    ch_file.write(ENDL + BIND_LIST_DEF_FUNC.replace("$BASENAME$", base_name) + ";"  + ENDL)
+    #init_all = init_all + "  bind_" + base_name + "__init_module(L);" + ENDL
+    init_all = init_all + INIT_ALL_ENTRY.replace("$BASENAME$", base_name)
+    ch_file.write(ENDL + "// --------------------------------------------------" + ENDL)
+    ch_file.write("#endif" + ENDL)
                   
-    bind_array = BIND_LIST_DEF
-    bind_array.replace("$BASENAME$", base_name)
+    bind_array = BIND_LIST_DEF.replace("$BASENAME$", base_name)
     for f in funcs:           
       bind_array = append_function(bind_array, c_file, ch_file, f)
+  
+    bind_array = bind_array + "};" + ENDL
+    c_file.write(bind_array)
+    print(bind_array)
+  
+    lua_file = open(base_name + ".lua", 'w')
+    lua_file.write(LUA_BODY.replace("$BASENAME$", base_name))
+    lua_file.close()
+  
+    init_file = open("lvgl_init_modules.c", 'w')
+    init_file.write(C_HEADER2.replace("$BASENAME$", base_name))
+    init_file.write(includes)
+    init_file.write(init_all)
+    init_file.write("}" + ENDL)
+    init_file.close()
                   
     c_file.close()
     ch_file.close()
