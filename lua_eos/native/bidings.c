@@ -24,13 +24,16 @@
 extern "C" {
 #endif
 
+extern void bind_init_lvgl_modules(lua_State *L);
+
 void lua_bindings_registration(lua_State *L)
 {
 #ifdef HAS_LVGL
-  lvgl_lua_init(L);
-   #ifdef  MOS_DESKTOP_SPLASH
-     lvgl_splash_init(L);
-   #endif
+  //lvgl_lua_init(L);
+  bind_init_lvgl_modules(L);
+  #ifdef  MOS_DESKTOP_SPLASH
+    lvgl_splash_init(L);
+  #endif
 #endif // HAS_LVGL
 }
 

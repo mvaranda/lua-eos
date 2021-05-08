@@ -38,7 +38,24 @@ C_HEADER2 = """
  ###############################################################
 */
 
+#include "log.h"
+#include "lua_eos.h"
+#include "lvgl.h"
+#include "$BASENAME$.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 """
+
+END_C = """
+
+#ifdef __cplusplus
+  }
+#endif
+"""
+
 LUA_BODY = """
 -- ***************************************************************
 -- *
@@ -102,19 +119,19 @@ RET_OBJ = """
 """
 
 RET_INT = """
-  lua_pushinteger(L, ret)
+  lua_pushinteger(L, ret);
   return 1;
 }
 """
 
 RET_BOOL = """
-  lua_pushboolean(L, ret)
+  lua_pushboolean(L, ret);
   return 1;
 }
 """
 
 RET_STRING = """
-  lua_pushstrinf(L, ret)
+  lua_pushstring(L, ret);
   return 1;
 }
 """
@@ -295,10 +312,14 @@ def append_function(bind_array, c_file, ch_file, f):
   # create parameters
   fcall_params = "("
   for p in f[0]["params"]:
-    if p["type"] == "char *":
+    if p["name"] == "void":
+      fcall_params = fcall_params + ");"
+      c_file.write(ENDL + "  UNUSED(L);" + ENDL)
+      continue
+    elif p["type"].find("char *") >= 0:
       l = PAR_STRING.replace("$PAR_NAME$", p["name"])
     elif p["type"] == "bool":
-      l = PAR_STRING.replace("$PAR_BOOL$", p["name"])  
+      l = PAR_BOOL.replace("$PAR_NAME$", p["name"])  
     # if type has * then assume user defined obj
     elif p["type"].find('*') >= 0:
       l = PAR_OBJ.replace("$PAR_NAME$", p["name"])
@@ -313,13 +334,15 @@ def append_function(bind_array, c_file, ch_file, f):
   fcall_params = fcall_params + ");"
   
   # create the function call
-  if f[0]["ret"] == "void":
-    c_file.write("  " + f[0]["name"] + fcall_params + ENDL)
+  if f[0]["ret"].find("void") >= 0:
+    fcall = "  " + f[0]["name"] + fcall_params + ENDL
   else:
-    c_file.write("  " + f[0]["ret"] + " ret = " + f[0]["name"] + fcall_params + ENDL)
+    fcall = "  " + f[0]["ret"] + " ret = " + f[0]["name"] + fcall_params + ENDL
+  fcall = fcall.replace("static inline ", '')
+  c_file.write(fcall)
   
   # create return
-  if f[0]["ret"] == "void":
+  if f[0]["ret"].find("void") >= 0:
     c_file.write(RET_VOID)
   elif f[0]["ret"].find("bool") >= 0:
     c_file.write(RET_BOOL)
@@ -342,7 +365,7 @@ def mk():
     print("no header file found")
     return
   
-  files = [ '../lvgl/src/lv_core/lv_obj.h' ]
+  #files = [ '../lvgl/src/lv_core/lv_obj.h' ]
   includes = ""
   init_all = INIT_ALL
   for file in files:
@@ -354,11 +377,12 @@ def mk():
     funcs = parse_obj_functions(file)
     #print(funcs)
     c_file = open("bind_" + base_name + ".c", 'w')
-    c_file.write(C_HEADER2)
+    c_file.write(C_HEADER2.replace("$BASENAME$", base_name))
+    c_file.write(ENDL + "#define UNUSED(x) (void)(x)" + ENDL)
     ch_file = open("bind_" + base_name + ".h", 'w')
-    includes = includes + "#include " + "bind_" + base_name + ".h" + ENDL
+    includes = includes + "#include \"" + "bind_" + base_name + ".h\"" + ENDL
     ch_file.write(C_HEADER1.replace("$BASENAME$", base_name))
-    ch_file.write(C_HEADER2)
+    ch_file.write(C_HEADER2.replace("$BASENAME$", base_name))
     ch_file.write(ENDL + BIND_LIST_DEF_FUNC.replace("$BASENAME$", base_name) + ";"  + ENDL)
     #init_all = init_all + "  bind_" + base_name + "__init_module(L);" + ENDL
     init_all = init_all + INIT_ALL_ENTRY.replace("$BASENAME$", base_name)
@@ -366,7 +390,11 @@ def mk():
     ch_file.write("#endif" + ENDL)
                   
     bind_array = BIND_LIST_DEF.replace("$BASENAME$", base_name)
-    for f in funcs:           
+    for f in funcs:
+      if f[0]["name"].find("_lv_") == 0: #disregard locals
+        continue
+      if f[0]["name"].find("LV_") == 0: #disregard macros
+        continue
       bind_array = append_function(bind_array, c_file, ch_file, f)
   
     bind_array = bind_array + "};" + ENDL
@@ -382,8 +410,11 @@ def mk():
     init_file.write(includes)
     init_file.write(init_all)
     init_file.write("}" + ENDL)
+    init_file.write(END_C)
     init_file.close()
-                  
+    
+    c_file.write(END_C)
+    ch_file.write(END_C)
     c_file.close()
     ch_file.close()
   

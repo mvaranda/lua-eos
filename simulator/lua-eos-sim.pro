@@ -232,6 +232,11 @@ SOURCES += \
     ../lvgl/src/lv_widgets/lv_textarea.c \
     ../lvgl/src/lv_widgets/lv_tileview.c \
     ../lvgl/src/lv_widgets/lv_win.c \
+    ../lvgl_patch/bind_lv_btn.c \
+    ../lvgl_patch/bind_lv_disp.c \
+    ../lvgl_patch/bind_lv_label.c \
+    ../lvgl_patch/bind_lv_obj.c \
+    ../lvgl_patch/lvgl_init_modules.c \
     ../lvgl_patch/lvgl_integr.cpp \
     ../utils/malloc.c \
     clabel.cpp \
@@ -368,6 +373,10 @@ HEADERS += \
     ../lvgl/src/lv_widgets/lv_tileview.h \
     ../lvgl/src/lv_widgets/lv_win.h \
     ../lvgl/src/lvgl.h \
+    ../lvgl_patch/bind_lv_btn.h \
+    ../lvgl_patch/bind_lv_disp.h \
+    ../lvgl_patch/bind_lv_label.h \
+    ../lvgl_patch/bind_lv_obj.h \
     ../lvgl_patch/lv_conf.h \
     ../lvgl_patch/lvgl_integr.h \
     ../utils/malloc.h \
