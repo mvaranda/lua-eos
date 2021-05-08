@@ -20,6 +20,7 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
+#include "lauxlib.h"
 #include "lv_btn.h"
 
 #ifdef __cplusplus
@@ -263,54 +264,32 @@ static int bind_lv_btn_get_fit_bottom(lua_State *L)
 
 
 
+static const luaL_Reg binding_names [] = {
+  { "btn_create", bind_lv_btn_create },
+  { "btn_set_checkable", bind_lv_btn_set_checkable },
+  { "btn_set_state", bind_lv_btn_set_state },
+  { "btn_toggle", bind_lv_btn_toggle },
+  { "btn_set_layout", bind_lv_btn_set_layout },
+  { "btn_set_fit4", bind_lv_btn_set_fit4 },
+  { "btn_set_fit2", bind_lv_btn_set_fit2 },
+  { "btn_set_fit", bind_lv_btn_set_fit },
+  { "btn_get_state", bind_lv_btn_get_state },
+  { "btn_get_checkable", bind_lv_btn_get_checkable },
+  { "btn_get_layout", bind_lv_btn_get_layout },
+  { "btn_get_fit_left", bind_lv_btn_get_fit_left },
+  { "btn_get_fit_right", bind_lv_btn_get_fit_right },
+  { "btn_get_fit_top", bind_lv_btn_get_fit_top },
+  { "btn_get_fit_bottom", bind_lv_btn_get_fit_bottom },
+
+  { NULL, NULL},
+};
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+
 int bind_lv_btn__init_module(lua_State *L)
 {
-
-    lua_pushcfunction(L, bind_lv_btn_create);
-    lua_setglobal(L, "lv_btn_create");
-
-    lua_pushcfunction(L, bind_lv_btn_set_checkable);
-    lua_setglobal(L, "lv_btn_set_checkable");
-
-    lua_pushcfunction(L, bind_lv_btn_set_state);
-    lua_setglobal(L, "lv_btn_set_state");
-
-    lua_pushcfunction(L, bind_lv_btn_toggle);
-    lua_setglobal(L, "lv_btn_toggle");
-
-    lua_pushcfunction(L, bind_lv_btn_set_layout);
-    lua_setglobal(L, "lv_btn_set_layout");
-
-    lua_pushcfunction(L, bind_lv_btn_set_fit4);
-    lua_setglobal(L, "lv_btn_set_fit4");
-
-    lua_pushcfunction(L, bind_lv_btn_set_fit2);
-    lua_setglobal(L, "lv_btn_set_fit2");
-
-    lua_pushcfunction(L, bind_lv_btn_set_fit);
-    lua_setglobal(L, "lv_btn_set_fit");
-
-    lua_pushcfunction(L, bind_lv_btn_get_state);
-    lua_setglobal(L, "lv_btn_get_state");
-
-    lua_pushcfunction(L, bind_lv_btn_get_checkable);
-    lua_setglobal(L, "lv_btn_get_checkable");
-
-    lua_pushcfunction(L, bind_lv_btn_get_layout);
-    lua_setglobal(L, "lv_btn_get_layout");
-
-    lua_pushcfunction(L, bind_lv_btn_get_fit_left);
-    lua_setglobal(L, "lv_btn_get_fit_left");
-
-    lua_pushcfunction(L, bind_lv_btn_get_fit_right);
-    lua_setglobal(L, "lv_btn_get_fit_right");
-
-    lua_pushcfunction(L, bind_lv_btn_get_fit_top);
-    lua_setglobal(L, "lv_btn_get_fit_top");
-
-    lua_pushcfunction(L, bind_lv_btn_get_fit_bottom);
-    lua_setglobal(L, "lv_btn_get_fit_bottom");
-};
+  lv_append_lib_funcs(L, binding_names);
+}
 
 
 #ifdef __cplusplus

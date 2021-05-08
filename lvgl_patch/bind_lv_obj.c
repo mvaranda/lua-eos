@@ -20,6 +20,7 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
+#include "lauxlib.h"
 #include "lv_obj.h"
 
 #ifdef __cplusplus
@@ -1872,19 +1873,19 @@ static int bind_lv_obj_get_type(lua_State *L)
 }
 
 
-// ***********************************************
-// * lv_obj_user_data_t lv_obj_get_user_data(const lv_obj_t * obj);
-// ***********************************************
+//// ***********************************************
+//// * lv_obj_user_data_t lv_obj_get_user_data(const lv_obj_t * obj);
+//// ***********************************************
 
-static int bind_lv_obj_get_user_data(lua_State *L)
-{
-  void * obj = lua_touserdata(L,1);
+//static int bind_lv_obj_get_user_data(lua_State *L)
+//{
+//  void * obj = lua_touserdata(L,1);
 
-  void * ret = lv_obj_get_user_data(obj);
+//  void * ret = lv_obj_get_user_data(obj);
 
-  lua_pushlightuserdata(L, ret);
-  return 1;
-}
+//  lua_pushinteger(L, ret);
+//  return 1;
+//}
 
 
 //// ***********************************************
@@ -2131,412 +2132,152 @@ static int bind_lv_debug_check_obj_valid(lua_State *L)
 
 
 
+static const luaL_Reg binding_names [] = {
+  { "init", bind_lv_init },
+  { "deinit", bind_lv_deinit },
+  { "obj_create", bind_lv_obj_create },
+  { "obj_del", bind_lv_obj_del },
+  { "obj_del_anim_ready_cb", bind_lv_obj_del_anim_ready_cb },
+  { "obj_del_async", bind_lv_obj_del_async },
+  { "obj_clean", bind_lv_obj_clean },
+  { "obj_invalidate_area", bind_lv_obj_invalidate_area },
+  { "obj_invalidate", bind_lv_obj_invalidate },
+  { "obj_area_is_visible", bind_lv_obj_area_is_visible },
+  { "obj_is_visible", bind_lv_obj_is_visible },
+  { "obj_set_parent", bind_lv_obj_set_parent },
+  { "obj_move_foreground", bind_lv_obj_move_foreground },
+  { "obj_move_background", bind_lv_obj_move_background },
+  { "obj_set_pos", bind_lv_obj_set_pos },
+  { "obj_set_x", bind_lv_obj_set_x },
+  { "obj_set_y", bind_lv_obj_set_y },
+  { "obj_set_size", bind_lv_obj_set_size },
+  { "obj_set_width", bind_lv_obj_set_width },
+  { "obj_set_height", bind_lv_obj_set_height },
+  { "obj_set_width_fit", bind_lv_obj_set_width_fit },
+  { "obj_set_height_fit", bind_lv_obj_set_height_fit },
+  { "obj_set_width_margin", bind_lv_obj_set_width_margin },
+  { "obj_set_height_margin", bind_lv_obj_set_height_margin },
+  { "obj_align", bind_lv_obj_align },
+  { "obj_align_x", bind_lv_obj_align_x },
+  { "obj_align_y", bind_lv_obj_align_y },
+  { "obj_align_mid", bind_lv_obj_align_mid },
+  { "obj_align_mid_x", bind_lv_obj_align_mid_x },
+  { "obj_align_mid_y", bind_lv_obj_align_mid_y },
+  { "obj_realign", bind_lv_obj_realign },
+  { "obj_set_auto_realign", bind_lv_obj_set_auto_realign },
+  { "obj_set_ext_click_area", bind_lv_obj_set_ext_click_area },
+  { "obj_add_style", bind_lv_obj_add_style },
+  { "obj_remove_style", bind_lv_obj_remove_style },
+  { "obj_clean_style_list", bind_lv_obj_clean_style_list },
+  { "obj_reset_style_list", bind_lv_obj_reset_style_list },
+  { "obj_refresh_style", bind_lv_obj_refresh_style },
+  { "obj_report_style_mod", bind_lv_obj_report_style_mod },
+  { "obj_remove_style_local_prop", bind_lv_obj_remove_style_local_prop },
+  { "obj_set_hidden", bind_lv_obj_set_hidden },
+  { "obj_set_adv_hittest", bind_lv_obj_set_adv_hittest },
+  { "obj_set_click", bind_lv_obj_set_click },
+  { "obj_set_top", bind_lv_obj_set_top },
+  { "obj_set_drag", bind_lv_obj_set_drag },
+  { "obj_set_drag_dir", bind_lv_obj_set_drag_dir },
+  { "obj_set_drag_throw", bind_lv_obj_set_drag_throw },
+  { "obj_set_drag_parent", bind_lv_obj_set_drag_parent },
+  { "obj_set_focus_parent", bind_lv_obj_set_focus_parent },
+  { "obj_set_gesture_parent", bind_lv_obj_set_gesture_parent },
+  { "obj_set_parent_event", bind_lv_obj_set_parent_event },
+  { "obj_set_base_dir", bind_lv_obj_set_base_dir },
+  { "obj_add_protect", bind_lv_obj_add_protect },
+  { "obj_clear_protect", bind_lv_obj_clear_protect },
+  { "obj_set_state", bind_lv_obj_set_state },
+  { "obj_add_state", bind_lv_obj_add_state },
+  { "obj_clear_state", bind_lv_obj_clear_state },
+  { "obj_finish_transitions", bind_lv_obj_finish_transitions },
+  { "obj_set_event_cb", bind_lv_obj_set_event_cb },
+  { "event_send", bind_lv_event_send },
+  { "event_send_refresh", bind_lv_event_send_refresh },
+  { "event_send_refresh_recursive", bind_lv_event_send_refresh_recursive },
+  { "event_send_func", bind_lv_event_send_func },
+  { "event_get_data", bind_lv_event_get_data },
+  { "obj_set_signal_cb", bind_lv_obj_set_signal_cb },
+  { "signal_send", bind_lv_signal_send },
+  { "obj_set_design_cb", bind_lv_obj_set_design_cb },
+  { "obj_allocate_ext_attr", bind_lv_obj_allocate_ext_attr },
+  { "obj_refresh_ext_draw_pad", bind_lv_obj_refresh_ext_draw_pad },
+  { "obj_get_screen", bind_lv_obj_get_screen },
+  { "obj_get_disp", bind_lv_obj_get_disp },
+  { "obj_get_parent", bind_lv_obj_get_parent },
+  { "obj_get_child", bind_lv_obj_get_child },
+  { "obj_get_child_back", bind_lv_obj_get_child_back },
+  { "obj_count_children", bind_lv_obj_count_children },
+  { "obj_count_children_recursive", bind_lv_obj_count_children_recursive },
+  { "obj_get_coords", bind_lv_obj_get_coords },
+  { "obj_get_inner_coords", bind_lv_obj_get_inner_coords },
+  { "obj_get_x", bind_lv_obj_get_x },
+  { "obj_get_y", bind_lv_obj_get_y },
+  { "obj_get_width", bind_lv_obj_get_width },
+  { "obj_get_height", bind_lv_obj_get_height },
+  { "obj_get_width_fit", bind_lv_obj_get_width_fit },
+  { "obj_get_height_fit", bind_lv_obj_get_height_fit },
+  { "obj_get_height_margin", bind_lv_obj_get_height_margin },
+  { "obj_get_width_margin", bind_lv_obj_get_width_margin },
+  { "obj_get_width_grid", bind_lv_obj_get_width_grid },
+  { "obj_get_height_grid", bind_lv_obj_get_height_grid },
+  { "obj_get_auto_realign", bind_lv_obj_get_auto_realign },
+  { "obj_get_ext_click_pad_left", bind_lv_obj_get_ext_click_pad_left },
+  { "obj_get_ext_click_pad_right", bind_lv_obj_get_ext_click_pad_right },
+  { "obj_get_ext_click_pad_top", bind_lv_obj_get_ext_click_pad_top },
+  { "obj_get_ext_click_pad_bottom", bind_lv_obj_get_ext_click_pad_bottom },
+  { "obj_get_ext_draw_pad", bind_lv_obj_get_ext_draw_pad },
+  { "obj_get_style_list", bind_lv_obj_get_style_list },
+  { "obj_get_local_style", bind_lv_obj_get_local_style },
+  { "obj_get_hidden", bind_lv_obj_get_hidden },
+  { "obj_get_adv_hittest", bind_lv_obj_get_adv_hittest },
+  { "obj_get_click", bind_lv_obj_get_click },
+  { "obj_get_top", bind_lv_obj_get_top },
+  { "obj_get_drag", bind_lv_obj_get_drag },
+  { "obj_get_drag_dir", bind_lv_obj_get_drag_dir },
+  { "obj_get_drag_throw", bind_lv_obj_get_drag_throw },
+  { "obj_get_drag_parent", bind_lv_obj_get_drag_parent },
+  { "obj_get_focus_parent", bind_lv_obj_get_focus_parent },
+  { "obj_get_parent_event", bind_lv_obj_get_parent_event },
+  { "obj_get_gesture_parent", bind_lv_obj_get_gesture_parent },
+  { "obj_get_base_dir", bind_lv_obj_get_base_dir },
+  { "obj_get_protect", bind_lv_obj_get_protect },
+  { "obj_is_protected", bind_lv_obj_is_protected },
+  { "obj_get_state", bind_lv_obj_get_state },
+  { "obj_get_signal_cb", bind_lv_obj_get_signal_cb },
+  { "obj_get_design_cb", bind_lv_obj_get_design_cb },
+  { "obj_get_event_cb", bind_lv_obj_get_event_cb },
+  { "obj_is_point_on_coords", bind_lv_obj_is_point_on_coords },
+  { "obj_hittest", bind_lv_obj_hittest },
+  { "obj_get_ext_attr", bind_lv_obj_get_ext_attr },
+  { "obj_get_type", bind_lv_obj_get_type },
+//  { "obj_get_user_data", bind_lv_obj_get_user_data },
+//  { "obj_get_user_data_ptr", bind_lv_obj_get_user_data_ptr },
+//  { "obj_set_user_data", bind_lv_obj_set_user_data },
+  { "obj_get_group", bind_lv_obj_get_group },
+  { "obj_is_focused", bind_lv_obj_is_focused },
+  { "obj_get_focused_obj", bind_lv_obj_get_focused_obj },
+  { "obj_handle_get_type_signal", bind_lv_obj_handle_get_type_signal },
+  { "obj_init_draw_rect_dsc", bind_lv_obj_init_draw_rect_dsc },
+  { "obj_init_draw_label_dsc", bind_lv_obj_init_draw_label_dsc },
+  { "obj_init_draw_img_dsc", bind_lv_obj_init_draw_img_dsc },
+  { "obj_init_draw_line_dsc", bind_lv_obj_init_draw_line_dsc },
+  { "obj_get_draw_rect_ext_pad_size", bind_lv_obj_get_draw_rect_ext_pad_size },
+  { "obj_fade_in", bind_lv_obj_fade_in },
+  { "obj_fade_out", bind_lv_obj_fade_out },
+  { "debug_check_obj_type", bind_lv_debug_check_obj_type },
+  { "debug_check_obj_valid", bind_lv_debug_check_obj_valid },
+  { "debug_check_obj_valid", bind_lv_debug_check_obj_valid },
+
+  { NULL, NULL},
+};
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+
 int bind_lv_obj__init_module(lua_State *L)
 {
-
-    lua_pushcfunction(L, bind_lv_init);
-    lua_setglobal(L, "lv_init");
-
-    lua_pushcfunction(L, bind_lv_deinit);
-    lua_setglobal(L, "lv_deinit");
-
-    lua_pushcfunction(L, bind_lv_obj_create);
-    lua_setglobal(L, "lv_obj_create");
-
-    lua_pushcfunction(L, bind_lv_obj_del);
-    lua_setglobal(L, "lv_obj_del");
-
-    lua_pushcfunction(L, bind_lv_obj_del_anim_ready_cb);
-    lua_setglobal(L, "lv_obj_del_anim_ready_cb");
-
-    lua_pushcfunction(L, bind_lv_obj_del_async);
-    lua_setglobal(L, "lv_obj_del_async");
-
-    lua_pushcfunction(L, bind_lv_obj_clean);
-    lua_setglobal(L, "lv_obj_clean");
-
-    lua_pushcfunction(L, bind_lv_obj_invalidate_area);
-    lua_setglobal(L, "lv_obj_invalidate_area");
-
-    lua_pushcfunction(L, bind_lv_obj_invalidate);
-    lua_setglobal(L, "lv_obj_invalidate");
-
-    lua_pushcfunction(L, bind_lv_obj_area_is_visible);
-    lua_setglobal(L, "lv_obj_area_is_visible");
-
-    lua_pushcfunction(L, bind_lv_obj_is_visible);
-    lua_setglobal(L, "lv_obj_is_visible");
-
-    lua_pushcfunction(L, bind_lv_obj_set_parent);
-    lua_setglobal(L, "lv_obj_set_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_move_foreground);
-    lua_setglobal(L, "lv_obj_move_foreground");
-
-    lua_pushcfunction(L, bind_lv_obj_move_background);
-    lua_setglobal(L, "lv_obj_move_background");
-
-    lua_pushcfunction(L, bind_lv_obj_set_pos);
-    lua_setglobal(L, "lv_obj_set_pos");
-
-    lua_pushcfunction(L, bind_lv_obj_set_x);
-    lua_setglobal(L, "lv_obj_set_x");
-
-    lua_pushcfunction(L, bind_lv_obj_set_y);
-    lua_setglobal(L, "lv_obj_set_y");
-
-    lua_pushcfunction(L, bind_lv_obj_set_size);
-    lua_setglobal(L, "lv_obj_set_size");
-
-    lua_pushcfunction(L, bind_lv_obj_set_width);
-    lua_setglobal(L, "lv_obj_set_width");
-
-    lua_pushcfunction(L, bind_lv_obj_set_height);
-    lua_setglobal(L, "lv_obj_set_height");
-
-    lua_pushcfunction(L, bind_lv_obj_set_width_fit);
-    lua_setglobal(L, "lv_obj_set_width_fit");
-
-    lua_pushcfunction(L, bind_lv_obj_set_height_fit);
-    lua_setglobal(L, "lv_obj_set_height_fit");
-
-    lua_pushcfunction(L, bind_lv_obj_set_width_margin);
-    lua_setglobal(L, "lv_obj_set_width_margin");
-
-    lua_pushcfunction(L, bind_lv_obj_set_height_margin);
-    lua_setglobal(L, "lv_obj_set_height_margin");
-
-    lua_pushcfunction(L, bind_lv_obj_align);
-    lua_setglobal(L, "lv_obj_align");
-
-    lua_pushcfunction(L, bind_lv_obj_align_x);
-    lua_setglobal(L, "lv_obj_align_x");
-
-    lua_pushcfunction(L, bind_lv_obj_align_y);
-    lua_setglobal(L, "lv_obj_align_y");
-
-    lua_pushcfunction(L, bind_lv_obj_align_mid);
-    lua_setglobal(L, "lv_obj_align_mid");
-
-    lua_pushcfunction(L, bind_lv_obj_align_mid_x);
-    lua_setglobal(L, "lv_obj_align_mid_x");
-
-    lua_pushcfunction(L, bind_lv_obj_align_mid_y);
-    lua_setglobal(L, "lv_obj_align_mid_y");
-
-    lua_pushcfunction(L, bind_lv_obj_realign);
-    lua_setglobal(L, "lv_obj_realign");
-
-    lua_pushcfunction(L, bind_lv_obj_set_auto_realign);
-    lua_setglobal(L, "lv_obj_set_auto_realign");
-
-    lua_pushcfunction(L, bind_lv_obj_set_ext_click_area);
-    lua_setglobal(L, "lv_obj_set_ext_click_area");
-
-    lua_pushcfunction(L, bind_lv_obj_add_style);
-    lua_setglobal(L, "lv_obj_add_style");
-
-    lua_pushcfunction(L, bind_lv_obj_remove_style);
-    lua_setglobal(L, "lv_obj_remove_style");
-
-    lua_pushcfunction(L, bind_lv_obj_clean_style_list);
-    lua_setglobal(L, "lv_obj_clean_style_list");
-
-    lua_pushcfunction(L, bind_lv_obj_reset_style_list);
-    lua_setglobal(L, "lv_obj_reset_style_list");
-
-    lua_pushcfunction(L, bind_lv_obj_refresh_style);
-    lua_setglobal(L, "lv_obj_refresh_style");
-
-    lua_pushcfunction(L, bind_lv_obj_report_style_mod);
-    lua_setglobal(L, "lv_obj_report_style_mod");
-
-    lua_pushcfunction(L, bind_lv_obj_remove_style_local_prop);
-    lua_setglobal(L, "lv_obj_remove_style_local_prop");
-
-    lua_pushcfunction(L, bind_lv_obj_set_hidden);
-    lua_setglobal(L, "lv_obj_set_hidden");
-
-    lua_pushcfunction(L, bind_lv_obj_set_adv_hittest);
-    lua_setglobal(L, "lv_obj_set_adv_hittest");
-
-    lua_pushcfunction(L, bind_lv_obj_set_click);
-    lua_setglobal(L, "lv_obj_set_click");
-
-    lua_pushcfunction(L, bind_lv_obj_set_top);
-    lua_setglobal(L, "lv_obj_set_top");
-
-    lua_pushcfunction(L, bind_lv_obj_set_drag);
-    lua_setglobal(L, "lv_obj_set_drag");
-
-    lua_pushcfunction(L, bind_lv_obj_set_drag_dir);
-    lua_setglobal(L, "lv_obj_set_drag_dir");
-
-    lua_pushcfunction(L, bind_lv_obj_set_drag_throw);
-    lua_setglobal(L, "lv_obj_set_drag_throw");
-
-    lua_pushcfunction(L, bind_lv_obj_set_drag_parent);
-    lua_setglobal(L, "lv_obj_set_drag_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_set_focus_parent);
-    lua_setglobal(L, "lv_obj_set_focus_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_set_gesture_parent);
-    lua_setglobal(L, "lv_obj_set_gesture_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_set_parent_event);
-    lua_setglobal(L, "lv_obj_set_parent_event");
-
-    lua_pushcfunction(L, bind_lv_obj_set_base_dir);
-    lua_setglobal(L, "lv_obj_set_base_dir");
-
-    lua_pushcfunction(L, bind_lv_obj_add_protect);
-    lua_setglobal(L, "lv_obj_add_protect");
-
-    lua_pushcfunction(L, bind_lv_obj_clear_protect);
-    lua_setglobal(L, "lv_obj_clear_protect");
-
-    lua_pushcfunction(L, bind_lv_obj_set_state);
-    lua_setglobal(L, "lv_obj_set_state");
-
-    lua_pushcfunction(L, bind_lv_obj_add_state);
-    lua_setglobal(L, "lv_obj_add_state");
-
-    lua_pushcfunction(L, bind_lv_obj_clear_state);
-    lua_setglobal(L, "lv_obj_clear_state");
-
-    lua_pushcfunction(L, bind_lv_obj_finish_transitions);
-    lua_setglobal(L, "lv_obj_finish_transitions");
-
-    lua_pushcfunction(L, bind_lv_obj_set_event_cb);
-    lua_setglobal(L, "lv_obj_set_event_cb");
-
-    lua_pushcfunction(L, bind_lv_event_send);
-    lua_setglobal(L, "lv_event_send");
-
-    lua_pushcfunction(L, bind_lv_event_send_refresh);
-    lua_setglobal(L, "lv_event_send_refresh");
-
-    lua_pushcfunction(L, bind_lv_event_send_refresh_recursive);
-    lua_setglobal(L, "lv_event_send_refresh_recursive");
-
-    lua_pushcfunction(L, bind_lv_event_send_func);
-    lua_setglobal(L, "lv_event_send_func");
-
-    lua_pushcfunction(L, bind_lv_event_get_data);
-    lua_setglobal(L, "lv_event_get_data");
-
-    lua_pushcfunction(L, bind_lv_obj_set_signal_cb);
-    lua_setglobal(L, "lv_obj_set_signal_cb");
-
-    lua_pushcfunction(L, bind_lv_signal_send);
-    lua_setglobal(L, "lv_signal_send");
-
-    lua_pushcfunction(L, bind_lv_obj_set_design_cb);
-    lua_setglobal(L, "lv_obj_set_design_cb");
-
-    lua_pushcfunction(L, bind_lv_obj_allocate_ext_attr);
-    lua_setglobal(L, "lv_obj_allocate_ext_attr");
-
-    lua_pushcfunction(L, bind_lv_obj_refresh_ext_draw_pad);
-    lua_setglobal(L, "lv_obj_refresh_ext_draw_pad");
-
-    lua_pushcfunction(L, bind_lv_obj_get_screen);
-    lua_setglobal(L, "lv_obj_get_screen");
-
-    lua_pushcfunction(L, bind_lv_obj_get_disp);
-    lua_setglobal(L, "lv_obj_get_disp");
-
-    lua_pushcfunction(L, bind_lv_obj_get_parent);
-    lua_setglobal(L, "lv_obj_get_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_get_child);
-    lua_setglobal(L, "lv_obj_get_child");
-
-    lua_pushcfunction(L, bind_lv_obj_get_child_back);
-    lua_setglobal(L, "lv_obj_get_child_back");
-
-    lua_pushcfunction(L, bind_lv_obj_count_children);
-    lua_setglobal(L, "lv_obj_count_children");
-
-    lua_pushcfunction(L, bind_lv_obj_count_children_recursive);
-    lua_setglobal(L, "lv_obj_count_children_recursive");
-
-    lua_pushcfunction(L, bind_lv_obj_get_coords);
-    lua_setglobal(L, "lv_obj_get_coords");
-
-    lua_pushcfunction(L, bind_lv_obj_get_inner_coords);
-    lua_setglobal(L, "lv_obj_get_inner_coords");
-
-    lua_pushcfunction(L, bind_lv_obj_get_x);
-    lua_setglobal(L, "lv_obj_get_x");
-
-    lua_pushcfunction(L, bind_lv_obj_get_y);
-    lua_setglobal(L, "lv_obj_get_y");
-
-    lua_pushcfunction(L, bind_lv_obj_get_width);
-    lua_setglobal(L, "lv_obj_get_width");
-
-    lua_pushcfunction(L, bind_lv_obj_get_height);
-    lua_setglobal(L, "lv_obj_get_height");
-
-    lua_pushcfunction(L, bind_lv_obj_get_width_fit);
-    lua_setglobal(L, "lv_obj_get_width_fit");
-
-    lua_pushcfunction(L, bind_lv_obj_get_height_fit);
-    lua_setglobal(L, "lv_obj_get_height_fit");
-
-    lua_pushcfunction(L, bind_lv_obj_get_height_margin);
-    lua_setglobal(L, "lv_obj_get_height_margin");
-
-    lua_pushcfunction(L, bind_lv_obj_get_width_margin);
-    lua_setglobal(L, "lv_obj_get_width_margin");
-
-    lua_pushcfunction(L, bind_lv_obj_get_width_grid);
-    lua_setglobal(L, "lv_obj_get_width_grid");
-
-    lua_pushcfunction(L, bind_lv_obj_get_height_grid);
-    lua_setglobal(L, "lv_obj_get_height_grid");
-
-    lua_pushcfunction(L, bind_lv_obj_get_auto_realign);
-    lua_setglobal(L, "lv_obj_get_auto_realign");
-
-    lua_pushcfunction(L, bind_lv_obj_get_ext_click_pad_left);
-    lua_setglobal(L, "lv_obj_get_ext_click_pad_left");
-
-    lua_pushcfunction(L, bind_lv_obj_get_ext_click_pad_right);
-    lua_setglobal(L, "lv_obj_get_ext_click_pad_right");
-
-    lua_pushcfunction(L, bind_lv_obj_get_ext_click_pad_top);
-    lua_setglobal(L, "lv_obj_get_ext_click_pad_top");
-
-    lua_pushcfunction(L, bind_lv_obj_get_ext_click_pad_bottom);
-    lua_setglobal(L, "lv_obj_get_ext_click_pad_bottom");
-
-    lua_pushcfunction(L, bind_lv_obj_get_ext_draw_pad);
-    lua_setglobal(L, "lv_obj_get_ext_draw_pad");
-
-    lua_pushcfunction(L, bind_lv_obj_get_style_list);
-    lua_setglobal(L, "lv_obj_get_style_list");
-
-    lua_pushcfunction(L, bind_lv_obj_get_local_style);
-    lua_setglobal(L, "lv_obj_get_local_style");
-
-    lua_pushcfunction(L, bind_lv_obj_get_hidden);
-    lua_setglobal(L, "lv_obj_get_hidden");
-
-    lua_pushcfunction(L, bind_lv_obj_get_adv_hittest);
-    lua_setglobal(L, "lv_obj_get_adv_hittest");
-
-    lua_pushcfunction(L, bind_lv_obj_get_click);
-    lua_setglobal(L, "lv_obj_get_click");
-
-    lua_pushcfunction(L, bind_lv_obj_get_top);
-    lua_setglobal(L, "lv_obj_get_top");
-
-    lua_pushcfunction(L, bind_lv_obj_get_drag);
-    lua_setglobal(L, "lv_obj_get_drag");
-
-    lua_pushcfunction(L, bind_lv_obj_get_drag_dir);
-    lua_setglobal(L, "lv_obj_get_drag_dir");
-
-    lua_pushcfunction(L, bind_lv_obj_get_drag_throw);
-    lua_setglobal(L, "lv_obj_get_drag_throw");
-
-    lua_pushcfunction(L, bind_lv_obj_get_drag_parent);
-    lua_setglobal(L, "lv_obj_get_drag_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_get_focus_parent);
-    lua_setglobal(L, "lv_obj_get_focus_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_get_parent_event);
-    lua_setglobal(L, "lv_obj_get_parent_event");
-
-    lua_pushcfunction(L, bind_lv_obj_get_gesture_parent);
-    lua_setglobal(L, "lv_obj_get_gesture_parent");
-
-    lua_pushcfunction(L, bind_lv_obj_get_base_dir);
-    lua_setglobal(L, "lv_obj_get_base_dir");
-
-    lua_pushcfunction(L, bind_lv_obj_get_protect);
-    lua_setglobal(L, "lv_obj_get_protect");
-
-    lua_pushcfunction(L, bind_lv_obj_is_protected);
-    lua_setglobal(L, "lv_obj_is_protected");
-
-    lua_pushcfunction(L, bind_lv_obj_get_state);
-    lua_setglobal(L, "lv_obj_get_state");
-
-    lua_pushcfunction(L, bind_lv_obj_get_signal_cb);
-    lua_setglobal(L, "lv_obj_get_signal_cb");
-
-    lua_pushcfunction(L, bind_lv_obj_get_design_cb);
-    lua_setglobal(L, "lv_obj_get_design_cb");
-
-    lua_pushcfunction(L, bind_lv_obj_get_event_cb);
-    lua_setglobal(L, "lv_obj_get_event_cb");
-
-    lua_pushcfunction(L, bind_lv_obj_is_point_on_coords);
-    lua_setglobal(L, "lv_obj_is_point_on_coords");
-
-    lua_pushcfunction(L, bind_lv_obj_hittest);
-    lua_setglobal(L, "lv_obj_hittest");
-
-    lua_pushcfunction(L, bind_lv_obj_get_ext_attr);
-    lua_setglobal(L, "lv_obj_get_ext_attr");
-
-    lua_pushcfunction(L, bind_lv_obj_get_type);
-    lua_setglobal(L, "lv_obj_get_type");
-
-//    lua_pushcfunction(L, bind_lv_obj_get_user_data);
-//    lua_setglobal(L, "lv_obj_get_user_data");
-
-//    lua_pushcfunction(L, bind_lv_obj_get_user_data_ptr);
-//    lua_setglobal(L, "lv_obj_get_user_data_ptr");
-
-//    lua_pushcfunction(L, bind_lv_obj_set_user_data);
-//    lua_setglobal(L, "lv_obj_set_user_data");
-
-    lua_pushcfunction(L, bind_lv_obj_get_group);
-    lua_setglobal(L, "lv_obj_get_group");
-
-    lua_pushcfunction(L, bind_lv_obj_is_focused);
-    lua_setglobal(L, "lv_obj_is_focused");
-
-    lua_pushcfunction(L, bind_lv_obj_get_focused_obj);
-    lua_setglobal(L, "lv_obj_get_focused_obj");
-
-    lua_pushcfunction(L, bind_lv_obj_handle_get_type_signal);
-    lua_setglobal(L, "lv_obj_handle_get_type_signal");
-
-    lua_pushcfunction(L, bind_lv_obj_init_draw_rect_dsc);
-    lua_setglobal(L, "lv_obj_init_draw_rect_dsc");
-
-    lua_pushcfunction(L, bind_lv_obj_init_draw_label_dsc);
-    lua_setglobal(L, "lv_obj_init_draw_label_dsc");
-
-    lua_pushcfunction(L, bind_lv_obj_init_draw_img_dsc);
-    lua_setglobal(L, "lv_obj_init_draw_img_dsc");
-
-    lua_pushcfunction(L, bind_lv_obj_init_draw_line_dsc);
-    lua_setglobal(L, "lv_obj_init_draw_line_dsc");
-
-    lua_pushcfunction(L, bind_lv_obj_get_draw_rect_ext_pad_size);
-    lua_setglobal(L, "lv_obj_get_draw_rect_ext_pad_size");
-
-    lua_pushcfunction(L, bind_lv_obj_fade_in);
-    lua_setglobal(L, "lv_obj_fade_in");
-
-    lua_pushcfunction(L, bind_lv_obj_fade_out);
-    lua_setglobal(L, "lv_obj_fade_out");
-
-    lua_pushcfunction(L, bind_lv_debug_check_obj_type);
-    lua_setglobal(L, "lv_debug_check_obj_type");
-
-    lua_pushcfunction(L, bind_lv_debug_check_obj_valid);
-    lua_setglobal(L, "lv_debug_check_obj_valid");
-
-};
+  lv_append_lib_funcs(L, binding_names);
+}
 
 
 #ifdef __cplusplus

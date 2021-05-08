@@ -20,6 +20,7 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
+#include "lauxlib.h"
 #include "lv_disp.h"
 
 #ifdef __cplusplus
@@ -147,7 +148,6 @@ static int bind_lv_disp_set_bg_color(lua_State *L)
   int color = lua_tointeger(L,2);
   lv_color16_t c;
   c.full = color;
-
   lv_disp_set_bg_color(disp, c);
 
   return 0;
@@ -251,7 +251,6 @@ static int bind_lv_disp_clean_dcache(lua_State *L)
 
 static int bind_lv_scr_act(lua_State *L)
 {
-
   lv_obj_t * ret = lv_scr_act();
 
   if (! ret) {
@@ -315,60 +314,34 @@ static int bind_lv_scr_load(lua_State *L)
 
 
 
+static const luaL_Reg binding_names [] = {
+  { "disp_get_scr_act", bind_lv_disp_get_scr_act },
+  { "disp_get_scr_prev", bind_lv_disp_get_scr_prev },
+  { "disp_load_scr", bind_lv_disp_load_scr },
+  { "disp_get_layer_top", bind_lv_disp_get_layer_top },
+  { "disp_get_layer_sys", bind_lv_disp_get_layer_sys },
+  { "disp_assign_screen", bind_lv_disp_assign_screen },
+  { "disp_set_bg_color", bind_lv_disp_set_bg_color },
+  { "disp_set_bg_image", bind_lv_disp_set_bg_image },
+  { "disp_set_bg_opa", bind_lv_disp_set_bg_opa },
+  { "scr_load_anim", bind_lv_scr_load_anim },
+  { "disp_get_inactive_time", bind_lv_disp_get_inactive_time },
+  { "disp_trig_activity", bind_lv_disp_trig_activity },
+  { "disp_clean_dcache", bind_lv_disp_clean_dcache },
+  { "scr_act", bind_lv_scr_act },
+  { "layer_top", bind_lv_layer_top },
+  { "layer_sys", bind_lv_layer_sys },
+  { "scr_load", bind_lv_scr_load },
+
+  { NULL, NULL},
+};
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+
 int bind_lv_disp__init_module(lua_State *L)
 {
-
-    lua_pushcfunction(L, bind_lv_disp_get_scr_act);
-    lua_setglobal(L, "lv_disp_get_scr_act");
-
-    lua_pushcfunction(L, bind_lv_disp_get_scr_prev);
-    lua_setglobal(L, "lv_disp_get_scr_prev");
-
-    lua_pushcfunction(L, bind_lv_disp_load_scr);
-    lua_setglobal(L, "lv_disp_load_scr");
-
-    lua_pushcfunction(L, bind_lv_disp_get_layer_top);
-    lua_setglobal(L, "lv_disp_get_layer_top");
-
-    lua_pushcfunction(L, bind_lv_disp_get_layer_sys);
-    lua_setglobal(L, "lv_disp_get_layer_sys");
-
-    lua_pushcfunction(L, bind_lv_disp_assign_screen);
-    lua_setglobal(L, "lv_disp_assign_screen");
-
-    lua_pushcfunction(L, bind_lv_disp_set_bg_color);
-    lua_setglobal(L, "lv_disp_set_bg_color");
-
-    lua_pushcfunction(L, bind_lv_disp_set_bg_image);
-    lua_setglobal(L, "lv_disp_set_bg_image");
-
-    lua_pushcfunction(L, bind_lv_disp_set_bg_opa);
-    lua_setglobal(L, "lv_disp_set_bg_opa");
-
-    lua_pushcfunction(L, bind_lv_scr_load_anim);
-    lua_setglobal(L, "lv_scr_load_anim");
-
-    lua_pushcfunction(L, bind_lv_disp_get_inactive_time);
-    lua_setglobal(L, "lv_disp_get_inactive_time");
-
-    lua_pushcfunction(L, bind_lv_disp_trig_activity);
-    lua_setglobal(L, "lv_disp_trig_activity");
-
-    lua_pushcfunction(L, bind_lv_disp_clean_dcache);
-    lua_setglobal(L, "lv_disp_clean_dcache");
-
-    lua_pushcfunction(L, bind_lv_scr_act);
-    lua_setglobal(L, "lv_scr_act");
-
-    lua_pushcfunction(L, bind_lv_layer_top);
-    lua_setglobal(L, "lv_layer_top");
-
-    lua_pushcfunction(L, bind_lv_layer_sys);
-    lua_setglobal(L, "lv_layer_sys");
-
-    lua_pushcfunction(L, bind_lv_scr_load);
-    lua_setglobal(L, "lv_scr_load");
-};
+  lv_append_lib_funcs(L, binding_names);
+}
 
 
 #ifdef __cplusplus

@@ -41,6 +41,7 @@ C_HEADER2 = """
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
+#include "lauxlib.h"
 #include "$BASENAME$.h"
 
 #ifdef __cplusplus
@@ -76,9 +77,11 @@ LUA_BODY = """
 -- Enumerations
 
 -- Load module
-  $BASENAME$__init_module()
+  lv.$BASENAME$__init_module()
 
 """
+
+ENDL = "\n"
 
 MODULE_INIT = """
 int bind_$BASENAME$__init_module(lua_State *L)
@@ -138,16 +141,48 @@ RET_STRING = """
 
 BIND_LIST_DEF_FUNC = "int bind_$BASENAME$__init_module(lua_State *L)"
 
+  
+BIND_REG_TABLE = """
+  { NULL, NULL},
+};
+
+#define LV_LIB_NAME "lv"
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg)
+{
+  lua_getglobal(L, LV_LIB_NAME);
+  if ( ! lua_istable(L, -1)) {
+    luaL_newlib (L, reg);
+    lua_setglobal(L, LV_LIB_NAME);
+     return;
+  }
+  luaL_setfuncs(L, reg, 0);
+}
+
+void bind_init_lvgl_modules(lua_State *L)
+{
+  lv_append_lib_funcs(L, binding_names);
+}
+"""
+
+BIND_TABLE = """
+static const luaL_Reg binding_names [] = {
+"""
+
+
 BIND_LIST_DEF = """
+  { NULL, NULL},
+};
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+
 int bind_$BASENAME$__init_module(lua_State *L)
 {
+  lv_append_lib_funcs(L, binding_names);
+}
 """
   
-BIND_LIST_ENTRY = """
-    lua_pushcfunction(L, bind_$FUNC_NAME$);
-    lua_setglobal(L, "$FUNC_NAME$");
-"""
-  
+BIND_LIST_ENTRY = "  { \"$LUA_FUNC_NAME$\", bind_$FUNC_NAME$ },"
 
   
 INIT_ALL = """
@@ -155,10 +190,8 @@ void bind_init_lvgl_modules(lua_State *L)
 {
 """
   
-INIT_ALL_ENTRY = """
-    lua_pushcfunction(L, bind_$BASENAME$__init_module);
-    lua_setglobal(L, "$BASENAME$__init_module");
-"""
+INIT_ALL_ENTRY = "  {\"$BASENAME$__init_module\", bind_$BASENAME$__init_module}," + ENDL
+
 
 import sys, os
 
@@ -174,7 +207,6 @@ exclude_dirs = {
   "../lvgl/src/lv_gpu"
 }
   
-ENDL = "\n"
 
 def create_file_list():
   files = []
@@ -354,7 +386,9 @@ def append_function(bind_array, c_file, ch_file, f):
     c_file.write(RET_INT)
   c_file.write(ENDL + ENDL)
   
-  bind_array = bind_array + BIND_LIST_ENTRY.replace("$FUNC_NAME$", f[0]["name"])
+  e = BIND_LIST_ENTRY.replace("$FUNC_NAME$", f[0]["name"])
+  #bind_array = bind_array + BIND_LIST_ENTRY.replace("$FUNC_NAME$", f[0]["name"])
+  bind_array = bind_array + e.replace("$LUA_FUNC_NAME$", f[0]["name"][3:]) + ENDL
   return bind_array
   
   
@@ -367,7 +401,7 @@ def mk():
   
   #files = [ '../lvgl/src/lv_core/lv_obj.h' ]
   includes = ""
-  init_all = INIT_ALL
+  init_all = BIND_TABLE
   for file in files:
     print("processing file: " + file)
     base_name = file.split('/')
@@ -389,7 +423,8 @@ def mk():
     ch_file.write(ENDL + "// --------------------------------------------------" + ENDL)
     ch_file.write("#endif" + ENDL)
                   
-    bind_array = BIND_LIST_DEF.replace("$BASENAME$", base_name)
+    #bind_array = BIND_LIST_DEF.replace("$BASENAME$", base_name)
+    bind_array = BIND_TABLE
     for f in funcs:
       if f[0]["name"].find("_lv_") == 0: #disregard locals
         continue
@@ -397,7 +432,7 @@ def mk():
         continue
       bind_array = append_function(bind_array, c_file, ch_file, f)
   
-    bind_array = bind_array + "};" + ENDL
+    bind_array = bind_array + BIND_LIST_DEF.replace("$BASENAME$", base_name)
     c_file.write(bind_array)
     print(bind_array)
   
@@ -409,7 +444,7 @@ def mk():
     init_file.write(C_HEADER2.replace("$BASENAME$", base_name))
     init_file.write(includes)
     init_file.write(init_all)
-    init_file.write("}" + ENDL)
+    init_file.write(BIND_REG_TABLE)
     init_file.write(END_C)
     init_file.close()
     

@@ -20,6 +20,7 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
+#include "lauxlib.h"
 #include "lv_label.h"
 
 #ifdef __cplusplus
@@ -390,78 +391,40 @@ static int bind_lv_label_refr_text(lua_State *L)
 
 
 
+static const luaL_Reg binding_names [] = {
+  { "label_create", bind_lv_label_create },
+  { "label_set_text", bind_lv_label_set_text },
+  { "label_set_text_static", bind_lv_label_set_text_static },
+  { "label_set_long_mode", bind_lv_label_set_long_mode },
+  { "label_set_align", bind_lv_label_set_align },
+  { "label_set_recolor", bind_lv_label_set_recolor },
+  { "label_set_anim_speed", bind_lv_label_set_anim_speed },
+  { "label_set_text_sel_start", bind_lv_label_set_text_sel_start },
+  { "label_set_text_sel_end", bind_lv_label_set_text_sel_end },
+  { "label_get_text", bind_lv_label_get_text },
+  { "label_get_long_mode", bind_lv_label_get_long_mode },
+  { "label_get_align", bind_lv_label_get_align },
+  { "label_get_recolor", bind_lv_label_get_recolor },
+  { "label_get_anim_speed", bind_lv_label_get_anim_speed },
+  { "label_get_letter_pos", bind_lv_label_get_letter_pos },
+  { "label_get_letter_on", bind_lv_label_get_letter_on },
+  { "label_is_char_under_pos", bind_lv_label_is_char_under_pos },
+  { "label_get_text_sel_start", bind_lv_label_get_text_sel_start },
+  { "label_get_text_sel_end", bind_lv_label_get_text_sel_end },
+  { "label_get_style", bind_lv_label_get_style },
+  { "label_ins_text", bind_lv_label_ins_text },
+  { "label_cut_text", bind_lv_label_cut_text },
+  { "label_refr_text", bind_lv_label_refr_text },
+
+  { NULL, NULL},
+};
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+
 int bind_lv_label__init_module(lua_State *L)
 {
-
-    lua_pushcfunction(L, bind_lv_label_create);
-    lua_setglobal(L, "lv_label_create");
-
-    lua_pushcfunction(L, bind_lv_label_set_text);
-    lua_setglobal(L, "lv_label_set_text");
-
-    lua_pushcfunction(L, bind_lv_label_set_text_static);
-    lua_setglobal(L, "lv_label_set_text_static");
-
-    lua_pushcfunction(L, bind_lv_label_set_long_mode);
-    lua_setglobal(L, "lv_label_set_long_mode");
-
-    lua_pushcfunction(L, bind_lv_label_set_align);
-    lua_setglobal(L, "lv_label_set_align");
-
-    lua_pushcfunction(L, bind_lv_label_set_recolor);
-    lua_setglobal(L, "lv_label_set_recolor");
-
-    lua_pushcfunction(L, bind_lv_label_set_anim_speed);
-    lua_setglobal(L, "lv_label_set_anim_speed");
-
-    lua_pushcfunction(L, bind_lv_label_set_text_sel_start);
-    lua_setglobal(L, "lv_label_set_text_sel_start");
-
-    lua_pushcfunction(L, bind_lv_label_set_text_sel_end);
-    lua_setglobal(L, "lv_label_set_text_sel_end");
-
-    lua_pushcfunction(L, bind_lv_label_get_text);
-    lua_setglobal(L, "lv_label_get_text");
-
-    lua_pushcfunction(L, bind_lv_label_get_long_mode);
-    lua_setglobal(L, "lv_label_get_long_mode");
-
-    lua_pushcfunction(L, bind_lv_label_get_align);
-    lua_setglobal(L, "lv_label_get_align");
-
-    lua_pushcfunction(L, bind_lv_label_get_recolor);
-    lua_setglobal(L, "lv_label_get_recolor");
-
-    lua_pushcfunction(L, bind_lv_label_get_anim_speed);
-    lua_setglobal(L, "lv_label_get_anim_speed");
-
-    lua_pushcfunction(L, bind_lv_label_get_letter_pos);
-    lua_setglobal(L, "lv_label_get_letter_pos");
-
-    lua_pushcfunction(L, bind_lv_label_get_letter_on);
-    lua_setglobal(L, "lv_label_get_letter_on");
-
-    lua_pushcfunction(L, bind_lv_label_is_char_under_pos);
-    lua_setglobal(L, "lv_label_is_char_under_pos");
-
-    lua_pushcfunction(L, bind_lv_label_get_text_sel_start);
-    lua_setglobal(L, "lv_label_get_text_sel_start");
-
-    lua_pushcfunction(L, bind_lv_label_get_text_sel_end);
-    lua_setglobal(L, "lv_label_get_text_sel_end");
-
-    lua_pushcfunction(L, bind_lv_label_get_style);
-    lua_setglobal(L, "lv_label_get_style");
-
-    lua_pushcfunction(L, bind_lv_label_ins_text);
-    lua_setglobal(L, "lv_label_ins_text");
-
-    lua_pushcfunction(L, bind_lv_label_cut_text);
-    lua_setglobal(L, "lv_label_cut_text");
-
-    lua_pushcfunction(L, bind_lv_label_refr_text);
-    lua_setglobal(L, "lv_label_refr_text");
-};
+  lv_append_lib_funcs(L, binding_names);
+}
 
 
 #ifdef __cplusplus

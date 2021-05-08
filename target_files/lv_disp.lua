@@ -18,5 +18,5 @@
 -- Enumerations
 
 -- Load module
-  lv_disp__init_module()
+  lv.lv_disp__init_module()
 

@@ -23,6 +23,7 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
+#include "lauxlib.h"
 #include "lv_label.h"
 
 #ifdef __cplusplus

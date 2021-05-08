@@ -43,7 +43,7 @@ btn_1_cnt = 1
 
 local function btn_1_cb (obj, ev)
   if ev == LV_EVENT_PRESSED then
-    lv_label_set_text(label_1, "Button " .. tostring(btn_1_cnt))
+    lv.label_set_text(label_1, "Button " .. tostring(btn_1_cnt))
     btn_1_cnt = btn_1_cnt + 1
     eos.post(g_user_event_1, "user event sent by btn_1_cb")
   end
@@ -56,7 +56,7 @@ btn_2_cnt = 1
 
 local function btn_2_cb (obj, ev)
   if ev == LV_EVENT_PRESSED then
-    lv_label_set_text(label_2, "Button " .. tostring(btn_2_cnt))
+    lv.label_set_text(label_2, "Button " .. tostring(btn_2_cnt))
     btn_2_cnt = btn_2_cnt + 1
     eos.post(g_user_event_1, "user event sent by btn_2_cb")
   end
@@ -64,19 +64,19 @@ end
 
 -- ---------- Init UI -------------
 local function init_ui()
-  btn_1 = lv_btn_create(lv_scr_act(), 0)
-  lv_obj_set_pos(btn_1, 30, 10)
-  lv_obj_set_size(btn_1, 120, 50)
-  label_1 = lv_label_create(btn_1, 0)
-  lv_label_set_text(label_1, "Button")
-  lv_obj_set_event_cb(btn_1, btn_1_cb)
+  btn_1 = lv.btn_create(lv.scr_act(), 0)
+  lv.obj_set_pos(btn_1, 30, 10)
+  lv.obj_set_size(btn_1, 120, 50)
+  label_1 = lv.label_create(btn_1, 0)
+  lv.label_set_text(label_1, "Button")
+  lv.obj_set_event_cb(btn_1, btn_1_cb)
   
-  btn_2 = lv_btn_create(lv_scr_act(), 0)
-  lv_obj_set_pos(btn_2, 170, 10)
-  lv_obj_set_size(btn_2, 120, 50)
-  label_2 = lv_label_create(btn_2, 0)
-  lv_label_set_text(label_2, "Button")
-  lv_obj_set_event_cb(btn_2, btn_2_cb)
+  btn_2 = lv.btn_create(lv.scr_act(), 0)
+  lv.obj_set_pos(btn_2, 170, 10)
+  lv.obj_set_size(btn_2, 120, 50)
+  label_2 = lv.label_create(btn_2, 0)
+  lv.label_set_text(label_2, "Button")
+  lv.obj_set_event_cb(btn_2, btn_2_cb)
 end
 
 -- ----------- dome: new task demo receiving user defined event ----------
@@ -132,10 +132,10 @@ function app_kalunga( ctx )
 
     eos.delay(ctx, 1000)
     btn_1_cnt = btn_1_cnt + 1
-    lv_label_set_text(label_1, "Button " .. btn_1_cnt)
+    lv.label_set_text(label_1, "Button " .. btn_1_cnt)
     if (btn_1_cnt % 2) > 0 then
       btn_2_cnt = btn_2_cnt + 1
-      lv_label_set_text(label_2, "Button " .. btn_2_cnt)
+      lv.label_set_text(label_2, "Button " .. btn_2_cnt)
     end
       
   end

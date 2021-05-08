@@ -18,5 +18,5 @@
 -- Enumerations
 
 -- Load module
-  lv_label__init_module()
+  lv.lv_label__init_module()
 

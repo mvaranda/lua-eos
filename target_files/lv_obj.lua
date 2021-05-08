@@ -18,5 +18,5 @@
 -- Enumerations
 
 -- Load module
-  lv_obj__init_module()
+  lv.lv_obj__init_module()
 

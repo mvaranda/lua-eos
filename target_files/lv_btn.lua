@@ -18,5 +18,5 @@
 -- Enumerations
 
 -- Load module
-  lv_btn__init_module()
+  lv.lv_btn__init_module()
 
