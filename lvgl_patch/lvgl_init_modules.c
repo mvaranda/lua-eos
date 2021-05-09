@@ -209,6 +209,8 @@ static const luaL_Reg binding_names [] = {
   { NULL, NULL},
 };
 
+extern void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+
 void bind_init_lvgl_modules(lua_State *L)
 {
   lv_append_lib_funcs(L, binding_names);
