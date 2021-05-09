@@ -16,7 +16,6 @@
 -- ***************************************************************
 -- */
 
-local EOS_PATH
 if EOS_PLATFORM == "SIMULATOR" then
   EOS_PATH = "../target_files/?.lua;"
 else

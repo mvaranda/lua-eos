@@ -56,8 +56,8 @@ extern "C" {
 //#include "bind_lv_log.h"
 //#include "bind_lv_ll.h"
 //#include "bind_lv_color.h"
-//#include "bind_lv_linemeter.h"
-//#include "bind_lv_slider.h"
+#include "bind_lv_linemeter.h"
+#include "bind_lv_slider.h"
 //#include "bind_lv_img.h"
 //#include "bind_lv_imgbtn.h"
 //#include "bind_lv_list.h"
@@ -146,8 +146,8 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_log__init_module", bind_lv_log__init_module},
 //  {"lv_ll__init_module", bind_lv_ll__init_module},
 //  {"lv_color__init_module", bind_lv_color__init_module},
-//  {"lv_linemeter__init_module", bind_lv_linemeter__init_module},
-//  {"lv_slider__init_module", bind_lv_slider__init_module},
+  {"lv_linemeter__init_module", bind_lv_linemeter__init_module},
+  {"lv_slider__init_module", bind_lv_slider__init_module},
 //  {"lv_img__init_module", bind_lv_img__init_module},
 //  {"lv_imgbtn__init_module", bind_lv_imgbtn__init_module},
 //  {"lv_list__init_module", bind_lv_list__init_module},
