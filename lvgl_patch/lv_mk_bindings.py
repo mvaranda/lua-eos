@@ -166,6 +166,7 @@ void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
 int bind_$BASENAME$__init_module(lua_State *L)
 {
   lv_append_lib_funcs(L, binding_names);
+  return 0;
 }
 """
   

@@ -419,11 +419,12 @@ static const luaL_Reg binding_names [] = {
   { NULL, NULL},
 };
 
-void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+void lv_append_lib_funcs(lua_State *L, luaL_Reg reg[]);
 
 int bind_lv_label__init_module(lua_State *L)
 {
   lv_append_lib_funcs(L, binding_names);
+  return 0;
 }
 
 

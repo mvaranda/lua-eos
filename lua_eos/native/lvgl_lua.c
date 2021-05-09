@@ -19,6 +19,7 @@
 #include "lua_eos.h"
 #include "lvgl.h"
 #include "lauxlib.h"
+#include "lua.h"
 #include "lualib.h"
 
 
@@ -68,12 +69,17 @@ static void lv_cb(lv_obj_t * obj, lv_event_t event)
 #define LV_LIB_NAME "lv"
 #define LV_OBJECTS  "lv_objs"
 
-void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg)
+// extern void luaL_setfuncs(lua_State *L, void * reg, int v);
+// extern void luaL_newlibtable (lua_State *L, void * reg);
+// extern void luaL_newlib (lua_State *L, void * reg);
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg reg[])
 {
   lua_getglobal(L, LV_LIB_NAME);
   if ( ! lua_istable(L, -1)) {
     // create table to store all lv functions and variables
     luaL_newlib (L, reg);
+    //luaL_newlibtable(L,reg); luaL_setfuncs(L,reg,0);
     lua_setglobal(L, LV_LIB_NAME);
 
     return;
