@@ -18,7 +18,8 @@
 #include "log.h"
 #include "lua_eos.h"
 #include "lvgl.h"
-
+#include "lauxlib.h"
+#include "lualib.h"
 
 
 #ifdef __cplusplus
@@ -150,6 +151,49 @@ static void lv_cb(lv_obj_t * obj, lv_event_t event)
 
 }
 
+#define LV_LIB_NAME "lv"
+#define LV_OBJECTS  "lv_objs"
+
+void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg)
+{
+  lua_getglobal(L, LV_LIB_NAME);
+  if ( ! lua_istable(L, -1)) {
+    // create table to store all lv functions and variables
+    luaL_newlib (L, reg);
+    lua_setglobal(L, LV_LIB_NAME);
+
+    return;
+  }
+  luaL_setfuncs(L, reg, 0);
+}
+
+extern lua_State * get_lua_state(void);
+
+void lv_append_obj(void * obj)
+{
+  lua_State * L = get_lua_state();
+  if ( ! L) {
+      LOG("L not available");
+      return;
+  }
+
+  lua_getglobal(L, LV_OBJECTS);
+
+  if ( ! lua_istable(L, -1)) {
+    // create a table to track objects to forward events
+    lua_newtable(L);
+    lua_pushstring(L, "dummy_key");
+    lua_pushstring(L, "dummy_val");
+    lua_settable(L, -3);
+    lua_setglobal(L, LV_OBJECTS);
+    LOG("lv_objs created\r\n");
+    lua_getglobal(L, LV_OBJECTS); // to top again
+  }
+
+  lua_pushstring(L, "dummy");
+  lua_setfield( L, -2, obj );
+}
+
 static int bind_lv_obj_set_event_cb (lua_State *L)
 {
     void * obj = lua_touserdata(L,1);
@@ -159,20 +203,20 @@ static int bind_lv_obj_set_event_cb (lua_State *L)
 
 void lvgl_lua_init(lua_State *L)
 {
-    lua_pushcfunction(L, bind_lv_create);
-    lua_setglobal(L, "bind_lv_create");
+//    lua_pushcfunction(L, bind_lv_create);
+//    lua_setglobal(L, "bind_lv_create");
 
-    lua_pushcfunction(L, bind_lv_scr_act);
-    lua_setglobal(L, "lv_scr_act");
+//    lua_pushcfunction(L, bind_lv_scr_act);
+//    lua_setglobal(L, "lv_scr_act");
 
-    lua_pushcfunction(L, bind_lv_obj_set_pos);
-    lua_setglobal(L, "lv_obj_set_pos");
+//    lua_pushcfunction(L, bind_lv_obj_set_pos);
+//    lua_setglobal(L, "lv_obj_set_pos");
 
-    lua_pushcfunction(L, bind_lv_obj_set_size);
-    lua_setglobal(L, "lv_obj_set_size");
+//    lua_pushcfunction(L, bind_lv_obj_set_size);
+//    lua_setglobal(L, "lv_obj_set_size");
 
-    lua_pushcfunction(L, bind_lv_label_set_text);
-    lua_setglobal(L, "lv_label_set_text");
+//    lua_pushcfunction(L, bind_lv_label_set_text);
+//    lua_setglobal(L, "lv_label_set_text");
 
     lua_pushcfunction(L, bind_lv_obj_set_event_cb);
     lua_setglobal(L, "bind_lv_obj_set_event_cb");

@@ -146,19 +146,6 @@ BIND_REG_TABLE = """
   { NULL, NULL},
 };
 
-#define LV_LIB_NAME "lv"
-
-void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg)
-{
-  lua_getglobal(L, LV_LIB_NAME);
-  if ( ! lua_istable(L, -1)) {
-    luaL_newlib (L, reg);
-    lua_setglobal(L, LV_LIB_NAME);
-     return;
-  }
-  luaL_setfuncs(L, reg, 0);
-}
-
 void bind_init_lvgl_modules(lua_State *L)
 {
   lv_append_lib_funcs(L, binding_names);

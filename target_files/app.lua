@@ -24,7 +24,7 @@ else
 end
 package.path = EOS_PATH
 
---require "lvgl"
+require "lvgl"
 require "lv_disp"
 require "lv_obj"
 require "lv_btn"

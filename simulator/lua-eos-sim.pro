@@ -128,7 +128,6 @@ SOURCES += \
     ../lvgl/src/lv_core/lv_disp.c \
     ../lvgl/src/lv_core/lv_group.c \
     ../lvgl/src/lv_core/lv_indev.c \
-    ../lvgl/src/lv_core/lv_obj.c \
     ../lvgl/src/lv_core/lv_refr.c \
     ../lvgl/src/lv_core/lv_style.c \
     ../lvgl/src/lv_draw/lv_draw_arc.c \
@@ -236,6 +235,7 @@ SOURCES += \
     ../lvgl_patch/bind_lv_disp.c \
     ../lvgl_patch/bind_lv_label.c \
     ../lvgl_patch/bind_lv_obj.c \
+    ../lvgl_patch/lv_obj.c \
     ../lvgl_patch/lvgl_init_modules.c \
     ../lvgl_patch/lvgl_integr.cpp \
     ../utils/malloc.c \

@@ -2191,7 +2191,7 @@ static const luaL_Reg binding_names [] = {
   { "obj_add_state", bind_lv_obj_add_state },
   { "obj_clear_state", bind_lv_obj_clear_state },
   { "obj_finish_transitions", bind_lv_obj_finish_transitions },
-  { "obj_set_event_cb", bind_lv_obj_set_event_cb },
+//  { "obj_set_event_cb", bind_lv_obj_set_event_cb },
   { "event_send", bind_lv_event_send },
   { "event_send_refresh", bind_lv_event_send_refresh },
   { "event_send_refresh_recursive", bind_lv_event_send_refresh_recursive },

@@ -49,6 +49,10 @@
 /* The variable used to hold the event queue's data structure. */
 static mos_queue_h_t event_queue;
 
+static lua_State * L;
+
+lua_State * get_lua_state(void) {return L;}
+
 void add_event_to_queue( const void * ev_item)
 {
 
@@ -260,7 +264,7 @@ void luaTask(void * arg)
   }
 
   //int status, result;
-  lua_State *L = luaL_newstate();  /* create state */
+  L = luaL_newstate();  /* create state */
   if (L == NULL) {
     LOG_E("cannot create state: not enough memory");
     return;
@@ -404,7 +408,5 @@ void eos_init(void)
 //      printf("dl max hsize = %d\r\n", hsize_ok);
 //      mos_thread_sleep(1000);
 //  }
-
-
 
 }
