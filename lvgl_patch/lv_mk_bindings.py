@@ -161,7 +161,7 @@ BIND_LIST_DEF = """
   { NULL, NULL},
 };
 
-void lv_append_lib_funcs(lua_State *L, luaL_Reg * reg);
+void lv_append_lib_funcs(lua_State *L, luaL_Reg reg[]);
 
 int bind_$BASENAME$__init_module(lua_State *L)
 {
