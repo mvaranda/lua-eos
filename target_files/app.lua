@@ -28,6 +28,8 @@ require "lv_disp"
 require "lv_obj"
 require "lv_btn"
 require "lv_label"
+require "lv_linemeter"
+require "lv_slider"
 
 --------
 global_demo = 0
@@ -61,6 +63,12 @@ local function btn_2_cb (obj, ev)
   end
 end
 
+------------- callback for slider -----
+function slider_handler (obj, ev)
+ local v = lv.slider_get_value(obj)
+ lv.linemeter_set_value(lmeter, v)
+end
+
 -- ---------- Init UI -------------
 local function init_ui()
   btn_1 = lv.btn_create(lv.scr_act(), 0)
@@ -76,6 +84,18 @@ local function init_ui()
   label_2 = lv.label_create(btn_2, 0)
   lv.label_set_text(label_2, "Button")
   lv.obj_set_event_cb(btn_2, btn_2_cb)
+
+  lmeter = lv.linemeter_create(lv.scr_act(), 0)
+  lv.linemeter_set_range(lmeter, 0, 100)
+  lv.linemeter_set_value(lmeter, 80)
+  lv.linemeter_set_scale(lmeter, 240, 10)
+  lv.obj_set_size(lmeter, 100, 100)
+  lv.obj_align(lmeter, 0, 0, 0, 70)
+
+  slider = lv.slider_create(lv.scr_act(), 0)
+  lv.obj_align(slider, 0, 0, 0, 0)
+  lv.slider_set_range(slider, 0, 100)
+  lv.obj_set_event_cb(slider, slider_handler)
 end
 
 -- ----------- dome: new task demo receiving user defined event ----------

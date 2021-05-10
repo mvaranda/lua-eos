@@ -42,6 +42,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     gMainObj = this;
 
+    installEventFilter(this);
+
     setWindowTitle("LUA EOS Simulator - version " LUA_EOS_VERSION);
 
     connect(ui->lb_display, SIGNAL(mousePressed(int, int)), this, SLOT(onMousePressed(int, int)));
@@ -158,17 +160,42 @@ void MainWindow::writeDataFromTerm(const QByteArray &data)
     memset(msg, 0, sizeof(msg));
 }
 
+static int last_state = LV_INDEV_STATE_REL;
+
 void MainWindow::onMousePressed(int x, int y)
 {
     printf("Mouse pressed %d, %d\n", x, y);
     lv_integr_update_pointer(x, y, LV_INDEV_STATE_PR);
+    last_state = LV_INDEV_STATE_PR;
 }
 
 void MainWindow::onMouseReleased(int x, int y)
 {
     printf("Mouse released %d, %d\n", x, y);
     lv_integr_update_pointer(x, y, LV_INDEV_STATE_REL);
+    last_state = LV_INDEV_STATE_REL;
 }
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+  if (event->type() == QEvent::MouseMove)
+  {
+    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+    statusBar()->showMessage(QString("Mouse move (%1,%2)").arg(mouseEvent->pos().x()).arg(mouseEvent->pos().y()));
+    int x = mouseEvent->pos().x();
+    int y = mouseEvent->pos().y();
+    printf("Mouse move %d, %d\n", x, y);
+    lv_integr_update_pointer(x, y, last_state);
+  }
+  return false;
+}
+
+void MainWindow::onMouseMoved(int x, int y)
+{
+    printf("Mouse released %d, %d\n", x, y);
+    lv_integr_update_pointer(x, y, last_state);
+}
+
 
 
 

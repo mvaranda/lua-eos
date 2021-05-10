@@ -43,11 +43,14 @@ private slots:
   void timerEvent(QTimerEvent *event);
   void onMousePressed(int x, int y);
   void onMouseReleased(int x, int y);
+  void onMouseMoved(int x, int y);
   void writeDataFromTerm(const QByteArray &data);
   void forwardToConsole(char * msg);
 
 
 private:
+  virtual bool eventFilter(QObject *obj, QEvent *event);
+
   int timerId;
   TermDlg * m_term;
   Console * m_term_console;
