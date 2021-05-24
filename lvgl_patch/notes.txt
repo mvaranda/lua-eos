@@ -1,0 +1,12 @@
+
+styles:
+
+  removed:
+    lv.style_init (replaced by lv.style_create).
+    lv.style_copy (also replaced by lv.style_create)
+    lv.style_list_get_style (does not make sense... lua can have a table for that)
+
+  added:
+    lv.style_create(original) if original is nil created. Otherwise, create a copy of original.
+
+

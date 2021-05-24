@@ -238,6 +238,7 @@ SOURCES += \
     ../lvgl_patch/bind_lv_linemeter.c \
     ../lvgl_patch/bind_lv_obj.c \
     ../lvgl_patch/bind_lv_slider.c \
+    ../lvgl_patch/bind_lv_style.c \
     ../lvgl_patch/lvgl_init_modules.c \
     ../lvgl_patch/lvgl_integr.cpp \
     ../utils/malloc.c \
@@ -381,6 +382,7 @@ HEADERS += \
     ../lvgl_patch/bind_lv_linemeter.h \
     ../lvgl_patch/bind_lv_obj.h \
     ../lvgl_patch/bind_lv_slider.h \
+    ../lvgl_patch/bind_lv_style.h \
     ../lvgl_patch/lv_conf.h \
     ../lvgl_patch/lvgl_integr.h \
     ../utils/malloc.h \
