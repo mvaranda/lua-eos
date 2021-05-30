@@ -383,6 +383,7 @@ def append_function(bind_array, c_file, ch_file, f):
 
 def mk():
   files = create_file_list()
+  #files = ['style_expanded.h']
   if len(files) == 0:
     print("no header file found")
     return
