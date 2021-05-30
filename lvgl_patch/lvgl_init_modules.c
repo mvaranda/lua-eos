@@ -35,7 +35,7 @@ extern "C" {
 //#include "bind_lv_obj_style_dec.h"
 #include "bind_lv_disp.h"
 //#include "bind_lv_indev.h"
-//#include "bind_lv_style.h"
+#include "bind_lv_style.h"
 //#include "bind_lv_refr.h"
 //#include "bind_lv_printf.h"
 //#include "bind_lv_templ.h"
@@ -125,7 +125,7 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_obj_style_dec__init_module", bind_lv_obj_style_dec__init_module},
   {"lv_disp__init_module", bind_lv_disp__init_module},
 //  {"lv_indev__init_module", bind_lv_indev__init_module},
-//  {"lv_style__init_module", bind_lv_style__init_module},
+  {"lv_style__init_module", bind_lv_style__init_module},
 //  {"lv_refr__init_module", bind_lv_refr__init_module},
 //  {"lv_printf__init_module", bind_lv_printf__init_module},
 //  {"lv_templ__init_module", bind_lv_templ__init_module},

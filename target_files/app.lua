@@ -30,6 +30,8 @@ require "lv_btn"
 require "lv_label"
 require "lv_linemeter"
 require "lv_slider"
+require "lv_style"
+require "lv_color"
 
 --------
 global_demo = 0
@@ -38,8 +40,8 @@ g_user_event_1 = nil
 
 
 -- -------- Variables and callback for button 1 -----
-local btn_1
-local label_1
+btn_1 = nil
+label_1 = nil
 btn_1_cnt = 1
 
 local function btn_1_cb (obj, ev)
@@ -51,8 +53,8 @@ local function btn_1_cb (obj, ev)
 end
 
 -- -------- Variables and callback for button 2 -----
-local btn_2
-local label_2
+btn_2 = nil
+label_2 = nil
 btn_2_cnt = 1
 
 local function btn_2_cb (obj, ev)

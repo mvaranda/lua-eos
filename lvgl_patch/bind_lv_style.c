@@ -72,7 +72,7 @@ static int bind_lv_style_create(lua_State *L)
 
   lv_style_t * style_obj = (lv_style_t *) mos_calloc(sizeof(lv_style_t), 1);
 
-  if ( ! original) {
+  if ( 1) {//! original) {
         lv_style_init(style_obj);
   }
   else {
