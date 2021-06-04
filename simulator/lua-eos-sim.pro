@@ -233,6 +233,7 @@ SOURCES += \
     ../lvgl/src/lv_widgets/lv_tileview.c \
     ../lvgl/src/lv_widgets/lv_win.c \
     ../lvgl_patch/bind_lv_btn.c \
+    ../lvgl_patch/bind_lv_checkbox.c \
     ../lvgl_patch/bind_lv_disp.c \
     ../lvgl_patch/bind_lv_label.c \
     ../lvgl_patch/bind_lv_linemeter.c \

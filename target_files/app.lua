@@ -27,11 +27,13 @@ require "lvgl"
 require "lv_disp"
 require "lv_obj"
 require "lv_btn"
+require "lv_checkbox"
 require "lv_label"
 require "lv_linemeter"
 require "lv_slider"
 require "lv_style"
 require "lv_color"
+
 
 --------
 global_demo = 0
