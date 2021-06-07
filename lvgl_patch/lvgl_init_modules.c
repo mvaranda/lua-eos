@@ -68,7 +68,7 @@ extern "C" {
 //#include "bind_lv_canvas.h"
 //#include "bind_lv_objx_templ.h"
 //#include "bind_lv_calendar.h"
-//#include "bind_lv_switch.h"
+#include "bind_lv_switch.h"
 //#include "bind_lv_tabview.h"
 #include "bind_lv_checkbox.h"
 //#include "bind_lv_line.h"
@@ -158,7 +158,7 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_canvas__init_module", bind_lv_canvas__init_module},
 //  {"lv_objx_templ__init_module", bind_lv_objx_templ__init_module},
 //  {"lv_calendar__init_module", bind_lv_calendar__init_module},
-//  {"lv_switch__init_module", bind_lv_switch__init_module},
+  {"lv_switch__init_module", bind_lv_switch__init_module},
 //  {"lv_tabview__init_module", bind_lv_tabview__init_module},
   {"lv_checkbox__init_module", bind_lv_checkbox__init_module},
 //  {"lv_line__init_module", bind_lv_line__init_module},

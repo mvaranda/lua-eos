@@ -240,6 +240,7 @@ SOURCES += \
     ../lvgl_patch/bind_lv_obj.c \
     ../lvgl_patch/bind_lv_slider.c \
     ../lvgl_patch/bind_lv_style.c \
+    ../lvgl_patch/bind_lv_switch.c \
     ../lvgl_patch/lvgl_init_modules.c \
     ../lvgl_patch/lvgl_integr.cpp \
     ../utils/malloc.c \
