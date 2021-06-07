@@ -103,7 +103,7 @@ static int bind_lv_keyboard_set_map(lua_State *L)
 {
   void * kb = lua_touserdata(L,1);
   int mode = lua_tointeger(L,2);
-  const char * map[] = lua_tostring(L,3);
+  const char * map = lua_tostring(L,3);
 
   lv_keyboard_set_map(kb, mode, map); // REPAIR
 
@@ -119,7 +119,7 @@ static int bind_lv_keyboard_set_ctrl_map(lua_State *L)
 {
   void * kb = lua_touserdata(L,1);
   int mode = lua_tointeger(L,2);
-  int ctrl_map[] = lua_tointeger(L,3);
+  const lv_btnmatrix_ctrl_t * ctrl_map = lua_touserdata(L,3);
 
   lv_keyboard_set_ctrl_map(kb, mode, ctrl_map); // REPAIR
 
