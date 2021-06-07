@@ -235,6 +235,7 @@ SOURCES += \
     ../lvgl_patch/bind_lv_btn.c \
     ../lvgl_patch/bind_lv_checkbox.c \
     ../lvgl_patch/bind_lv_disp.c \
+    ../lvgl_patch/bind_lv_keyboard.c \
     ../lvgl_patch/bind_lv_label.c \
     ../lvgl_patch/bind_lv_linemeter.c \
     ../lvgl_patch/bind_lv_obj.c \

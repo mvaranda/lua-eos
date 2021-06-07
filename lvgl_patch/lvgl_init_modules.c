@@ -74,7 +74,7 @@ extern "C" {
 //#include "bind_lv_line.h"
 //#include "bind_lv_spinner.h"
 #include "bind_lv_label.h"
-//#include "bind_lv_keyboard.h"
+#include "bind_lv_keyboard.h"
 //#include "bind_lv_page.h"
 //#include "bind_lv_cpicker.h"
 //#include "bind_lv_gauge.h"
@@ -164,7 +164,7 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_line__init_module", bind_lv_line__init_module},
 //  {"lv_spinner__init_module", bind_lv_spinner__init_module},
   {"lv_label__init_module", bind_lv_label__init_module},
-//  {"lv_keyboard__init_module", bind_lv_keyboard__init_module},
+  {"lv_keyboard__init_module", bind_lv_keyboard__init_module},
 //  {"lv_page__init_module", bind_lv_page__init_module},
 //  {"lv_cpicker__init_module", bind_lv_cpicker__init_module},
 //  {"lv_gauge__init_module", bind_lv_gauge__init_module},

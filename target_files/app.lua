@@ -34,6 +34,7 @@ require "lv_slider"
 require "lv_style"
 require "lv_color"
 require "lv_switch"
+require "lv_keyboard"
 
 
 --------
