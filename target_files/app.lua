@@ -35,6 +35,7 @@ require "lv_style"
 require "lv_color"
 require "lv_switch"
 require "lv_keyboard"
+require "lv_textarea"
 
 
 --------

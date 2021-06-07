@@ -83,7 +83,7 @@ extern "C" {
 //#include "bind_lv_roller.h"
 //#include "bind_lv_objmask.h"
 //#include "bind_lv_chart.h"
-//#include "bind_lv_textarea.h"
+#include "bind_lv_textarea.h"
 //#include "bind_lv_msgbox.h"
 //#include "bind_lv_spinbox.h"
 //#include "bind_lv_led.h"
@@ -173,7 +173,7 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_roller__init_module", bind_lv_roller__init_module},
 //  {"lv_objmask__init_module", bind_lv_objmask__init_module},
 //  {"lv_chart__init_module", bind_lv_chart__init_module},
-//  {"lv_textarea__init_module", bind_lv_textarea__init_module},
+  {"lv_textarea__init_module", bind_lv_textarea__init_module},
 //  {"lv_msgbox__init_module", bind_lv_msgbox__init_module},
 //  {"lv_spinbox__init_module", bind_lv_spinbox__init_module},
 //  {"lv_led__init_module", bind_lv_led__init_module},
