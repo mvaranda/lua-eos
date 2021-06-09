@@ -26,6 +26,7 @@ set(COMPONENT_SRCS
   "../../../lvgl_patch/bind_lv_slider.c"
   "../../../lvgl_patch/bind_lv_label.c"
   "../../../lvgl_patch/bind_lv_linemeter.c"
+  "../../../lvgl_patch/bind_lv_style.c"
   )
                     
 register_component()
