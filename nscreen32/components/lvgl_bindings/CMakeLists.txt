@@ -26,6 +26,10 @@ set(COMPONENT_SRCS
   "../../../lvgl_patch/bind_lv_slider.c"
   "../../../lvgl_patch/bind_lv_label.c"
   "../../../lvgl_patch/bind_lv_linemeter.c"
+  "../../../lvgl_patch/bind_lv_switch.c"
+  "../../../lvgl_patch/bind_lv_keyboard.c"
+  "../../../lvgl_patch/bind_lv_textarea.c"
+  "../../../lvgl_patch/bind_lv_checkbox.c"
   )
                     
 register_component()
