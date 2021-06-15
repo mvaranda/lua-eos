@@ -30,6 +30,7 @@ set(COMPONENT_SRCS
   "../../../lvgl_patch/bind_lv_keyboard.c"
   "../../../lvgl_patch/bind_lv_textarea.c"
   "../../../lvgl_patch/bind_lv_checkbox.c"
+  "../../../lvgl_patch/bind_lv_style.c"
   )
                     
 register_component()
