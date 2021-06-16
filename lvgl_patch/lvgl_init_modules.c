@@ -63,7 +63,7 @@ extern "C" {
 //#include "bind_lv_list.h"
 //#include "bind_lv_table.h"
 #include "bind_lv_arc.h"
-//#include "bind_lv_bar.h"
+#include "bind_lv_bar.h"
 //#include "bind_lv_dropdown.h"
 //#include "bind_lv_canvas.h"
 //#include "bind_lv_objx_templ.h"
@@ -153,7 +153,7 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_list__init_module", bind_lv_list__init_module},
 //  {"lv_table__init_module", bind_lv_table__init_module},
   {"lv_arc__init_module", bind_lv_arc__init_module},
-//  {"lv_bar__init_module", bind_lv_bar__init_module},
+  {"lv_bar__init_module", bind_lv_bar__init_module},
 //  {"lv_dropdown__init_module", bind_lv_dropdown__init_module},
 //  {"lv_canvas__init_module", bind_lv_canvas__init_module},
 //  {"lv_objx_templ__init_module", bind_lv_objx_templ__init_module},

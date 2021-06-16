@@ -37,6 +37,7 @@ require "lv_switch"
 require "lv_keyboard"
 require "lv_textarea"
 require "lv_arc"
+require "lv_bar"
 
 
 --------
