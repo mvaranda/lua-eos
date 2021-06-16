@@ -38,6 +38,7 @@ require "lv_keyboard"
 require "lv_textarea"
 require "lv_arc"
 require "lv_bar"
+require "lv_btnmatrix"
 
 
 --------

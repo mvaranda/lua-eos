@@ -88,7 +88,7 @@ extern "C" {
 //#include "bind_lv_spinbox.h"
 //#include "bind_lv_led.h"
 //#include "bind_lv_tileview.h"
-//#include "bind_lv_btnmatrix.h"
+#include "bind_lv_btnmatrix.h"
 //#include "bind_lv_cont.h"
 //#include "bind_lv_theme_mono.h"
 //#include "bind_lv_theme_empty.h"
@@ -178,7 +178,7 @@ static const luaL_Reg binding_names [] = {
 //  {"lv_spinbox__init_module", bind_lv_spinbox__init_module},
 //  {"lv_led__init_module", bind_lv_led__init_module},
 //  {"lv_tileview__init_module", bind_lv_tileview__init_module},
-//  {"lv_btnmatrix__init_module", bind_lv_btnmatrix__init_module},
+  {"lv_btnmatrix__init_module", bind_lv_btnmatrix__init_module},
 //  {"lv_cont__init_module", bind_lv_cont__init_module},
 //  {"lv_theme_mono__init_module", bind_lv_theme_mono__init_module},
 //  {"lv_theme_empty__init_module", bind_lv_theme_empty__init_module},
