@@ -18,9 +18,11 @@
 */
 
 #include "log.h"
+#include "mos.h"
 #include "lua_eos.h"
 #include "lvgl.h"
 #include "lauxlib.h"
+#include "stdlib.h"
 #include "lv_btnmatrix.h"
 
 #ifdef __cplusplus
@@ -57,9 +59,24 @@ static int bind_lv_btnmatrix_create(lua_State *L)
 static int bind_lv_btnmatrix_set_map(lua_State *L)
 {
   void * btnm = lua_touserdata(L,1);
-  const char * map[] = lua_tostring(L,2);
 
-  lv_btnmatrix_set_map(btnm, map[]);
+  lua_len(L, 2);
+  lua_Integer mapSize = lua_tointeger(L, -1);
+  lua_pop(L, 1);
+  const char ** map = (const char **)mos_malloc(mapSize*sizeof(char*));
+
+  for (int i = 0; i < mapSize; i++) {
+      const char * str;
+      lua_pushinteger(L, i+1);
+      lua_gettable(L, 2);
+      lua_len(L, -1);
+      str = (const char *)malloc(lua_tointeger(L, -1)*sizeof(char));
+      strcpy(str, lua_tostring(L, -2));
+      map[i] = str;
+      lua_pop(L, 2);
+  }
+
+  lv_btnmatrix_set_map(btnm, map);
 
   return 0;
 }
@@ -72,9 +89,20 @@ static int bind_lv_btnmatrix_set_map(lua_State *L)
 static int bind_lv_btnmatrix_set_ctrl_map(lua_State *L)
 {
   void * btnm = lua_touserdata(L,1);
-  int ctrl_map[] = lua_tointeger(L,2);
 
-  lv_btnmatrix_set_ctrl_map(btnm, ctrl_map[]);
+  lua_len(L, 2);
+  lua_Integer mapSize = lua_tointeger(L, -1);
+  lua_pop(L, 1);
+  lv_btnmatrix_ctrl_t ctrl_map[mapSize];
+
+  for (int i = 0; i < mapSize; i++) {
+      lua_pushinteger(L, i+1);
+      lua_gettable(L, 2);
+      ctrl_map[i] = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+  }
+
+  lv_btnmatrix_set_ctrl_map(btnm, ctrl_map);
 
   return 0;
 }
