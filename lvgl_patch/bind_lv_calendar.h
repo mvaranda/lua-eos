@@ -30,6 +30,7 @@
 extern "C" {
 #endif
 
+int lv_calendar_date_create(lua_State *L);
 
 int bind_lv_calendar__init_module(lua_State *L);
 
