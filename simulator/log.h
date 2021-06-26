@@ -17,7 +17,7 @@
  ***************************************************************
  */
 
-// commit 1 from test
+// commit 2 from test
 
 #include <stdio.h>
 #if 1
