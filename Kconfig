@@ -1,0 +1,32 @@
+
+# Kconfig file for package Lua_EOS
+menuconfig PKG_USING_LUA_EOS
+    bool "Lua EOS is an embedded multi-task framework."
+    default n
+
+if PKG_USING_LUA_EOS
+
+    config PKG_LUA_EOS_PATH
+        string
+        default "/packages/language/Lua_EOS"
+
+    choice
+        prompt "Version"
+        default PKG_USING_LUA_EOS_LATEST_VERSION
+        help
+            Select the package version
+
+        config PKG_USING_LUA_EOS_V001
+            bool "v0.0.1"
+
+        config PKG_USING_LUA_EOS_LATEST_VERSION
+            bool "latest"
+    endchoice
+          
+    config PKG_LUA_EOS_VER
+       string
+       default "v0.0.1"    if PKG_USING_LUA_EOS_V001
+       default "latest"    if PKG_USING_LUA_EOS_LATEST_VERSION
+
+endif
+
